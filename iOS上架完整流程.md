@@ -1,4 +1,4 @@
-# iOS 上架全流程操作手册
+﻿# iOS 上架全流程操作手册
 
 > 适用项目：`E:\Tools\ios\mytool`（书籍阅读，Expo SDK 57）
 > 本文档记录从零到上架 App Store 的完整操作步骤、所需 Key/ID 清单及注意事项。
@@ -153,7 +153,7 @@
       "ios": {
         "appleId": "你的开发者账号邮箱",
         "ascAppId": "你的 ASC App ID（数字）",
-        "appleTeamId": "你的 Team ID（10位）"
+        "appleTeamId": "D5VA6Q22PL"
       }
     }
   }
@@ -222,15 +222,33 @@ npm run submit:ios
 2. App 详情页 → **功能 → App 内购买项目** → 创建商品（唯一 Product ID）
 3. 设置好沙盒测试账号：**用户和访问 → 沙盒 → 测试者**（新建测试 Apple ID）
 
+**本项目已定的商品**（无需改代码，代码已按此 ID 实现）：
+
+| 字段 | 值 |
+|------|-----|
+| 类型 | 非消耗型项目（Non-Consumable，一次购买永久有效） |
+| 参考名称 | 解锁精品书库 |
+| 产品 ID | `vip.unlock.all` |
+| 价格 | **¥1（最低档）**——⚠️ 苹果没有 0.1 元档，中国区最低 ¥1，美区最低 $0.99 |
+| 本地化 | 简体中文：名称「解锁精品书库」/ 描述「解锁全部热门精品书籍」 |
+
+> 商品创建后处于「准备提交」状态即可用于**沙盒测试**（无需等审核）。
+
 ### 9.2 代码接入
-- 推荐库：`react-native-iap`（OpenIAP 规范，支持 StoreKit 2，Expo 需开发版构建）
-- 需要配置 StoreKit capability（在 Bundle ID 中勾选 In-App Purchase）
-- ⚠️ IAP 必须真机测试（模拟器不行），用沙盒账号
+- 已实现：`expo-iap`（OpenIAP 规范，支持 StoreKit 2，Expo 官方推荐库）+ `@react-native-async-storage/async-storage`
+- 代码位置：`mytool/App.js`（页签/付费墙/购买/恢复购买）、`mytool/src/iap.js`（产品 ID 与解锁持久化）
+- 需配置 StoreKit capability：**Bundle ID（com.mytool.booksreader）中勾选 In-App Purchase**
+- ⚠️ IAP 必须**真机 + 开发版构建**测试（模拟器不行、Expo Go 不行），流程：
+  1. `eas build --platform ios --profile development`（或 preview）装到真机
+  2. 真机「设置 → App Store」退出登录，改用**沙盒测试员账号**登录
+  3. 打开 App 点购买 → 出现「沙盒环境」确认框 → 确认 → **模拟支付，不产生真实扣费**
+  4. 测试恢复购买：卸载重装后点「恢复购买」应恢复解锁
+- 正式上线后价格才会真实扣款（¥1 档）
 
 ### 9.3 服务器（收据验证，当前阶段说明）
 | 场景 | 是否需要服务器 |
 |------|--------------|
-| 一次性小额购买、测试期 | 纯客户端可行（有被刷风险） |
+| 一次性小额购买（¥1）、测试期 | 纯客户端可行（有被刷风险：客户端可伪造本地解锁状态；¥1 低价下风险低） |
 | 订阅/正式上线 | **建议**：后端调 Apple App Store Server API 验证收据 + 处理订阅通知 |
 
 - 当前项目 **纯前端**，无需服务器；后续需要时可用 Vercel/Cloudflare Workers 免费 Serverless 方案，无需购买服务器
