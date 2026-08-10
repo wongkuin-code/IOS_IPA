@@ -75,6 +75,7 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
   const [books, setBooks] = useState([]);
   const [search, setSearch] = useState('');
   const [genre, setGenre] = useState(null);
+  const [trope, setTrope] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -237,6 +238,31 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
         </ScrollView>
       )}
 
+      {isShort && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow} contentContainerStyle={styles.chipRowContent}>
+          <TouchableOpacity
+            style={[styles.chip, trope === null && styles.chipActive]}
+            onPress={() => setTrope(null)}
+          >
+            <Text style={[styles.chipText, trope === null && styles.chipTextActive]}>全部标签</Text>
+          </TouchableOpacity>
+          {drama.TROPE_KEYS.map(k => {
+            const tp = drama.TROPES[k];
+            return (
+              <TouchableOpacity
+                key={k}
+                style={[styles.chip, trope === k && styles.chipTropeActive]}
+                onPress={() => setTrope(k)}
+              >
+                <Text style={[styles.chipText, trope === k && styles.chipTextActive]}>
+                  {tp.emoji} {tp.label} {drama.TROPE_COUNTS[k]}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+
       {error ? (
         <View style={styles.centerBlock}>
           <Text style={styles.errorText}>{error}</Text>
@@ -246,7 +272,14 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
         </View>
       ) : (
         <FlatList
-          data={genre ? books.filter(b => b.drama && b.drama.g === genre) : books}
+          data={genre || trope
+            ? books.filter(b => {
+                if (!b.drama) return false;
+                if (genre && b.drama.g !== genre) return false;
+                if (trope && !(b.drama.t || []).includes(trope)) return false;
+                return true;
+              })
+            : books}
           keyExtractor={item => String(item.id)}
           contentContainerStyle={[styles.list, { paddingBottom: 24 + insets.bottom }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
@@ -303,6 +336,15 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
                       </View>
                     )}
                     <Text style={styles.bookNote} numberOfLines={1}>{item.drama.note}</Text>
+                  </View>
+                )}
+                {item.drama && (item.drama.t || []).length > 0 && (
+                  <View style={styles.tagRow}>
+                    {(item.drama.t || []).map(k => (
+                      <View key={k} style={styles.tropeBadge}>
+                        <Text style={styles.tropeBadgeText}>{drama.TROPES[k].emoji} {drama.TROPES[k].label}</Text>
+                      </View>
+                    ))}
                   </View>
                 )}
               </View>
@@ -646,6 +688,11 @@ const styles = StyleSheet.create({
     borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginRight: 6,
   },
   hitBadgeText: { fontSize: 10, color: COLORS.danger, fontWeight: '700' },
+  tropeBadge: {
+    backgroundColor: '#f0f4ff', borderWidth: 1, borderColor: '#c3d3f0',
+    borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginRight: 6,
+  },
+  tropeBadgeText: { fontSize: 10, color: '#4a6da8', fontWeight: '600' },
   bookInfo: { flex: 1 },
   bookTitle: { fontSize: 16, fontWeight: '600', color: COLORS.text, marginBottom: 2 },
   bookAuthor: { fontSize: 12, color: COLORS.muted, marginBottom: 4 },
@@ -664,6 +711,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
   },
   chipActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primary },
+  chipTropeActive: { borderColor: '#4a6da8', backgroundColor: '#4a6da8' },
   chipText: { fontSize: 13, color: COLORS.muted },
   chipTextActive: { color: '#fff', fontWeight: '600' },
   rankBadge: {
