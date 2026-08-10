@@ -182,7 +182,7 @@ export const DRAMA_BOOKS = {
   24032:  { g: 'shiqing',   note: '儒林讽世 · 读书人百态' },
 };
 
-// 🔥 最火爆：短剧改编热度榜（VIP 解锁）
+// 🔥 已拍短剧且爆火的经典 IP（VIP 解锁热榜）
 export const HOT_RANK = [
   23962, // 西游记
   24264, // 红楼梦
@@ -197,6 +197,16 @@ export const HOT_RANK = [
   25349, // 东周列国志
   23825, // 施公案
 ];
+
+export function isHit(id) {
+  return HOT_RANK.includes(Number(id));
+}
+
+// 每个分类的书目数量（用于分类筛选显示）
+export const GENRE_COUNTS = Object.fromEntries(
+  GENRE_KEYS.map(k => [k, 0]),
+);
+for (const t of Object.values(DRAMA_BOOKS)) GENRE_COUNTS[t.g]++;
 
 export function tagOf(id) {
   const t = DRAMA_BOOKS[Number(id)];

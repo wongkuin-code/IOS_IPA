@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   StyleSheet, Text, View, FlatList, TouchableOpacity,
-  ActivityIndicator, TextInput, Alert, RefreshControl, ScrollView, Modal,
+  ActivityIndicator, TextInput, Alert, RefreshControl, ScrollView, Modal, Image,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIAP, ErrorCode, getAvailablePurchases } from 'expo-iap';
@@ -33,9 +33,20 @@ const TOP_TABS = [
   { key: 'hot', label: '🔥 最火爆' },
 ];
 
-const PREMIUM_PAGES = [1, 2, 3];
-const SHORT_PAGES = [1, 2, 3, 4, 5];
-const HOT_PAGES = [1, 2, 3, 4];
+const ALL_SHORT_IDS = Object.keys(drama.DRAMA_BOOKS).map(Number);
+
+// ── 书籍封面（加载失败回退为 📖 占位）──
+function BookCover({ coverUrl, style }) {
+  const [failed, setFailed] = useState(false);
+  if (!coverUrl || failed) {
+    return (
+      <View style={style}>
+        <Text style={styles.bookCoverText}>📖</Text>
+      </View>
+    );
+  }
+  return <Image source={{ uri: coverUrl }} style={style} onError={() => setFailed(true)} />;
+}
 
 // ── IAP 诊断 ──
 function fmtErr(e) {
@@ -76,69 +87,38 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
     const p = nextPage || 1;
     try {
       if (isHot) {
-        const pages = await Promise.all(HOT_PAGES.map(n => api.fetchBooks({ language: 'zh', page: n })));
+        const list = await api.fetchBooksByIds(drama.HOT_RANK);
         const rankMap = new Map(drama.HOT_RANK.map((id, i) => [id, i]));
-        const merged = [];
-        const seen = new Set();
-        for (const d of pages) {
-          for (const b of d.books) {
-            if (!seen.has(b.id)) {
-              seen.add(b.id);
-              merged.push(b);
-            }
-          }
-        }
         setBooks(
-          merged
+          list
             .filter(b => rankMap.has(b.id))
             .sort((a, b) => rankMap.get(a.id) - rankMap.get(b.id))
-            .map(b => ({ ...b, hotRank: rankMap.get(b.id) + 1, drama: drama.tagOf(b.id) })),
+            .map((b, i) => ({ ...b, hotRank: i + 1, drama: drama.tagOf(b.id) })),
         );
         setHasMore(false);
         pageRef.current = 1;
         return;
       }
       if (isShort && !keyword) {
-        const pages = await Promise.all(SHORT_PAGES.map(n => api.fetchBooks({ language: 'zh', page: n })));
-        const merged = [];
-        const seen = new Set();
-        for (const d of pages) {
-          for (const b of d.books) {
-            if (!seen.has(b.id)) {
-              seen.add(b.id);
-              merged.push(b);
-            }
-          }
-        }
-        setBooks(merged.map(b => ({ ...b, drama: drama.tagOf(b.id) })));
+        const list = await api.fetchBooksByIds(ALL_SHORT_IDS);
+        setBooks(list.map(b => ({ ...b, drama: drama.tagOf(b.id) })));
         setHasMore(false);
         pageRef.current = 1;
         return;
       }
       if (premium && p === 1 && !keyword) {
-        const pages = await Promise.all(
-          PREMIUM_PAGES.map(n => api.fetchBooks({ language: lang, page: n })),
-        );
-        const merged = [];
-        const seen = new Set();
-        for (const d of pages) {
-          for (const b of d.books) {
-            if (!seen.has(b.id)) {
-              seen.add(b.id);
-              merged.push(b);
-            }
-          }
-        }
-        setBooks(merged.map(b => ({ ...b, drama: drama.tagOf(b.id) })));
+        const list = await api.fetchBooksByIds(ALL_SHORT_IDS);
+        const top = [...list].sort((a, b) => b.downloads - a.downloads).slice(0, 60);
+        setBooks(top.map(b => ({ ...b, drama: drama.tagOf(b.id) })));
         setHasMore(false);
         pageRef.current = 1;
-      } else {
-        const data = await api.fetchBooks({ language: isShort || isHot ? 'zh' : lang, search: keyword, page: p });
-        const next = data.books.map(b => ({ ...b, drama: drama.tagOf(b.id) }));
-        setBooks(keepList ? [...books, ...next] : next);
-        setHasMore(data.hasMore);
-        pageRef.current = p;
+        return;
       }
+      const data = await api.fetchBooks({ language: isShort || isHot ? 'zh' : lang, search: keyword, page: p });
+      const next = data.books.map(b => ({ ...b, drama: drama.tagOf(b.id) }));
+      setBooks(keepList ? [...books, ...next] : next);
+      setHasMore(data.hasMore);
+      pageRef.current = p;
     } catch (e) {
       setError(e.message);
       if (!keepList) setBooks([]);
@@ -179,15 +159,15 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
       <Text style={styles.header}>
-        {isHot ? '🔥 最火爆' : isShort ? '🎬 短剧改编' : premium ? '⭐ 精品精选' : '📚 短剧小说'}
+        {isHot ? '🔥 最火爆' : isShort ? '🎬 短剧小说' : premium ? '⭐ 精品精选' : '📚 免费阅读'}
       </Text>
       <Text style={styles.subHeader}>
         {isHot
-          ? (unlocked ? '短剧改编热度榜 TOP12 · 已解锁畅读' : '短剧改编热度榜 TOP12 · 需解锁畅读')
+          ? (unlocked ? '短剧改编热度榜 TOP12 · 已拍爆火经典 · 已解锁' : '短剧改编热度榜 TOP12 · 已拍爆火的经典 IP')
           : isShort
-            ? '按短剧主流题材分类 · 每本附改编看点'
+            ? '已拍爆火的经典 IP 与适合改编的书目 · 按题材分类'
             : premium
-              ? (unlocked ? '已解锁 · 畅读全部热门精品' : '热度榜精选 · 一次解锁永久阅读')
+              ? (unlocked ? '已解锁 · 畅读全部热门精品' : '热度精选 · 一次解锁永久阅读')
               : '阅读，让文化浸润生活'}
       </Text>
 
@@ -248,7 +228,9 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
                 style={[styles.chip, genre === k && { borderColor: g.color, backgroundColor: g.color }]}
                 onPress={() => setGenre(k)}
               >
-                <Text style={[styles.chipText, genre === k && styles.chipTextActive]}>{g.label}</Text>
+                <Text style={[styles.chipText, genre === k && styles.chipTextActive]}>
+                  {g.label} {drama.GENRE_COUNTS[k]}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -274,11 +256,11 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
             loading ? null : (
               <Text style={styles.countText}>
                 {isHot
-                  ? `🔥 短剧改编热榜 TOP${books.length} · ${unlocked ? '已解锁' : '需解锁'}`
+                  ? `🔥 短剧改编热榜 TOP${books.length} · ${unlocked ? '已解锁' : '已拍爆火经典'}`
                   : isShort
-                    ? `共 ${books.length} 本 · 短剧改编书单（公共版权）`
+                    ? `共 ${books.length} 本 · 其中 ${drama.HOT_RANK.filter(id => books.some(b => b.id === id)).length} 本已拍爆火 · 其余适合改编`
                     : premium
-                      ? `共 ${books.length} 本 · 精品精选${unlocked ? ' · 已解锁' : ' · 需解锁'}`
+                      ? `共 ${books.length} 本 · 热度精选${unlocked ? ' · 已解锁' : ' · 需解锁'}`
                       : `共 ${books.length} 本（公共版权 · 免费阅读）`}
               </Text>
             )
@@ -302,9 +284,7 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
                   <Text style={styles.rankBadgeText}>{item.hotRank}</Text>
                 </View>
               ) : (
-                <View style={styles.bookCover}>
-                  <Text style={styles.bookCoverText}>📖</Text>
-                </View>
+                <BookCover coverUrl={item.coverUrl} style={styles.bookCover} />
               )}
               <View style={styles.bookInfo}>
                 <Text style={styles.bookTitle} numberOfLines={1}>{item.title}</Text>
@@ -317,6 +297,11 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
                     <View style={[styles.genreBadge, { backgroundColor: drama.DRAMA_GENRES[item.drama.g].color }]}>
                       <Text style={styles.genreBadgeText}>{drama.DRAMA_GENRES[item.drama.g].label}</Text>
                     </View>
+                    {drama.isHit(item.id) && (
+                      <View style={styles.hitBadge}>
+                        <Text style={styles.hitBadgeText}>🔥 已拍爆火</Text>
+                      </View>
+                    )}
                     <Text style={styles.bookNote} numberOfLines={1}>{item.drama.note}</Text>
                   </View>
                 )}
@@ -656,6 +641,11 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginRight: 12,
   },
   bookCoverText: { fontSize: 26 },
+  hitBadge: {
+    backgroundColor: '#ffe9e6', borderWidth: 1, borderColor: COLORS.danger,
+    borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginRight: 6,
+  },
+  hitBadgeText: { fontSize: 10, color: COLORS.danger, fontWeight: '700' },
   bookInfo: { flex: 1 },
   bookTitle: { fontSize: 16, fontWeight: '600', color: COLORS.text, marginBottom: 2 },
   bookAuthor: { fontSize: 12, color: COLORS.muted, marginBottom: 4 },

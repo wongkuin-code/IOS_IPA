@@ -19,6 +19,7 @@ function normalizeBook(b) {
     author: (b.authors || []).map(a => a.name).join('、') || '佚名',
     downloads: b.download_count || 0,
     languages: b.languages || [],
+    coverUrl: formats['image/jpeg'] || '',
     textUrl: toSecure(formats['text/plain; charset=utf-8'] || formats['text/plain'] || ''),
   };
 }
@@ -42,6 +43,20 @@ export async function fetchBooks({ language = 'zh', search = '', page = 1 } = {}
     hasMore: Boolean(data.next),
     count: data.count || 0,
   };
+}
+
+// 按 ID 批量获取书籍（保持传入顺序），Gutendex ids 单次最多返回 32 条
+export async function fetchBooksByIds(ids) {
+  const CHUNK = 32;
+  const chunks = [];
+  for (let i = 0; i < ids.length; i += CHUNK) chunks.push(ids.slice(i, i + CHUNK));
+  const settled = await Promise.all(chunks.map(c => request(`/books?ids=${c.join(',')}`).catch(() => null)));
+  const map = new Map();
+  for (const data of settled) {
+    if (!data) continue;
+    for (const b of data.results || []) map.set(b.id, normalizeBook(b));
+  }
+  return ids.map(id => map.get(id)).filter(Boolean);
 }
 
 // 获取书籍正文（纯文本，自动剥离 Gutenberg 头尾声明）
