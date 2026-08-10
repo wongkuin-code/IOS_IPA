@@ -2,7 +2,7 @@
 
 > 适用项目：`E:\Tools\ios\IOS_IPA\mytool`（EvaReel，Expo SDK 57，React Native 0.86）
 > 本手册是 iOS 开发的唯一操作依据：从零到上架、日常迭代、TestFlight 测试、内购接入，以及各种异常情况的归因与处理。
-> 最后更新：2026-08-10
+> 最后更新：2026-08-10（首包已上传 TestFlight ✅）
 
 ---
 
@@ -31,7 +31,7 @@
 | 账号 | 归属 | 作用 | 状态 |
 |------|------|------|------|
 | Expo 账号（wongkuin） | expo.dev | 云端构建 EAS | ✅ 已登录 |
-| Apple 开发者账号（$99/年） | developer.apple.com | 签名、Bundle ID、证书 | ✅ 已注册 |
+| Apple 开发者账号 `vuthingocnga9798@icloud.com`（$99/年） | developer.apple.com | 签名、Bundle ID、证书 | ✅ 已注册，团队 Van Nam Nguyen |
 | App Store Connect | appstoreconnect.apple.com | App 管理、TestFlight、上架 | ✅ 已注册 |
 
 > 三者为独立体系，互相没有绑定关系。Expo 只负责云端打包，Apple 账号负责签名与上传。
@@ -44,12 +44,14 @@
 | 2 | EAS projectId | `a49f46cd-54e1-4dbd-b1f6-fc8c615cb4c3` | 公开 |
 | 3 | App 显示名 | `EvaReel`（app.json `name`） | 公开 |
 | 4 | Bundle ID | `com.mytool.booksreader` | 公开 |
-| 5 | Team ID | 见 Apple 会员资格页 | 半公开 |
+| 5 | Team ID | `D5VA6Q22PL`（Van Nam Nguyen，Individual） | 半公开 |
 | 6 | ASC App ID | `6799368982` | 半公开 |
 | 7 | ASC API Key ID | `74AU6WRUF9` | 🔒 保密 |
 | 8 | ASC API Issuer ID | `ac9f4281-658a-4b96-8a40-cebf371c26de` | 🔒 保密 |
 | 9 | .p8 私钥 | `keys/AuthKey_74AU6WRUF9.p8` | 🔒 严禁外泄 |
 | 10 | SKU | `BooksReader123456789` | 半公开 |
+| 11 | Apple 账号 | `vuthingocnga9798@icloud.com`（登录密码 + 2FA，存 `keys/apple-dev.txt`） | 🔒 保密 |
+| 12 | 分发证书 Serial | `72D0AB8AB168ECDA152CE709FF40803B`（2027-08-08 到期） | 半公开 |
 
 > 🔒 第 7/8/9 项为 API Key 三件套，泄露后任何拿到 .p8 的人都能上传/管理你的 App。已加入 `.gitignore`，严禁提交 git、严禁外发。
 
@@ -233,14 +235,39 @@ npx eas build --platform ios --profile production --auto-submit
 
 上传完成后进入 App Store Connect → **TestFlight** 页即可看到构建版本。
 
+### 7.3 ⚠️ 首次构建必读（证书配置交互）
+
+首次 production 构建需要创建**分发证书 + 描述文件**，必须**在你的终端里交互式运行**（非交互模式会直接失败）：
+
+```bash
+npx eas build --platform ios --profile production
+```
+
+交互应答要点（2026-08-10 实战验证）：
+
+| 提示 | 应答 |
+|------|------|
+| Do you want to log in to your Apple account? | `yes` |
+| Apple ID | `vuthingocnga9798@icloud.com` |
+| Password | **输入账号真实登录密码**（⚠️ 不是 App 专用密码！） |
+| 2FA 验证码（6 位） | 输手机收到的验证码 |
+| Reuse this distribution certificate? | `Y`（复用已有证书，本项目已有 72D0AB8A…） |
+| Generate a new Apple Provisioning Profile? | `Y`（首次必选，之后复用） |
+
+> ⚠️ **密码大坑**：`EXPO_APPLE_APP_SPECIFIC_PASSWORD`（App 专用密码）**只用于 `eas submit` 上传**，**不用于证书认证**。构建登录必须用**账号真实密码 + 2FA 验证码**，否则一直报 `Invalid username and password combination`。
+
+> ✅ 证书配置一次后保存在 EAS 服务器，**以后构建无需再交互**，直接 `npm run build:ios` 即可。
+
 ---
 
 ## 八、TestFlight 测试
 
 ### 8.1 内部测试（≤100 人，免审核，推荐自测）
 1. App Store Connect → 你的 App → **TestFlight** → **内部测试** → 新建群组
-2. 添加测试员：**自己的 Apple ID**（免费普通账号即可，与开发者账号无关）
-3. iPhone 安装 **TestFlight** App → 登录同一 Apple ID → 接受测试 → 安装
+2. 添加测试员：**直接填自己 iPhone 上日常使用的 Apple ID 邮箱**（免费普通账号即可，与开发者账号无关）
+3. iPhone 安装 **TestFlight** App → 登录**同一个 Apple ID** → 接受测试 → 安装
+
+> ✅ **推荐直接用自己 iPhone 的日常 Apple ID 当测试员**：一次添加,以后每发新版自动收到更新,不用换号、不用维护第二个账号。
 
 ### 8.2 外部测试（≤10000 人，首次需 Beta 审核）
 - 适合发给外部朋友，首次审核约 1-2 天，通过后无需再审核
@@ -248,7 +275,7 @@ npx eas build --platform ios --profile production --auto-submit
 ### 8.3 测试员要求
 | 项 | 要求 |
 |----|------|
-| Apple ID | 任何免费账号，无需开发者账号 |
+| Apple ID | 任何免费账号，无需开发者账号；**推荐直接用自己 iPhone 的日常 Apple ID** |
 | 设备 | iPhone/iPad 均可 |
 | TestFlight App | 必须从 App Store 安装 |
 
@@ -357,9 +384,9 @@ git push
 npx eas build --platform ios --profile preview
 
 # 5. 发新 TestFlight 版本
-npm run build:ios                  # autoIncrement 自动 +1 buildNumber
-npm run submit:ios                 # 上传
-# 6. App Store Connect → TestFlight 等待处理完成 → 添加测试员 → 测试
+npm run build:ios                  # autoIncrement 自动 +1 buildNumber（证书已配好，无需交互）
+npm run submit:ios                 # 上传（若提示选择构建：npx eas submit --platform ios --profile production --id <构建ID> --non-interactive）
+# 6. App Store Connect → TestFlight 等待处理完成（5-10 分钟）→ 测试员自动收到新版本 → 测试
 ```
 
 > ⚠️ 新代码必须经过 TestFlight 全流程验证后才能提审，避免「空壳应用」「功能不可用」被拒。
@@ -376,12 +403,16 @@ npm run submit:ios                 # 上传
 | 构建失败不扣额度 | EAS 机制 | 直接重试即可 |
 | 构建成功但无法安装 | 证书/设备未加入 adhoc 描述文件 | preview 构建时确认设备 UDID 已登记（EAS 会引导） |
 | 上传时提示版本号已存在 | buildNumber 未递增 | 用 `autoIncrement: true` 或手动改 app.json `buildNumber` |
+| `Credentials are not set up. Run in interactive mode` | 首次构建需创建证书 | **必须在你自己的终端交互运行** `eas build --profile production`（见 7.3） |
+| Apple 登录报 `Invalid username and password combination` | ① 密码用了 App 专用密码（仅 submit 用）② 账号不对 | 用**账号真实密码** + 2FA 验证码；核对 Apple ID=`vuthingocnga9798@icloud.com` |
+| 构建提示复用证书/描述文件 | 已生成过 | 直接 `Y` 复用，勿重复生成 |
 
 ### 12.2 上传/提交类
 
 | 现象 | 原因 | 处理 |
 |------|------|------|
 | `eas submit` 报 401/403 | API Key 无效或权限不足 | 检查 Key ID/Issuer/.p8 是否一致；ASC 账号需 App Manager/Admin 角色 |
+| `eas submit` 提示 `What would you like to submit?` | 交互提示选择构建 | 加 `--id <构建ID>` + `--non-interactive`，或先 `npm run build:ios` 再 `npm run submit:ios` |
 | 上传提示 App 不存在 | `ascAppId` 填错，或 Bundle ID 与 ASC 中 App 不匹配 | 核对 `ascAppId=6799368982`、Bundle ID=`com.mytool.booksreader` |
 | 上传被拒（preview 包） | internal 分发不能传 TestFlight | 必须用 production profile 重新构建 |
 | 上传后 TestFlight 看不到 | 处理中（一般几分钟~1小时） | 等状态变「已处理」；过久则看邮件/构建日志 |
@@ -428,7 +459,7 @@ npm run submit:ios                 # 上传
 
 1. **API Key 三件套**（Key ID / Issuer / .p8）= 你的上传身份证，泄露即失控
 2. 已加入 `.gitignore`：`*.p8`、`*.p12`、`*.key`、`*.mobileprovision`、`keys/`
-3. `keys/AuthKey_74AU6WRUF9.p8` 只可放本机，备份到私人存储，勿发任何人
+3. `keys/AuthKey_74AU6WRUF9.p8`、`keys/apple-dev.txt`（含 Apple 登录密码/App 专用密码）只可放本机，备份到私人存储，勿发任何人
 4. 若怀疑泄露：立即在 App Store Connect → 访问 → API Keys 中**撤销并重建**
 5. 沙盒测试账号密码无需保密，但不能用于真实购买测试
 
