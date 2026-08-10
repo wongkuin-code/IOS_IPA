@@ -7,6 +7,7 @@ import {
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIAP, ErrorCode, getAvailablePurchases } from 'expo-iap';
 import * as api from './src/api';
+import * as drama from './src/drama';
 import { VIP_PRODUCT_ID, loadUnlockState, saveUnlockState, isVipPurchase } from './src/iap';
 
 const COLORS = {
@@ -27,18 +28,42 @@ const LANGS = [
 
 const TOP_TABS = [
   { key: 'free', label: '📚 免费' },
+  { key: 'short', label: '🎬 短剧' },
   { key: 'premium', label: '⭐ 精品' },
+  { key: 'hot', label: '🔥 最火爆' },
 ];
 
 const PREMIUM_PAGES = [1, 2, 3];
+const SHORT_PAGES = [1, 2, 3, 4, 5];
+const HOT_PAGES = [1, 2, 3, 4];
+
+// ── IAP 诊断 ──
+function fmtErr(e) {
+  if (!e) return '未知错误（无详细信息）';
+  if (typeof e === 'string') return e;
+  const parts = [];
+  if (e.code !== undefined && e.code !== null) {
+    const name = typeof e.code === 'number' && ErrorCode[e.code] ? ErrorCode[e.code] : '';
+    parts.push(`错误码: ${e.code}${name ? ` (${name})` : ''}`);
+  }
+  if (e.message) parts.push(`消息: ${e.message}`);
+  if (e.userErrorMessage) parts.push(`详情: ${e.userErrorMessage}`);
+  if (e.nativeErrorMessage) parts.push(`原生: ${e.nativeErrorMessage}`);
+  if (!parts.length) parts.push(String(e));
+  return parts.join('\n');
+}
 
 // ── 书架页 ──
 function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
   const insets = useSafeAreaInsets();
   const premium = tab === 'premium';
+  const isShort = tab === 'short';
+  const isHot = tab === 'hot';
+  const locked = premium || isHot;
   const [lang, setLang] = useState('zh');
   const [books, setBooks] = useState([]);
   const [search, setSearch] = useState('');
+  const [genre, setGenre] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -50,6 +75,46 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
   const load = useCallback(async (nextPage, keyword, keepList) => {
     const p = nextPage || 1;
     try {
+      if (isHot) {
+        const pages = await Promise.all(HOT_PAGES.map(n => api.fetchBooks({ language: 'zh', page: n })));
+        const rankMap = new Map(drama.HOT_RANK.map((id, i) => [id, i]));
+        const merged = [];
+        const seen = new Set();
+        for (const d of pages) {
+          for (const b of d.books) {
+            if (!seen.has(b.id)) {
+              seen.add(b.id);
+              merged.push(b);
+            }
+          }
+        }
+        setBooks(
+          merged
+            .filter(b => rankMap.has(b.id))
+            .sort((a, b) => rankMap.get(a.id) - rankMap.get(b.id))
+            .map(b => ({ ...b, hotRank: rankMap.get(b.id) + 1, drama: drama.tagOf(b.id) })),
+        );
+        setHasMore(false);
+        pageRef.current = 1;
+        return;
+      }
+      if (isShort && !keyword) {
+        const pages = await Promise.all(SHORT_PAGES.map(n => api.fetchBooks({ language: 'zh', page: n })));
+        const merged = [];
+        const seen = new Set();
+        for (const d of pages) {
+          for (const b of d.books) {
+            if (!seen.has(b.id)) {
+              seen.add(b.id);
+              merged.push(b);
+            }
+          }
+        }
+        setBooks(merged.map(b => ({ ...b, drama: drama.tagOf(b.id) })));
+        setHasMore(false);
+        pageRef.current = 1;
+        return;
+      }
       if (premium && p === 1 && !keyword) {
         const pages = await Promise.all(
           PREMIUM_PAGES.map(n => api.fetchBooks({ language: lang, page: n })),
@@ -64,12 +129,13 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
             }
           }
         }
-        setBooks(merged);
+        setBooks(merged.map(b => ({ ...b, drama: drama.tagOf(b.id) })));
         setHasMore(false);
         pageRef.current = 1;
       } else {
-        const data = await api.fetchBooks({ language: lang, search: keyword, page: p });
-        setBooks(keepList ? [...books, ...data.books] : data.books);
+        const data = await api.fetchBooks({ language: isShort || isHot ? 'zh' : lang, search: keyword, page: p });
+        const next = data.books.map(b => ({ ...b, drama: drama.tagOf(b.id) }));
+        setBooks(keepList ? [...books, ...next] : next);
         setHasMore(data.hasMore);
         pageRef.current = p;
       }
@@ -81,15 +147,16 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
       setLoadingMore(false);
       setRefreshing(false);
     }
-  }, [lang, premium, books]);
+  }, [lang, premium, isShort, isHot, books]);
 
   useEffect(() => {
     setLoading(true);
     setError('');
     setSearch('');
+    setGenre(null);
     pageRef.current = 1;
     load(1, '', false);
-  }, [lang, premium]);
+  }, [lang, premium, isShort, isHot]);
 
   const handleSearch = () => {
     setLoading(true);
@@ -111,11 +178,17 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
-      <Text style={styles.header}>{premium ? '⭐ 精品精选' : '📚 短剧小说'}</Text>
+      <Text style={styles.header}>
+        {isHot ? '🔥 最火爆' : isShort ? '🎬 短剧改编' : premium ? '⭐ 精品精选' : '📚 短剧小说'}
+      </Text>
       <Text style={styles.subHeader}>
-        {premium
-          ? (unlocked ? '已解锁 · 畅读全部热门精品' : '热度榜精选 · 一次解锁永久阅读')
-          : '阅读，让文化浸润生活'}
+        {isHot
+          ? (unlocked ? '短剧改编热度榜 TOP12 · 已解锁畅读' : '短剧改编热度榜 TOP12 · 需解锁畅读')
+          : isShort
+            ? '按短剧主流题材分类 · 每本附改编看点'
+            : premium
+              ? (unlocked ? '已解锁 · 畅读全部热门精品' : '热度榜精选 · 一次解锁永久阅读')
+              : '阅读，让文化浸润生活'}
       </Text>
 
       <View style={styles.tabs}>
@@ -130,17 +203,19 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
         ))}
       </View>
 
-      <View style={styles.tabs}>
-        {LANGS.map(l => (
-          <TouchableOpacity
-            key={l.key}
-            style={[styles.tab, lang === l.key && styles.tabActive]}
-            onPress={() => setLang(l.key)}
-          >
-            <Text style={[styles.tabText, lang === l.key && styles.tabTextActive]}>{l.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {!isShort && !isHot && (
+        <View style={styles.tabs}>
+          {LANGS.map(l => (
+            <TouchableOpacity
+              key={l.key}
+              style={[styles.tab, lang === l.key && styles.tabActive]}
+              onPress={() => setLang(l.key)}
+            >
+              <Text style={[styles.tabText, lang === l.key && styles.tabTextActive]}>{l.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       <View style={styles.searchRow}>
         <TextInput
@@ -157,6 +232,29 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
         </TouchableOpacity>
       </View>
 
+      {isShort && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow} contentContainerStyle={styles.chipRowContent}>
+          <TouchableOpacity
+            style={[styles.chip, genre === null && styles.chipActive]}
+            onPress={() => setGenre(null)}
+          >
+            <Text style={[styles.chipText, genre === null && styles.chipTextActive]}>全部</Text>
+          </TouchableOpacity>
+          {drama.GENRE_KEYS.map(k => {
+            const g = drama.DRAMA_GENRES[k];
+            return (
+              <TouchableOpacity
+                key={k}
+                style={[styles.chip, genre === k && { borderColor: g.color, backgroundColor: g.color }]}
+                onPress={() => setGenre(k)}
+              >
+                <Text style={[styles.chipText, genre === k && styles.chipTextActive]}>{g.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+
       {error ? (
         <View style={styles.centerBlock}>
           <Text style={styles.errorText}>{error}</Text>
@@ -166,7 +264,7 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
         </View>
       ) : (
         <FlatList
-          data={books}
+          data={genre ? books.filter(b => b.drama && b.drama.g === genre) : books}
           keyExtractor={item => String(item.id)}
           contentContainerStyle={[styles.list, { paddingBottom: 24 + insets.bottom }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
@@ -175,9 +273,13 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
           ListHeaderComponent={
             loading ? null : (
               <Text style={styles.countText}>
-                {premium
-                  ? `共 ${books.length} 本 · 精品精选${unlocked ? ' · 已解锁' : ' · 需解锁'}`
-                  : `共 ${books.length} 本（公共版权 · 免费阅读）`}
+                {isHot
+                  ? `🔥 短剧改编热榜 TOP${books.length} · ${unlocked ? '已解锁' : '需解锁'}`
+                  : isShort
+                    ? `共 ${books.length} 本 · 短剧改编书单（公共版权）`
+                    : premium
+                      ? `共 ${books.length} 本 · 精品精选${unlocked ? ' · 已解锁' : ' · 需解锁'}`
+                      : `共 ${books.length} 本（公共版权 · 免费阅读）`}
               </Text>
             )
           }
@@ -185,23 +287,41 @@ function BookShelf({ tab, onTabChange, unlocked, onOpenBook }) {
             loading ? (
               <View style={styles.centerBlock}><ActivityIndicator size="large" color={COLORS.primary} /></View>
             ) : (
-              <Text style={styles.emptyText}>{premium ? '暂无精品内容' : '暂无书籍，换个关键词试试'}</Text>
+              <Text style={styles.emptyText}>
+                {isHot ? '暂无热榜数据' : isShort ? '该分类下暂无适合改编的书目' : premium ? '暂无精品内容' : '暂无书籍，换个关键词试试'}
+              </Text>
             )
           }
           ListFooterComponent={
             loadingMore ? <ActivityIndicator style={{ marginVertical: 12 }} color={COLORS.primary} /> : null
           }
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.bookCard} onPress={() => onOpenBook(item, premium)}>
-              <View style={styles.bookCover}>
-                <Text style={styles.bookCoverText}>📖</Text>
-              </View>
+            <TouchableOpacity style={styles.bookCard} onPress={() => onOpenBook(item, locked)}>
+              {isHot ? (
+                <View style={[styles.rankBadge, item.hotRank <= 3 && styles.rankBadgeTop]}>
+                  <Text style={styles.rankBadgeText}>{item.hotRank}</Text>
+                </View>
+              ) : (
+                <View style={styles.bookCover}>
+                  <Text style={styles.bookCoverText}>📖</Text>
+                </View>
+              )}
               <View style={styles.bookInfo}>
                 <Text style={styles.bookTitle} numberOfLines={1}>{item.title}</Text>
                 <Text style={styles.bookAuthor}>{item.author}</Text>
-                <Text style={styles.bookDesc}>{item.downloads} 次下载</Text>
+                <Text style={styles.bookDesc}>
+                  {isHot ? `🔥 改编热度第 ${item.hotRank} 名 · ${item.downloads} 次下载` : `${item.downloads} 次下载`}
+                </Text>
+                {item.drama && (
+                  <View style={styles.tagRow}>
+                    <View style={[styles.genreBadge, { backgroundColor: drama.DRAMA_GENRES[item.drama.g].color }]}>
+                      <Text style={styles.genreBadgeText}>{drama.DRAMA_GENRES[item.drama.g].label}</Text>
+                    </View>
+                    <Text style={styles.bookNote} numberOfLines={1}>{item.drama.note}</Text>
+                  </View>
+                )}
               </View>
-              {premium && !unlocked ? (
+              {locked && !unlocked ? (
                 <View style={styles.vipBadge}><Text style={styles.vipBadgeText}>🔒 VIP</Text></View>
               ) : (
                 <Text style={styles.chevron}>›</Text>
@@ -344,9 +464,16 @@ export default function App() {
   const [unlocked, setUnlocked] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallBusy, setPaywallBusy] = useState(false);
+  const productsFetchedRef = useRef(false);
 
   const { connected, products, fetchProducts, requestPurchase, finishTransaction, restorePurchases } = useIAP({
     onPurchaseSuccess: async (purchase) => {
+      console.log('[IAP] 购买成功', JSON.stringify(purchase && {
+        productId: purchase.productId,
+        purchaseState: purchase.purchaseState,
+        transactionDate: purchase.transactionDate,
+        originalTransactionDate: purchase.originalTransactionDate,
+      }));
       await finishTransaction({ purchase, isConsumable: false });
       if (isVipPurchase(purchase)) {
         await saveUnlockState();
@@ -354,16 +481,22 @@ export default function App() {
         setPaywallOpen(false);
         setPaywallBusy(false);
         Alert.alert('解锁成功', '精品书库已全部解锁');
+      } else {
+        console.warn('[IAP] 商品ID不匹配:', purchase && purchase.productId, '期望:', VIP_PRODUCT_ID);
+        Alert.alert('商品ID不匹配', `已购买商品: ${purchase && purchase.productId}\n期望商品: ${VIP_PRODUCT_ID}\n后台配置的 ID 与代码不一致。`);
       }
     },
     onPurchaseError: (error) => {
       setPaywallBusy(false);
+      console.warn('[IAP] 购买失败(回调):', error);
       if (error.code !== ErrorCode.UserCancelled) {
-        Alert.alert('购买失败', error.message || '请稍后再试');
+        Alert.alert('购买失败', fmtErr(error));
       }
     },
-    onError: () => {
+    onError: (error) => {
       setPaywallBusy(false);
+      console.warn('[IAP] 商店错误:', error);
+      Alert.alert('商店错误', fmtErr(error));
     },
   });
 
@@ -373,17 +506,42 @@ export default function App() {
 
   useEffect(() => {
     if (connected) {
-      fetchProducts({ skus: [VIP_PRODUCT_ID], type: 'in-app' }).catch(() => {});
+      console.log('[IAP] 商店连接成功');
+      fetchProducts({ skus: [VIP_PRODUCT_ID], type: 'in-app' })
+        .then(() => {
+          productsFetchedRef.current = true;
+          console.log('[IAP] 商品查询完成，等待商品列表回调');
+        })
+        .catch(e => {
+          console.warn('[IAP] 商品查询失败:', e);
+          Alert.alert('商品查询失败', fmtErr(e));
+        });
       getAvailablePurchases()
         .then(purchases => {
+          console.log(`[IAP] 已有购买记录: ${purchases.length} 个`, purchases.map(p => p.productId));
           if (purchases.some(isVipPurchase)) {
             saveUnlockState();
             setUnlocked(true);
           }
         })
-        .catch(() => {});
+        .catch(e => {
+          console.warn('[IAP] 查询已有购买记录失败:', e);
+          Alert.alert('查询购买记录失败', fmtErr(e));
+        });
+    } else {
+      console.warn('[IAP] 商店未连接');
     }
   }, [connected]);
+
+  useEffect(() => {
+    console.log(`[IAP] 商品列表回调: ${products.length} 个`,
+      products.map(p => ({ id: p.id, price: p.localizedPrice, displayPrice: p.displayPrice })));
+    if (productsFetchedRef.current && products.length === 0) {
+      productsFetchedRef.current = false;
+      Alert.alert('商品未配置',
+        `后台取不到商品 ${VIP_PRODUCT_ID}（返回 0 个商品）。\n最常见原因：\n1) IAP 未提交审核通过(状态非 Approved)\n2) 该商品未覆盖当前 Apple 商店地区(价格/可用地区)或测试账号地区不对\n3) IAP 挂在别的 bundle id 的 App 下\n4) 用 Expo Go 测试(应改用 TestFlight/EAS 包)\n5) 付费协议未生效`);
+    }
+  }, [products]);
 
   const vipPrice = (() => {
     const p = products.find(x => x.id === VIP_PRODUCT_ID);
@@ -400,7 +558,8 @@ export default function App() {
 
   const handleBuy = async () => {
     if (!connected) {
-      Alert.alert('商店不可用', '暂时无法连接 App Store，请稍后再试');
+      console.warn('[IAP] 商店未连接，无法购买');
+      Alert.alert('商店不可用', '暂时无法连接 App Store（StoreKit 未连接）\n常见原因：付费协议未生效 / 审核中 / 用 Expo Go 测试');
       return;
     }
     setPaywallBusy(true);
@@ -414,7 +573,8 @@ export default function App() {
       });
     } catch (e) {
       setPaywallBusy(false);
-      Alert.alert('购买失败', e.message || '请稍后再试');
+      console.warn('[IAP] requestPurchase 抛错:', e);
+      Alert.alert('购买失败', fmtErr(e));
     }
   };
 
@@ -423,6 +583,7 @@ export default function App() {
     try {
       await restorePurchases();
       const purchases = await getAvailablePurchases();
+      console.log('[IAP] 恢复购买完成:', purchases.map(p => p.productId));
       if (purchases.some(isVipPurchase)) {
         await saveUnlockState();
         setUnlocked(true);
@@ -432,7 +593,8 @@ export default function App() {
         Alert.alert('无购买记录', '未找到可恢复的购买记录');
       }
     } catch (e) {
-      Alert.alert('恢复失败', e.message || '请稍后再试');
+      console.warn('[IAP] 恢复购买失败:', e);
+      Alert.alert('恢复失败', fmtErr(e));
     } finally {
       setPaywallBusy(false);
     }
@@ -504,6 +666,26 @@ const styles = StyleSheet.create({
     borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginLeft: 8,
   },
   vipBadgeText: { fontSize: 12, color: COLORS.gold, fontWeight: '700' },
+  chipRow: { flexGrow: 0, marginBottom: 12 },
+  chipRowContent: { paddingRight: 4 },
+  chip: {
+    borderWidth: 1, borderColor: COLORS.border, borderRadius: 16,
+    paddingHorizontal: 14, paddingVertical: 6, marginRight: 8,
+    backgroundColor: COLORS.card,
+  },
+  chipActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primary },
+  chipText: { fontSize: 13, color: COLORS.muted },
+  chipTextActive: { color: '#fff', fontWeight: '600' },
+  rankBadge: {
+    width: 52, height: 70, borderRadius: 6, backgroundColor: '#3d3521',
+    alignItems: 'center', justifyContent: 'center', marginRight: 12,
+  },
+  rankBadgeTop: { backgroundColor: '#e8a33d' },
+  rankBadgeText: { fontSize: 26, fontWeight: '800', color: '#fff' },
+  tagRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  genreBadge: { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginRight: 6 },
+  genreBadgeText: { fontSize: 10, color: '#fff', fontWeight: '600' },
+  bookNote: { flex: 1, fontSize: 11, color: COLORS.muted },
   centerBlock: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
   emptyText: { textAlign: 'center', color: COLORS.muted, marginTop: 40 },
   errorText: { textAlign: 'center', color: COLORS.danger, marginBottom: 16, fontSize: 14 },

@@ -19,8 +19,17 @@ function normalizeBook(b) {
     author: (b.authors || []).map(a => a.name).join('、') || '佚名',
     downloads: b.download_count || 0,
     languages: b.languages || [],
-    textUrl: formats['text/plain; charset=utf-8'] || formats['text/plain'] || '',
+    textUrl: toSecure(formats['text/plain; charset=utf-8'] || formats['text/plain'] || ''),
   };
+}
+
+function toSecure(url) {
+  if (!url) return '';
+  let u = url;
+  if (u.startsWith('http://')) u = `https://${u.slice(7)}`;
+  const m = u.match(/^https:\/\/www\.gutenberg\.org\/ebooks\/(\d+)\.txt\./);
+  if (m) u = `https://www.gutenberg.org/cache/epub/${m[1]}/pg${m[1]}.txt`;
+  return u;
 }
 
 // 获取书单（按热度排序），language: 'zh' | 'en'，search 关键字
@@ -37,7 +46,7 @@ export async function fetchBooks({ language = 'zh', search = '', page = 1 } = {}
 
 // 获取书籍正文（纯文本，自动剥离 Gutenberg 头尾声明）
 export async function fetchBookText(book) {
-  const url = book.textUrl || `${TEXT_BASE}/${book.id}/pg${book.id}.txt`;
+  const url = toSecure(book.textUrl) || `${TEXT_BASE}/${book.id}/pg${book.id}.txt`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`正文获取失败 [${res.status}]`);
   const raw = await res.text();
