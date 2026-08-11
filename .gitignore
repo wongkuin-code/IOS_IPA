@@ -42,3 +42,7 @@ keys/
 # generated native folders
 /ios
 /android
+
+server/node_modules/
+server/store.json
+server/.env

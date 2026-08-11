@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#1A1410"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mytool.booksreader",
@@ -27,7 +30,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-iap"
+      "expo-iap",
+      "expo-font"
     ],
     "extra": {
       "eas": {
