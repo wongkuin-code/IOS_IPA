@@ -1,6 +1,41 @@
-﻿// ── Mock short-drama catalogue (offline poster art, zero network images) ──
+﻿// ── Mock short-drama catalogue (30 bundled poster covers, zero network) ──
 
 export const categories = ['For You', 'Romance', 'Urban', 'Revenge', 'More'];
+
+// Bundled poster images (assets/covers/poster-01.jpg … poster-30.jpg).
+// Static require() lets Metro bundle them into the app at build time.
+const POSTERS = [
+  require('../../assets/covers/poster-01.jpg'),
+  require('../../assets/covers/poster-02.jpg'),
+  require('../../assets/covers/poster-03.jpg'),
+  require('../../assets/covers/poster-04.jpg'),
+  require('../../assets/covers/poster-05.jpg'),
+  require('../../assets/covers/poster-06.jpg'),
+  require('../../assets/covers/poster-07.jpg'),
+  require('../../assets/covers/poster-08.jpg'),
+  require('../../assets/covers/poster-09.jpg'),
+  require('../../assets/covers/poster-10.jpg'),
+  require('../../assets/covers/poster-11.jpg'),
+  require('../../assets/covers/poster-12.jpg'),
+  require('../../assets/covers/poster-13.jpg'),
+  require('../../assets/covers/poster-14.jpg'),
+  require('../../assets/covers/poster-15.jpg'),
+  require('../../assets/covers/poster-16.jpg'),
+  require('../../assets/covers/poster-17.jpg'),
+  require('../../assets/covers/poster-18.jpg'),
+  require('../../assets/covers/poster-19.jpg'),
+  require('../../assets/covers/poster-20.jpg'),
+  require('../../assets/covers/poster-21.jpg'),
+  require('../../assets/covers/poster-22.jpg'),
+  require('../../assets/covers/poster-23.jpg'),
+  require('../../assets/covers/poster-24.jpg'),
+  require('../../assets/covers/poster-25.jpg'),
+  require('../../assets/covers/poster-26.jpg'),
+  require('../../assets/covers/poster-27.jpg'),
+  require('../../assets/covers/poster-28.jpg'),
+  require('../../assets/covers/poster-29.jpg'),
+  require('../../assets/covers/poster-30.jpg'),
+];
 
 const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
   id,
@@ -10,6 +45,8 @@ const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
   rating,
   category,
   premium: Boolean(premium),
+  cover: POSTERS[(id - 1) % POSTERS.length],
+  poster: POSTERS[(id - 1) % POSTERS.length],
 });
 
 export const dramas = [

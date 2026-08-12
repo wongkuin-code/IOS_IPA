@@ -1,5 +1,5 @@
-// ── Full-width 16:9 hero card: offline theme art, overlay, Play pill ──
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+// ── Full-width 16:9 hero card: bundled poster (fallback theme art), overlay, Play pill ──
+import { Image, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import { dramaTheme } from './DramaCover';
@@ -8,7 +8,11 @@ export default function HeroCard({ drama, onPlay, onPress }) {
   const { colors, radii, fonts } = useTheme();
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { borderRadius: radii.card }]}>
-      <LinearGradient colors={dramaTheme(drama.id)} style={styles.image} />
+      {drama.cover ? (
+        <Image source={drama.cover} style={styles.image} resizeMode="cover" />
+      ) : (
+        <LinearGradient colors={dramaTheme(drama.id)} style={styles.image} />
+      )}
       <LinearGradient
         colors={['transparent', 'rgba(10,6,4,0.55)', 'rgba(10,6,4,0.92)']}
         locations={[0, 0.45, 1]}
