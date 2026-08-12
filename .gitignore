@@ -52,3 +52,5 @@ mytool/dist-web.zip
 mytool/web.log
 mytool/scripts/serve_web.log
 mytool/build/
+mytool/build_eas.log
+.workbuddy/
