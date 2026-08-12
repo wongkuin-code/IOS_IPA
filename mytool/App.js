@@ -11,8 +11,17 @@ import { ThemeProvider } from './src/theme/ThemeContext';
 import { UnlockProvider } from './src/iap/UnlockContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import PaywallModal from './src/components/PaywallModal';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
+  );
+}
+
+function AppContent() {
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold_Italic,
     PlayfairDisplay_600SemiBold_Italic,

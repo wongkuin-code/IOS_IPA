@@ -1,40 +1,11 @@
-// ── Mock short-drama catalogue (real TV-series posters via TVMaze, zero local assets) ──
+// ── Mock short-drama catalogue (covers served from our HK API server) ──
 
 export const categories = ['For You', 'Romance', 'Urban', 'Revenge', 'More'];
 
-// Verified-live TVMaze poster URLs (CC-BY-SA, hotlinkable), mapped by drama id
-const POSTERS = [
-  'https://static.tvmaze.com/uploads/images/original_untouched/600/1500863.jpg', // 1  How to Survive My CEO
-  'https://static.tvmaze.com/uploads/images/original_untouched/568/1420721.jpg', // 2  High School Heiress
-  'https://static.tvmaze.com/uploads/images/original_untouched/403/1007574.jpg', // 3  Hollywood Love Story
-  'https://static.tvmaze.com/uploads/images/original_untouched/450/1125495.jpg', // 4  Unintentional Love Story
-  'https://static.tvmaze.com/uploads/images/original_untouched/71/178937.jpg',   // 5  Secret Love
-  'https://static.tvmaze.com/uploads/images/original_untouched/390/976828.jpg',  // 6  The Billionaire Scoundrel
-  'https://static.tvmaze.com/uploads/images/original_untouched/261/654539.jpg',  // 7  Revenge Prank
-  'https://static.tvmaze.com/uploads/images/original_untouched/272/681043.jpg',  // 8  Divorce
-  'https://static.tvmaze.com/uploads/images/original_untouched/272/682044.jpg',  // 9  Homemade Love Story
-  'https://static.tvmaze.com/uploads/images/original_untouched/213/532988.jpg',  // 10 Tycoon
-  'https://static.tvmaze.com/uploads/images/original_untouched/38/97439.jpg',    // 11 Runaway
-  'https://static.tvmaze.com/uploads/images/original_untouched/407/1018712.jpg', // 12 Female CEO Love Me
-  'https://static.tvmaze.com/uploads/images/original_untouched/483/1207998.jpg', // 13 Moonlight
-  'https://static.tvmaze.com/uploads/images/original_untouched/578/1446962.jpg', // 14 My CEO in Disguise
-  'https://static.tvmaze.com/uploads/images/original_untouched/459/1149435.jpg', // 15 A Secret Love Affair
-  'https://static.tvmaze.com/uploads/images/original_untouched/558/1396756.jpg', // 16 The Divorce Insurance
-  'https://static.tvmaze.com/uploads/images/original_untouched/139/348151.jpg',  // 17 Moonlight Resonance
-  'https://static.tvmaze.com/uploads/images/original_untouched/542/1357359.jpg', // 18 Secret Love
-  'https://static.tvmaze.com/uploads/images/original_untouched/422/1056629.jpg', // 19 Billionaire Holiday Resort
-  'https://static.tvmaze.com/uploads/images/original_untouched/293/732943.jpg',  // 20 Revenge
-  'https://static.tvmaze.com/uploads/images/original_untouched/375/939926.jpg',  // 21 Anni The Honeymoon Murder
-  'https://static.tvmaze.com/uploads/images/original_untouched/410/1025854.jpg', // 22 My Secret Love
-  'https://static.tvmaze.com/uploads/images/original_untouched/237/593306.jpg',  // 23 The Ghost Bride
-  'https://static.tvmaze.com/uploads/images/original_untouched/82/206879.jpg',   // 24 Revenge
-  'https://static.tvmaze.com/uploads/images/original_untouched/418/1047467.jpg', // 25 Marriage
-  'https://static.tvmaze.com/uploads/images/original_untouched/414/1035908.jpg', // 26 Extraordinary Attorney Woo
-  'https://static.tvmaze.com/uploads/images/original_untouched/442/1106880.jpg', // 27 Moonlight Chicken
-  'https://static.tvmaze.com/uploads/images/original_untouched/198/496341.jpg',  // 28 Dear Marriage
-  'https://static.tvmaze.com/uploads/images/original_untouched/276/690180.jpg',  // 29 Vendetta: Secrets of a Mafia Bride
-  'https://static.tvmaze.com/uploads/images/original_untouched/178/445626.jpg',  // 30 Neo Yokio
-];
+// Covers are served from our own Hong Kong server (fast & reliable from mainland CN).
+// RN native Image loads these as remote URLs — the standard, reliable path on iOS
+// (base64 data URIs and locally-bundled assets both failed to render on iOS builds).
+const coverUrl = (id) => `https://api.haoweimedia.cn/covers/poster-${String(id).padStart(2, '0')}.jpg`;
 
 const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
   id,
@@ -44,8 +15,8 @@ const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
   rating,
   category,
   premium: Boolean(premium),
-  cover: POSTERS[(id - 1) % POSTERS.length],
-  poster: POSTERS[(id - 1) % POSTERS.length],
+  cover: { uri: coverUrl(id) },
+  poster: { uri: coverUrl(id) },
 });
 
 export const dramas = [

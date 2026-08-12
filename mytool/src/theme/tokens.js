@@ -1,4 +1,5 @@
 // ── Design tokens: exact hex values per spec ──
+import { DarkTheme } from '@react-navigation/native';
 
 export const colors = {
   background: '#0D0B09',   // near-black warm brown (black shell)
@@ -47,9 +48,12 @@ export const fonts = {
   uiBold: { fontWeight: '700' },
 };
 
+// 继承 DarkTheme 的 fonts(regular/medium/bold/heavy),否则 native-stack 读取
+// theme.fonts.regular 时因 fonts 为 undefined 崩溃
 export const navTheme = {
-  dark: true,
+  ...DarkTheme,
   colors: {
+    ...DarkTheme.colors,
     primary: colors.gold,
     background: colors.background,
     card: colors.background,

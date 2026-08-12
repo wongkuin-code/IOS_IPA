@@ -16,8 +16,18 @@ let iap = null;
 try {
   iap = require('expo-iap');
 } catch (e) {
-  console.warn('[IAP] expo-iap 原生模块不可用（Expo Go / Web 预览模式）:', e && e.message);
+  console.warn('[IAP] expo-iap native module unavailable (Expo Go / Web preview mode):', e && e.message);
   iap = null;
+}
+
+// 购买看门狗：requestPurchase 返回后若长时间收不到商店回调（常见于存在未完成交易），
+// 主动复位忙碌态并给出提示，避免无限转圈。
+let buyWatchdog = null;
+function clearBuyWatchdog() {
+  if (buyWatchdog) {
+    clearTimeout(buyWatchdog);
+    buyWatchdog = null;
+  }
 }
 
 const UnlockContext = createContext(null);
@@ -40,18 +50,19 @@ export function UnlockProvider({ children }) {
     const subs = [];
     try {
       subs.push(iap.purchaseUpdatedListener(async (purchase) => {
-      console.log('[IAP] 购买成功', JSON.stringify(purchase && {
+      console.log('[IAP] purchase success', JSON.stringify(purchase && {
         productId: purchase.productId,
         purchaseState: purchase.purchaseState,
         transactionDate: purchase.transactionDate,
         originalTransactionDate: purchase.originalTransactionDate,
       }));
       if (!isVipPurchase(purchase)) {
-        console.warn('[IAP] 商品ID不匹配:', purchase && purchase.productId, '期望:', VIP_PRODUCT_ID);
+        console.warn('[IAP] product ID mismatch:', purchase && purchase.productId, 'expected:', VIP_PRODUCT_ID);
         setPaywallBusy(false);
-        setUnlockError('商品ID不匹配，后台配置的 ID 与代码不一致');
+        setUnlockError('Product ID mismatch: the ID configured in App Store Connect differs from the code');
         return;
       }
+      clearBuyWatchdog();
       setPaywallBusy(true);
       const result = await verifyOnServer(purchase);
       if (result.ok) {
@@ -60,22 +71,23 @@ export function UnlockProvider({ children }) {
         setUnlocked(true);
         setPaywallVisible(false);
         setPaywallBusy(false);
-        Alert.alert('解锁成功', '全部精品短剧已解锁');
+        Alert.alert('Unlocked', 'All premium dramas are now unlocked');
       } else {
         setPaywallBusy(false);
-        console.warn('[IAP] 服务器验证失败:', result);
-        setUnlockError(`服务器未确认这笔交易，暂未解锁。\n${result.error}\n交易已保留，可稍后重启 App 自动重试。`);
+        console.warn('[IAP] server verification failed:', result);
+        setUnlockError(`The server could not confirm this transaction, so it was not unlocked.\n${result.error}\nThe transaction is preserved — restart the app later to retry automatically.`);
       }
     }));
     subs.push(iap.purchaseErrorListener((error) => {
+      clearBuyWatchdog();
       setPaywallBusy(false);
-      console.warn('[IAP] 购买失败(回调):', error);
+      console.warn('[IAP] purchase failed (callback):', error);
       if (error.code !== iap.ErrorCode.UserCancelled) {
         setUnlockError(fmtIapError(error));
       }
     }));
     } catch (e) {
-      console.warn('[IAP] expo-iap 原生模块不可用（Expo Go / Web 预览模式）:', e && e.message);
+      console.warn('[IAP] expo-iap native module unavailable (Expo Go / Web preview mode):', e && e.message);
       iap = null;
       setUnlocked(true);
       return;
@@ -91,7 +103,7 @@ export function UnlockProvider({ children }) {
     try {
       connectionPromise = iap.initConnection();
     } catch (e) {
-      console.warn('[IAP] expo-iap 原生模块不可用（Expo Go / Web 预览模式）:', e && e.message);
+      console.warn('[IAP] expo-iap native module unavailable (Expo Go / Web preview mode):', e && e.message);
       iap = null;
       setUnlocked(true);
       return;
@@ -99,12 +111,12 @@ export function UnlockProvider({ children }) {
     connectionPromise
       .then(() => {
         if (alive) {
-          console.log('[IAP] 商店连接成功');
+          console.log('[IAP] store connected');
           setConnected(true);
         }
       })
       .catch((e) => {
-        console.warn('[IAP] initConnection 失败:', e);
+        console.warn('[IAP] initConnection failed:', e);
         if (alive) setUnlockError(fmtIapError(e));
       });
     return () => {
@@ -124,40 +136,48 @@ export function UnlockProvider({ children }) {
   // Fetch products + restore purchases on connect
   useEffect(() => {
     if (!iap || !connected) return;
-    iap.fetchProducts({ skus: [VIP_PRODUCT_ID], type: 'in-app' })
-      .then((list) => {
-        const p = (list || []).find((x) => x.id === VIP_PRODUCT_ID);
-        setVipPrice((p && p.displayPrice) || '¥1');
-      })
-      .catch((e) => console.warn('[IAP] 商品查询失败:', e));
-    iap.getAvailablePurchases()
-      .then((purchases) => {
-        console.log(`[IAP] 已有购买记录: ${purchases.length} 个`, purchases.map((p) => p.productId));
-        const vip = purchases.filter(isVipPurchase);
-        if (!vip.length) return;
-        Promise.all(vip.map((p) => verifyOnServer(p).catch((e) => ({ ok: false, networkError: true, error: String(e) }))))
-          .then((results) => {
-            if (results.some((r) => r.ok)) {
-              console.log('[IAP] 服务器验证通过，恢复解锁');
-              saveUnlockState();
-              setUnlocked(true);
-            } else if (results.every((r) => r.networkError)) {
-              console.warn('[IAP] 服务器不可达，暂不恢复解锁');
-            } else {
-              console.warn('[IAP] 服务器验证未通过:', results);
-            }
-          });
-      })
-      .catch((e) => console.warn('[IAP] 查询已有购买记录失败:', e));
+    try {
+      iap.fetchProducts({ skus: [VIP_PRODUCT_ID], type: 'in-app' })
+        .then((list) => {
+          const p = (list || []).find((x) => x.id === VIP_PRODUCT_ID);
+          setVipPrice((p && p.displayPrice) || '¥1');
+        })
+        .catch((e) => console.warn('[IAP] product fetch failed:', e));
+    } catch (e) {
+      console.warn('[IAP] product fetch threw synchronously:', e);
+    }
+    try {
+      iap.getAvailablePurchases()
+        .then((purchases) => {
+          console.log(`[IAP] existing purchases: ${purchases.length}`, purchases.map((p) => p.productId));
+          const vip = purchases.filter(isVipPurchase);
+          if (!vip.length) return;
+          Promise.all(vip.map((p) => verifyOnServer(p).catch((e) => ({ ok: false, networkError: true, error: String(e) }))))
+            .then((results) => {
+              if (results.some((r) => r.ok)) {
+                console.log('[IAP] server verified, restoring unlock');
+                saveUnlockState();
+                setUnlocked(true);
+              } else if (results.every((r) => r.networkError)) {
+                console.warn('[IAP] server unreachable, not restoring unlock');
+              } else {
+                console.warn('[IAP] server verification failed:', results);
+              }
+            });
+        })
+        .catch((e) => console.warn('[IAP] failed to query existing purchases:', e));
+    } catch (e) {
+      console.warn('[IAP] existing purchase query threw synchronously:', e);
+    }
   }, [connected]);
 
   const buyVip = useCallback(async () => {
     if (!iap) {
-      Alert.alert('预览模式', '当前是预览模式（Expo Go / Web），无法购买。\n请在 TestFlight / 正式包中购买。');
+      Alert.alert('Preview Mode', 'Purchases are unavailable in preview mode (Expo Go / Web).\nPlease purchase in the TestFlight or production build.');
       return;
     }
     if (!connected) {
-      setUnlockError('暂时无法连接 App Store（StoreKit 未连接）\n常见原因：付费协议未生效 / 审核中 / 用 Expo Go 测试');
+      setUnlockError('Unable to connect to the App Store (StoreKit not connected)\nCommon causes: paid app agreement not accepted / build under review / testing in Expo Go');
       return;
     }
     setPaywallBusy(true);
@@ -170,16 +190,25 @@ export function UnlockProvider({ children }) {
         },
         type: 'in-app',
       });
+      // requestPurchase 只负责发起，结果靠 listener 回调。若 25s 内无任何回调
+      // （常见于存在未完成交易时再购买），主动复位，避免无限转圈。
+      clearBuyWatchdog();
+      buyWatchdog = setTimeout(() => {
+        buyWatchdog = null;
+        setPaywallBusy(false);
+        setUnlockError('The store returned no result (there may be an unfinished transaction).\nIf you were already charged, restarting the app will auto-restore the unlock; or try again later.');
+      }, 25000);
     } catch (e) {
+      clearBuyWatchdog();
       setPaywallBusy(false);
-      console.warn('[IAP] requestPurchase 抛错:', e);
+      console.warn('[IAP] requestPurchase threw:', e);
       setUnlockError(fmtIapError(e));
     }
   }, [connected]);
 
   const restoreVip = useCallback(async () => {
     if (!iap) {
-      Alert.alert('预览模式', '当前是预览模式（Expo Go / Web），无购买记录可恢复。');
+      Alert.alert('Preview Mode', 'No purchases can be restored in preview mode (Expo Go / Web).');
       return;
     }
     setPaywallBusy(true);
@@ -187,10 +216,10 @@ export function UnlockProvider({ children }) {
     try {
       await iap.restorePurchases();
       const purchases = await iap.getAvailablePurchases();
-      console.log('[IAP] 恢复购买完成:', purchases.map((p) => p.productId));
+      console.log('[IAP] restore purchases done:', purchases.map((p) => p.productId));
       const vip = purchases.filter(isVipPurchase);
       if (!vip.length) {
-        Alert.alert('无购买记录', '未找到可恢复的购买记录');
+        Alert.alert('No Purchases', 'No restorable purchase was found');
         return;
       }
       const results = await Promise.all(vip.map((p) => verifyOnServer(p).catch((e) => ({ ok: false, networkError: true, error: String(e) }))));
@@ -198,13 +227,13 @@ export function UnlockProvider({ children }) {
         await saveUnlockState();
         setUnlocked(true);
         setPaywallVisible(false);
-        Alert.alert('已恢复', '购买记录已恢复，精品短剧已解锁');
+        Alert.alert('Restored', 'Your purchase was restored — premium dramas are unlocked');
       } else {
         const first = results[0];
-        Alert.alert('恢复失败', `服务器未确认购买记录。\n${first && first.error}`);
+        Alert.alert('Restore Failed', `The server could not confirm the purchase.\n${first && first.error}`);
       }
     } catch (e) {
-      console.warn('[IAP] 恢复购买失败:', e);
+      console.warn('[IAP] restore purchases failed:', e);
       setUnlockError(fmtIapError(e));
     } finally {
       setPaywallBusy(false);

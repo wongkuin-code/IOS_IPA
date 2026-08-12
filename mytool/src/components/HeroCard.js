@@ -9,7 +9,7 @@ export default function HeroCard({ drama, onPlay, onPress }) {
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { borderRadius: radii.card }]}>
       {drama.cover ? (
-        <Image source={{ uri: drama.cover }} style={styles.image} />
+        <Image source={drama.cover} style={styles.image} resizeMode="cover" />
       ) : (
         <LinearGradient colors={dramaTheme(drama.id)} style={styles.image} />
       )}

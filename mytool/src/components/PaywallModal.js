@@ -1,4 +1,5 @@
 // ── Paywall modal: ¥1 unlock all premium dramas ──
+import { useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
@@ -6,7 +7,10 @@ import { useUnlock } from '../iap/UnlockContext';
 
 export default function PaywallModal() {
   const { colors, fonts } = useTheme();
-  const { paywallVisible, setPaywallVisible, paywallBusy, vipPrice, unlockError, buyVip, restoreVip } = useUnlock();
+  const { paywallVisible, setPaywallVisible, setUnlockError, paywallBusy, vipPrice, unlockError, buyVip, restoreVip } = useUnlock();
+  useEffect(() => {
+    if (paywallVisible) setUnlockError(null);
+  }, [paywallVisible, setUnlockError]);
   if (!paywallVisible) return null;
   return (
     <Modal visible transparent animationType="fade" onRequestClose={() => setPaywallVisible(false)}>

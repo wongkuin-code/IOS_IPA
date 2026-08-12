@@ -10,7 +10,7 @@ export default function PosterCard({ drama, locked, onPress }) {
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={styles.wrap}>
       <View style={[styles.poster, { borderRadius: radii.card }]}>
         {drama.poster ? (
-          <Image source={{ uri: drama.poster }} style={styles.image} />
+          <Image source={drama.poster} style={styles.image} resizeMode="cover" />
         ) : (
           <DramaCover drama={drama} style={styles.image} />
         )}

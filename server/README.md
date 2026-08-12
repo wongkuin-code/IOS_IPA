@@ -2,6 +2,46 @@
 
 StoreKit 2 交易 JWS 服务器端验证（Apple 官方 `@apple/app-store-server-library`）。
 
+## 部署到香港服务器（43.129.30.172 · OpenCloudOS 9 · api.haoweimedia.cn）
+
+> 2026-08-12 已从上海服务器（124.221.168.96，备案受限）迁到香港节点，直接用标准 443，无需 8443 过渡方案。
+> 上海机上的旧 8443 方案文档已移入 `server/deploy/archive/`。
+
+本地（Windows）把修复后的代码上传：
+
+```powershell
+# 1. 把 server/ 目录(exclude node_modules)完整上传到香港服务器
+scp -r server root@43.129.30.172:/opt/evareel-server/
+```
+
+服务器上（root）：
+
+```bash
+cd /opt/evareel-server
+npm install --omit=dev
+pm2 restart evareel-verify
+```
+
+之后确认（自检 /health）：
+
+```bash
+curl https://api.haoweimedia.cn/health
+# 期望: {"ok":true,"app":"evareel-iap-verify","env":"Sandbox"}
+pm2 logs evareel-verify
+```
+
+首次全新部署用一键脚本（Node 20 + pm2 常驻 + nginx 反代 + certbot HTTPS + promo 页面托管）：
+
+```bash
+bash server/deploy/deploy-on-server.sh
+```
+
+域名现状（DNS 均解析到 43.129.30.172）：
+
+- `api.haoweimedia.cn` → 443 (Let's Encrypt) → 反代 `127.0.0.1:3000`（IAP 验签接口）
+- `www.haoweimedia.cn` / `haoweimedia.cn` → 80 静态落地页（`/var/www/haoweimedia`）
+- 香港服务器无 ICP 备案限制，80/443 入站正常，无需 8443 非标端口
+
 ## 本地运行
 
 ```bash
@@ -10,64 +50,19 @@ PORT=3000 node server.js
 # 或: npm start
 ```
 
-## 部署到云服务器（方案 A：域名 + HTTPS）
-
-1. 把本目录（不含 node_modules）传到服务器：
-   ```bash
-   scp -r server user@SERVER_IP:/opt/evareel-server
-   ```
-2. 服务器上安装 Node 20+ 与依赖：
-   ```bash
-   cd /opt/evareel-server && npm install --omit=dev
-   ```
-3. 配置环境变量（可写进 systemd 或 .env 由进程管理器注入）：
-   - `APP_ENV`：沙盒测试阶段用默认 `SANDBOX`；**上架后改 `PRODUCTION` 并填 `APPLE_APP_ID`（App 的 Apple ID，即 ASC App ID：6799368982）**
-   - `PORT=3000`（内部端口，不对外暴露）
-4. 用 pm2 常驻：
-   ```bash
-   npm i -g pm2
-   pm2 start server.js --name evareel-verify
-   pm2 save && pm2 startup
-   ```
-5. 域名解析：`verify.yourdomain.com` A 记录 → 服务器公网 IP
-6. nginx 反代 + 免费证书（certbot）：
-   ```nginx
-   server {
-     listen 80;
-     server_name verify.yourdomain.com;
-     location /.well-known/acme-challenge/ { root /var/www/certbot; }
-     location / { return 301 https://$host$request_uri; }
-   }
-   server {
-     listen 443 ssl;
-     server_name verify.yourdomain.com;
-     ssl_certificate     /etc/letsencrypt/live/verify.yourdomain.com/fullchain.pem;
-     ssl_certificate_key /etc/letsencrypt/live/verify.yourdomain.com/privkey.pem;
-     location / {
-       proxy_pass http://127.0.0.1:3000;
-       proxy_set_header Host $host;
-       proxy_set_header X-Real-IP $remote_addr;
-     }
-   }
-   ```
-   ```bash
-   sudo apt install nginx certbot python3-certbot-nginx
-   sudo certbot --nginx -d verify.yourdomain.com
-   ```
-
 ## 验证接口
 
 - `GET /health` — 存活检查
 - `POST /api/verify-iap` — 请求体 `{ "jws": "<交易JWS>", "platform": "ios" }`
   - 验签 + 证书链校验（锚定 server/certs 的 Apple 根证书）
-  - 校验 `bundleId=com.mytool.booksreader`、`productId=vip.unlock.all`、类型 NonConsumable
+  - 校验 `bundleId=com.mytool.booksreader`、`productId=vip.unlock.all`、类型 `Type.NON_CONSUMABLE`（Apple 枚举值 = `"Non-Consumable"`，带连字符）
   - `transactionId` 防重放（写入 store.json）
   - 返回 `{ ok: true, productId, transactionId, alreadyGranted }`
 
 ## 客户端接入
 
-`mytool/src/iap.js` 里把 `VERIFY_API` 换成你的真实域名：
-`https://verify.yourdomain.com/api/verify-iap`
+`mytool/src/iap/iap.js` 里已指向真实域名：
+`https://api.haoweimedia.cn/api/verify-iap`
 
 ## 环境变量
 
