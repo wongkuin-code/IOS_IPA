@@ -1,11 +1,6 @@
-// ── Mock short-drama catalogue (covers served from our HK API server) ──
+﻿// ── Mock short-drama catalogue (offline poster art, zero network images) ──
 
 export const categories = ['For You', 'Romance', 'Urban', 'Revenge', 'More'];
-
-// Covers are served from our own Hong Kong server (fast & reliable from mainland CN).
-// RN native Image loads these as remote URLs — the standard, reliable path on iOS
-// (base64 data URIs and locally-bundled assets both failed to render on iOS builds).
-const coverUrl = (id) => `https://api.haoweimedia.cn/covers/poster-${String(id).padStart(2, '0')}.jpg`;
 
 const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
   id,
@@ -15,8 +10,6 @@ const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
   rating,
   category,
   premium: Boolean(premium),
-  cover: { uri: coverUrl(id) },
-  poster: { uri: coverUrl(id) },
 });
 
 export const dramas = [

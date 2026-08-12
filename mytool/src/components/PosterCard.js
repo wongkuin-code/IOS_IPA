@@ -1,5 +1,5 @@
-// ── 2:3 poster card: real poster (or drama-style art), title + gold rating badge ──
-import { Image, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+// ── 2:3 poster card: offline art poster, title + gold rating badge ──
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import DramaCover from './DramaCover';
@@ -9,11 +9,7 @@ export default function PosterCard({ drama, locked, onPress }) {
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={styles.wrap}>
       <View style={[styles.poster, { borderRadius: radii.card }]}>
-        {drama.poster ? (
-          <Image source={drama.poster} style={styles.image} resizeMode="cover" />
-        ) : (
-          <DramaCover drama={drama} style={styles.image} />
-        )}
+        <DramaCover drama={drama} style={styles.image} />
         <View style={[styles.topHighlight, { backgroundColor: colors.gold }]} />
         <LinearGradient
           colors={[colors.rating[0], colors.rating[1], colors.rating[2]]}
