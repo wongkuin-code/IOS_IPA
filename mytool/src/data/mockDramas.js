@@ -1,5 +1,6 @@
 ﻿// ── Mock short-drama catalogue (20 bundled inline posters, zero network, synchronous) ──
 import { posters } from './posters';
+import { coverAssets } from './coverAssets';
 
 export const categories = ['For You', 'Romance', 'Urban', 'Revenge', 'More'];
 
@@ -13,6 +14,7 @@ const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
   premium: Boolean(premium),
   cover: posters[(id - 1) % posters.length],
   poster: posters[(id - 1) % posters.length],
+  asset: coverAssets[(id - 1) % coverAssets.length],
 });
 
 export const dramas = [

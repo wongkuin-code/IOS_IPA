@@ -1,8 +1,9 @@
 // ── 2:3 poster card: bundled poster image (fallback art), title + gold rating badge ──
-import { Image, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import DramaCover from './DramaCover';
+import CoverImage from './CoverImage';
 
 export default function PosterCard({ drama, locked, onPress }) {
   const { colors, radii } = useTheme();
@@ -10,7 +11,7 @@ export default function PosterCard({ drama, locked, onPress }) {
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={styles.wrap}>
       <View style={[styles.poster, { borderRadius: radii.card }]}>
         {drama.poster ? (
-          <Image source={drama.poster} style={styles.image} resizeMode="cover" />
+          <CoverImage uri={drama.poster} asset={drama.asset} style={styles.image} resizeMode="cover" />
         ) : (
           <DramaCover drama={drama} style={styles.image} />
         )}
