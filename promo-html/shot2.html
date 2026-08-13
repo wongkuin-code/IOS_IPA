@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1290px; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  .screen { width:1290px; height:2796px; position:relative; overflow:hidden; background:#f5f0e8; }
+
+  .ui { position:absolute; inset:0; padding:0 64px; }
+  .status { height:80px; }
+  .brand { display:flex; align-items:center; margin-top:44px; }
+  .brand .name { font-size:46px; font-weight:800; color:#3a2f25; }
+  .brand .tag { font-size:26px; color:#8a7a68; margin-left:20px; margin-top:8px; }
+  .chips { display:flex; margin-top:36px; flex-wrap:wrap; }
+  .chip { font-size:27px; padding:14px 26px; border-radius:32px; border:2px solid #e5dccb; background:#fff; color:#8a7a68; margin:0 18px 18px 0; }
+  .chip.active { border-color:#8b5e3c; background:#8b5e3c; color:#fff; font-weight:700; }
+  .chip.c1 { border-color:#7c5cff; color:#7c5cff; } .chip.c2 { border-color:#c0392b; color:#c0392b; } .chip.c3 { border-color:#e67e22; color:#e67e22; }
+
+  .section { margin-top:40px; }
+  .sechead { font-size:32px; font-weight:800; color:#3a2f25; margin-bottom:24px; }
+  .cards { display:flex; }
+  .card { width:300px; margin-right:28px; background:#fff; border:2px solid #e5dccb; border-radius:26px; padding:24px; }
+  .cover { height:200px; border-radius:16px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:58px; font-weight:800; }
+  .card .title { font-size:28px; font-weight:700; color:#3a2f25; margin-top:18px; line-height:1.25; }
+  .card .dl { font-size:24px; color:#8a7a68; margin-top:8px; }
+  .card .tagrow { display:flex; margin-top:14px; flex-wrap:wrap; }
+  .card .tag { font-size:21px; color:#fff; border-radius:10px; padding:5px 14px; margin:0 10px 8px 0; font-weight:700; }
+
+  .promo { position:absolute; top:0; left:0; right:0; padding:150px 64px 220px; z-index:5; background:linear-gradient(to bottom, rgba(18,14,11,0.99) 0%, rgba(18,14,11,0.97) 22%, rgba(18,14,11,0.94) 44%, rgba(18,14,11,0.78) 58%, rgba(18,14,11,0.25) 70%, rgba(18,14,11,0.02) 80%, rgba(18,14,11,0) 88%); }
+  .headline { font-size:92px; font-weight:800; color:#fff; line-height:1.14; letter-spacing:1px; }
+  .headline .gold { color:#f0c060; }
+  .rule { width:120px; height:10px; background:#f0c060; border-radius:6px; margin-top:36px; }
+  .subtitle { font-size:42px; color:rgba(255,255,255,0.88); margin-top:30px; line-height:1.4; font-weight:500; }
+</style>
+</head>
+<body>
+  <div class="screen">
+    <div class="ui">
+      <div class="status"></div>
+      <div class="brand">
+        <div class="name">Short Dramas</div>
+        <div class="tag">Trending library of drama-worthy books</div>
+      </div>
+      <div class="chips">
+        <div class="chip active">All</div>
+        <div class="chip c1">⚔️ Conflict</div>
+        <div class="chip c2">Revenge</div>
+        <div class="chip c3">Romance</div>
+        <div class="chip">Time-travel</div>
+        <div class="chip">Sweet</div>
+        <div class="chip">Scheming</div>
+        <div class="chip">Mystery</div>
+        <div class="chip">Heroine</div>
+      </div>
+      <div class="section">
+        <div class="sechead">For You</div>
+        <div class="cards">
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#c0392b,#8b5e3c)">L</div>
+            <div class="title">Reborn to Love</div>
+            <div class="dl">860K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#c0392b">Revenge</div><div class="tag" style="background:#e67e22">Romance</div></div>
+          </div>
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#8e44ad,#3a2f25)">C</div>
+            <div class="title">The CEO</div>
+            <div class="dl">740K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#e67e22">Romance</div><div class="tag" style="background:#2e86c1">CEO</div></div>
+          </div>
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#7c5cff,#1c1510)">F</div>
+            <div class="title">Failed to My Heiress</div>
+            <div class="dl">690K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#8e44ad">Drama</div><div class="tag" style="background:#c0392b">Revenge</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sechead">Trending Now</div>
+        <div class="cards">
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#b7950b,#8b5e3c)">V</div>
+            <div class="title">Vengeful Husband Returns</div>
+            <div class="dl">720K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#c0392b">Revenge</div><div class="tag" style="background:#e67e22">Romance</div></div>
+          </div>
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#16a085,#34495e)">B</div>
+            <div class="title">Before I Met My True Love</div>
+            <div class="dl">980K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#16a085">Drama</div><div class="tag" style="background:#b7950b">Sweet</div></div>
+          </div>
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#e67e22,#c0392b)">S</div>
+            <div class="title">Secret Lover</div>
+            <div class="dl">660K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#e67e22">Romance</div><div class="tag" style="background:#2e86c1">CEO</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sechead">New Releases</div>
+        <div class="cards">
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#34495e,#7c5cff)">H</div>
+            <div class="title">The Heiress's Revenge</div>
+            <div class="dl">510K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#8e44ad">Drama</div><div class="tag" style="background:#c0392b">Revenge</div></div>
+          </div>
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#2e86c1,#b7950b)">M</div>
+            <div class="title">Midnight Confession</div>
+            <div class="dl">620K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#e67e22">Romance</div><div class="tag" style="background:#16a085">Sweet</div></div>
+          </div>
+          <div class="card">
+            <div class="cover" style="background:linear-gradient(135deg,#8b5e3c,#1c1510)">T</div>
+            <div class="title">Time-travel Wife</div>
+            <div class="dl">480K downloads</div>
+            <div class="tagrow"><div class="tag" style="background:#7c5cff">Time-travel</div><div class="tag" style="background:#e67e22">Romance</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="promo">
+      <div class="headline">Most Popular<br><span class="gold">Short Dramas</span></div>
+      <div class="rule"></div>
+      <div class="subtitle">Urban · Romance · Revenge ·<br>Time-travel and more</div>
+    </div>
+  </div>
+</body>
+</html>

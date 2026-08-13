@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1290px; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  .screen { width:1290px; height:2796px; position:relative; overflow:hidden; background:#12100d; }
+
+  /* cinematic backdrop */
+  .backdrop { position:absolute; inset:0; background:
+    radial-gradient(1200px 800px at 50% 42%, rgba(240,192,96,0.16), rgba(18,16,13,0) 60%),
+    linear-gradient(165deg, #241a12 0%, #12100d 55%, #1a120b 100%); }
+  .grain { position:absolute; inset:0; opacity:0.5; background:repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 3px); }
+
+  .top { position:absolute; top:0; left:0; right:0; padding:100px 72px 0; z-index:3; display:flex; align-items:center; }
+  .epbadge { font-size:30px; color:#fff; background:rgba(240,192,96,0.9); border-radius:16px; padding:12px 28px; font-weight:800; }
+  .top .spacer { flex:1; }
+  .top .hd { color:#f0c060; font-size:30px; font-weight:700; }
+  .cast { color:rgba(255,255,255,0.55); font-size:27px; margin-left:24px; }
+
+  .stage { position:absolute; top:0; bottom:0; left:0; right:0; display:flex; align-items:center; justify-content:center; }
+  .play { width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,0.14); border:3px solid rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+  .play .tri { width:0; height:0; margin-left:22px; border-top:52px solid transparent; border-bottom:52px solid transparent; border-left:86px solid #f0c060; }
+  .ring { margin-top:56px; text-align:center; color:rgba(255,255,255,0.7); font-size:30px; letter-spacing:4px; }
+
+  .meta { position:absolute; bottom:0; left:0; right:0; padding:80px 72px 100px; z-index:3; }
+  .progress { height:10px; background:rgba(255,255,255,0.18); border-radius:6px; overflow:hidden; margin-bottom:44px; }
+  .progress .fill { width:41%; height:100%; background:linear-gradient(90deg,#f0c060,#e67e22); }
+  .m-title { font-size:48px; font-weight:800; color:#fff; }
+  .m-desc { font-size:31px; color:rgba(255,255,255,0.72); margin-top:18px; line-height:1.5; }
+  .m-ep { font-size:28px; color:#f0c060; margin-top:26px; font-weight:700; }
+
+  .promo { position:absolute; top:0; left:0; right:0; padding:130px 72px 220px; z-index:6; background:linear-gradient(to bottom, rgba(18,14,11,0.99) 0%, rgba(18,14,11,0.96) 22%, rgba(18,14,11,0.90) 40%, rgba(18,14,11,0.55) 58%, rgba(18,14,11,0.15) 72%, rgba(18,14,11,0) 85%); }
+  .headline { font-size:92px; font-weight:800; color:#fff; line-height:1.14; letter-spacing:1px; }
+  .headline .gold { color:#f0c060; }
+  .rule { width:120px; height:10px; background:#f0c060; border-radius:6px; margin-top:36px; }
+  .subtitle { font-size:42px; color:rgba(255,255,255,0.88); margin-top:30px; line-height:1.4; font-weight:500; }
+</style>
+</head>
+<body>
+  <div class="screen">
+    <div class="backdrop"></div>
+    <div class="grain"></div>
+
+    <div class="top">
+      <div class="epbadge">▶ EP.66</div>
+      <div class="spacer"></div>
+      <div class="hd">90 Episodes</div>
+      <div class="cast">· auto-play</div>
+    </div>
+
+    <div class="stage">
+      <div class="play"><div class="tri"></div></div>
+      <div class="ring"></div>
+    </div>
+
+    <div class="meta">
+      <div class="progress"><div class="fill"></div></div>
+      <div class="m-title">The CEO's Secret Lover</div>
+      <div class="m-desc">She thought it was just a one-night stand, but he was the CEO?</div>
+      <div class="m-ep">EP.66 · Playing next automatically</div>
+    </div>
+
+    <div class="promo">
+      <div class="headline">Exciting Plays,<br><span class="gold">Non-Stop</span></div>
+      <div class="rule"></div>
+      <div class="subtitle">Auto-play next episode,<br>never miss a moment</div>
+    </div>
+  </div>
+</body>
+</html>

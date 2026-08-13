@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EvaReel — Short Dramas &amp; Novels</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { font-family:-apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background:#101010; color:#fff; }
+  a { color:inherit; text-decoration:none; }
+
+  .hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:48px 24px; position:relative; overflow:hidden; }
+  .hero::before { content:""; position:absolute; width:900px; height:900px; border-radius:50%; background:radial-gradient(circle, rgba(240,192,96,0.18) 0%, rgba(240,192,96,0) 65%); top:50%; left:50%; transform:translate(-50%,-50%); }
+  .logo { width:96px; height:96px; border-radius:24px; background:#1c1510; border:1px solid #f0c060; display:flex; align-items:center; justify-content:center; font-size:48px; font-weight:800; color:#f0c060; position:relative; z-index:1; }
+  h1 { font-size:clamp(40px, 8vw, 72px); font-weight:800; letter-spacing:1px; margin-top:36px; position:relative; z-index:1; }
+  h1 .gold { color:#f0c060; }
+  .rule { width:110px; height:8px; background:#f0c060; border-radius:4px; margin:28px auto 0; position:relative; z-index:1; }
+  .sub { font-size:clamp(18px, 2.5vw, 26px); color:rgba(255,255,255,0.88); margin-top:28px; line-height:1.6; position:relative; z-index:1; }
+  .cta { margin-top:44px; display:flex; gap:20px; flex-wrap:wrap; justify-content:center; position:relative; z-index:1; }
+  .btn { display:inline-block; padding:18px 44px; border-radius:40px; font-size:20px; font-weight:700; }
+  .btn-gold { background:linear-gradient(135deg,#f8d27a,#f0c060 45%,#c9942f); color:#1c1510; box-shadow:0 8px 30px rgba(240,192,96,0.35); }
+  .btn-ghost { border:2px solid rgba(255,255,255,0.35); color:#fff; }
+  .btn-ghost:hover { border-color:#f0c060; color:#f0c060; }
+
+  .section { padding:96px 24px; max-width:1180px; margin:0 auto; }
+  .sec-title { text-align:center; font-size:clamp(30px,4vw,44px); font-weight:800; }
+  .sec-title .gold { color:#f0c060; }
+  .sec-sub { text-align:center; color:rgba(255,255,255,0.7); font-size:18px; margin-top:16px; }
+
+  .feats { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:28px; margin-top:56px; }
+  .feat { background:#171512; border:1px solid #2a241d; border-radius:24px; padding:36px 28px; transition:transform .2s, border-color .2s; }
+  .feat:hover { transform:translateY(-6px); border-color:#f0c060; }
+  .feat .ic { font-size:40px; }
+  .feat h3 { font-size:22px; margin-top:18px; }
+  .feat p { color:rgba(255,255,255,0.65); font-size:16px; line-height:1.7; margin-top:10px; }
+
+  .shots { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:28px; margin-top:56px; }
+  .shot { border-radius:20px; overflow:hidden; border:1px solid #2a241d; background:#171512; transition:transform .2s, border-color .2s; display:block; }
+  .shot:hover { transform:translateY(-6px); border-color:#f0c060; }
+  .shot .ph { aspect-ratio:46/100; display:flex; align-items:center; justify-content:center; font-size:40px; }
+  .shot .cap { padding:16px 20px; font-size:15px; color:rgba(255,255,255,0.7); }
+
+  footer { text-align:center; padding:48px 24px; color:rgba(255,255,255,0.45); font-size:15px; border-top:1px solid #2a241d; }
+</style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="logo">📖</div>
+    <h1>Turn to<br><span class="gold">Short Dramas</span></h1>
+    <div class="rule"></div>
+    <div class="sub">Immersive Experience, Dramatic Thrills in Minutes<br>1200+ Public-domain classics · Free to read</div>
+    <div class="cta">
+      <a class="btn btn-gold" href="shot1.html">View Screenshots</a>
+      <a class="btn btn-ghost" href="icon.html">App Icon</a>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Why <span class="gold">EvaReel</span></div>
+    <div class="sec-sub">Premium short dramas, one small unlock. No ads. No subscriptions.</div>
+    <div class="feats">
+      <div class="feat">
+        <div class="ic">🎬</div>
+        <h3>Short Dramas</h3>
+        <p>Binge-worthy mini dramas and novels — each episode just minutes long.</p>
+      </div>
+      <div class="feat">
+        <div class="ic">🔓</div>
+        <h3>One-Time Unlock</h3>
+        <p>A single low-price unlock grants permanent access to all premium titles.</p>
+      </div>
+      <div class="feat">
+        <div class="ic">📚</div>
+        <h3>Classics Library</h3>
+        <p>1200+ public-domain classics included free, with smart search &amp; favorites.</p>
+      </div>
+      <div class="feat">
+        <div class="ic">🔒</div>
+        <h3>Private &amp; Secure</h3>
+        <p>Purchases verified securely. No account required, no tracking.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">App <span class="gold">Screens</span></div>
+    <div class="sec-sub">A look inside EvaReel</div>
+    <div class="shots">
+      <a class="shot" href="shot1.html"><div class="ph" style="background:linear-gradient(180deg,#1c1510,#2a241d);color:#f0c060">🏠</div><div class="cap">Home — Browse &amp; Search</div></a>
+      <a class="shot" href="shot2.html"><div class="ph" style="background:linear-gradient(180deg,#2a1a12,#1c1510);color:#f0c060">🎬</div><div class="cap">Drama Detail</div></a>
+      <a class="shot" href="shot3.html"><div class="ph" style="background:linear-gradient(180deg,#1c1510,#120e0a);color:#f0c060">▶</div><div class="cap">Player</div></a>
+      <a class="shot" href="shot4.html"><div class="ph" style="background:linear-gradient(180deg,#15101b,#1c1510);color:#f0c060">📚</div><div class="cap">Library</div></a>
+      <a class="shot" href="shot5.html"><div class="ph" style="background:linear-gradient(180deg,#10151c,#1c1510);color:#f0c060">👤</div><div class="cap">Profile &amp; Unlock</div></a>
+    </div>
+  </div>
+
+  <footer>© 2026 EvaReel · haoweimedia.com</footer>
+</body>
+</html>

@@ -55,3 +55,24 @@ mytool/build/
 mytool/build_eas.log
 mytool/submit_eas.log
 .workbuddy/
+
+# local editor config
+.claude/
+**/.claude/
+
+# build artifacts
+*.ipa
+
+# temp / generated output
+_export_test/
+_export_test2/
+_web_preview/
+promo-png/
+promo-png$out/
+ref-split/
+tmp-ref.jpg
+ref.png
+buy1.jpg
+buy1-*.png
+info.png
+assets/Image_to_image_edit_of_the_sou_2026-08-12T11-35-20.png
