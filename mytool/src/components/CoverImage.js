@@ -1,37 +1,25 @@
-// ── Cover image with base64-first rendering and a local-asset fallback ──
-// Renders the inline base64 poster; if it hasn't loaded within FALLBACK_DELAY
-// (or errors), swaps to the Expo-standard bundled asset so a black card never sticks.
-import { useEffect, useRef, useState } from 'react';
-import { Image } from 'react-native';
+// ── Gradient-first cover: renders the fallback art immediately, then swaps to
+// the bundled photo once it decodes; on failure the gradient stays on —
+// a cover card can never end up black. ──
+import { useState } from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 
-const FALLBACK_DELAY = 10000;
+export default function CoverImage({ asset, fallback, style, resizeMode = 'cover' }) {
+  const [failed, setFailed] = useState(false);
 
-export default function CoverImage({ uri, asset, style, resizeMode = 'cover' }) {
-  const [useAsset, setUseAsset] = useState(false);
-  const loadedRef = useRef(false);
-
-  useEffect(() => {
-    loadedRef.current = false;
-    setUseAsset(false);
-    const timer = setTimeout(() => {
-      if (!loadedRef.current) setUseAsset(true);
-    }, FALLBACK_DELAY);
-    return () => clearTimeout(timer);
-  }, [uri, asset]);
-
-  if (useAsset && asset) {
-    return <Image source={asset} style={style} resizeMode={resizeMode} />;
-  }
+  if (!asset) return fallback || null;
 
   return (
-    <Image
-      source={{ uri }}
-      style={style}
-      resizeMode={resizeMode}
-      onLoad={() => {
-        loadedRef.current = true;
-      }}
-      onError={() => setUseAsset(true)}
-    />
+    <View style={style}>
+      {fallback || null}
+      {failed ? null : (
+        <Image
+          source={asset}
+          style={StyleSheet.absoluteFill}
+          resizeMode={resizeMode}
+          onError={() => setFailed(true)}
+        />
+      )}
+    </View>
   );
 }

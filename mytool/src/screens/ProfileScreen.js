@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
@@ -80,7 +81,8 @@ export default function ProfileScreen() {
         <Row icon="⭐" label="Rate Us" onPress={() => {}} />
         <Row icon="📄" label="Privacy Policy" onPress={() => {}} />
         <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: 'center', marginTop: 20 }}>
-          EvaReel v1.0.0
+          EvaReel v{Constants.expoConfig?.version || '1.0.0'} (build{' '}
+          {Constants.expoConfig?.ios?.buildNumber || 'dev'})
         </Text>
       </View>
     </View>

@@ -9,11 +9,11 @@ export default function HeroCard({ drama, onPlay, onPress }) {
   const { colors, radii, fonts } = useTheme();
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { borderRadius: radii.card }]}>
-      {drama.cover ? (
-        <CoverImage uri={drama.cover} asset={drama.asset} style={styles.image} resizeMode="cover" />
-      ) : (
-        <LinearGradient colors={dramaTheme(drama.id)} style={styles.image} />
-      )}
+      <CoverImage
+        asset={drama.asset}
+        fallback={<LinearGradient colors={dramaTheme(drama.id)} style={styles.image} />}
+        style={styles.image}
+      />
       <LinearGradient
         colors={['transparent', 'rgba(10,6,4,0.55)', 'rgba(10,6,4,0.92)']}
         locations={[0, 0.45, 1]}

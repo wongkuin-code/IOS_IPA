@@ -10,11 +10,11 @@ export default function PosterCard({ drama, locked, onPress }) {
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={styles.wrap}>
       <View style={[styles.poster, { borderRadius: radii.card }]}>
-        {drama.poster ? (
-          <CoverImage uri={drama.poster} asset={drama.asset} style={styles.image} resizeMode="cover" />
-        ) : (
-          <DramaCover drama={drama} style={styles.image} />
-        )}
+        <CoverImage
+          asset={drama.asset}
+          fallback={<DramaCover drama={drama} style={styles.image} />}
+          style={styles.image}
+        />
         <View style={[styles.topHighlight, { backgroundColor: colors.gold }]} />
         <LinearGradient
           colors={[colors.rating[0], colors.rating[1], colors.rating[2]]}
