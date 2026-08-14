@@ -8,9 +8,9 @@ import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import DramaGrid from '../components/DramaGrid';
 import { dramas } from '../data/mockDramas';
-import { loadSaved, loadHistory } from '../data/libraryStore';
+import { loadSaved, loadHistory, syncLibraryFromServer } from '../data/libraryStore';
 
-const byId = (id) => dramas.find((d) => d.id === String(id).replace(/-r$/, ''));
+const byId = (id) => dramas.find((d) => String(d.id) === String(id).replace(/-r$/, ''));
 
 export default function LibraryScreen() {
   const { colors, spacing } = useTheme();
@@ -22,8 +22,10 @@ export default function LibraryScreen() {
   const [history, setHistory] = useState([]);
 
   const reload = useCallback(() => {
-    loadSaved().then(setSaved);
-    loadHistory().then(setHistory);
+    syncLibraryFromServer().finally(() => {
+      loadSaved().then(setSaved);
+      loadHistory().then(setHistory);
+    });
   }, []);
 
   useFocusEffect(reload);
@@ -46,7 +48,7 @@ export default function LibraryScreen() {
       <View style={[styles.segment, { backgroundColor: colors.surface, borderRadius: 10 }]}>
         {['Saved', 'History'].map((t) => (
           <TouchableOpacity key={t} onPress={() => setTab(t)} style={[styles.segmentBtn, tab === t && { backgroundColor: colors.gold }]}>
-            <Text style={[styles.segmentText, { color: tab === t ? '#1A1410' : colors.textMuted }]}>{t}</Text>
+            <Text style={[styles.segmentText, { color: tab === t ? '#200B06' : colors.textMuted }]}>{t}</Text>
           </TouchableOpacity>
         ))}
       </View>

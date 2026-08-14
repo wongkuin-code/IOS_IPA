@@ -1,24 +1,25 @@
-// ── Circular search button (magnifier) ──
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+// ── Search pill button: tap to open Discover (TikTok-style) ──
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 
 export default function SearchButton({ onPress }) {
   const { colors } = useTheme();
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.circle, { borderColor: colors.gold }]}>
-      <Text style={styles.icon}>🔍</Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[styles.pill, { backgroundColor: colors.surface }]}>
+      <Ionicons name="search" size={15} color={colors.textMuted} />
+      <Text style={[styles.text, { color: colors.textMuted }]}>Search</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  circle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
+  pill: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 999,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
   },
-  icon: { fontSize: 16 },
+  text: { fontSize: 12, fontWeight: '600', marginLeft: 6 },
 });

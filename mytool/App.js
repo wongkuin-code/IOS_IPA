@@ -3,11 +3,12 @@ import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   useFonts,
-  PlayfairDisplay_700Bold_Italic,
-  PlayfairDisplay_600SemiBold_Italic,
-  PlayfairDisplay_400Regular_Italic,
-} from '@expo-google-fonts/playfair-display';
+  Poppins_800ExtraBold,
+  Poppins_700Bold,
+  Poppins_600SemiBold,
+} from '@expo-google-fonts/poppins';
 import { ThemeProvider } from './src/theme/ThemeContext';
+import { AuthProvider } from './src/auth/AuthContext';
 import { UnlockProvider } from './src/iap/UnlockContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import PaywallModal from './src/components/PaywallModal';
@@ -23,15 +24,15 @@ export default function App() {
 
 function AppContent() {
   const [fontsLoaded] = useFonts({
-    PlayfairDisplay_700Bold_Italic,
-    PlayfairDisplay_600SemiBold_Italic,
-    PlayfairDisplay_400Regular_Italic,
+    Poppins_800ExtraBold,
+    Poppins_700Bold,
+    Poppins_600SemiBold,
   });
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#1A1410', alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color="#D4AF37" />
+      <View style={{ flex: 1, backgroundColor: '#0D0D12', alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color="#FF4D2E" />
       </View>
     );
   }
@@ -39,10 +40,12 @@ function AppContent() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <UnlockProvider>
-          <AppNavigator />
-          <PaywallModal />
-        </UnlockProvider>
+        <AuthProvider>
+          <UnlockProvider>
+            <AppNavigator />
+            <PaywallModal />
+          </UnlockProvider>
+        </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

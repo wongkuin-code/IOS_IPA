@@ -57,7 +57,7 @@ def url_for(photo_id):
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
-    headers = {'User-Agent': 'Mozilla/5.0 (EvaReel cover asset script)'}
+    headers = {'User-Agent': 'Mozilla/5.0 (EvaShort cover asset script)'}
     ok = 0
     total = 0
     for i, photo_id in enumerate(PHOTOS, start=1):

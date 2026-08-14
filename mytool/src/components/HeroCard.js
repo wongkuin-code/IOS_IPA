@@ -39,7 +39,7 @@ export default function HeroCard({ drama, onPlay, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  card: { width: '100%', aspectRatio: 16 / 9, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
+  card: { width: '100%', aspectRatio: 16 / 9, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,77,46,0.25)' },
   image: { ...StyleSheet.absoluteFillObject, width: undefined, height: undefined },
   overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end' },
   info: { padding: 18 },
@@ -52,5 +52,5 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginTop: 10,
   },
-  playText: { color: '#1A1410', fontWeight: '800', fontSize: 15 },
+  playText: { color: '#200B06', fontWeight: '800', fontSize: 15 },
 });

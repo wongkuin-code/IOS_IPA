@@ -85,11 +85,11 @@ function ErrorScreen({ error, onReload }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A1410',
+    backgroundColor: '#200B06',
     paddingTop: 90,
     paddingHorizontal: 20,
   },
-  title: { color: '#D4AF37', fontSize: 20, fontWeight: '800' },
+  title: { color: '#FF4D2E', fontSize: 20, fontWeight: '800' },
   subtitle: { color: '#9C8F7F', fontSize: 13, marginTop: 6 },
   scroll: { flex: 1, marginTop: 18, backgroundColor: 'rgba(0,0,0,0.35)', borderRadius: 12 },
   scrollContent: { padding: 14 },
@@ -98,10 +98,10 @@ const styles = StyleSheet.create({
   btn: {
     marginTop: 16,
     marginBottom: 40,
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#FF4D2E',
     borderRadius: 999,
     paddingVertical: 14,
     alignItems: 'center',
   },
-  btnText: { color: '#1A1410', fontSize: 16, fontWeight: '800' },
+  btnText: { color: '#200B06', fontSize: 16, fontWeight: '800' },
 });

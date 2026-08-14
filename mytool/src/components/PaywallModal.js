@@ -28,7 +28,7 @@ export default function PaywallModal() {
             style={[styles.buyBtn, { backgroundColor: colors.gold, borderRadius: 999 }, paywallBusy && styles.disabled]}
           >
             {paywallBusy ? (
-              <ActivityIndicator color="#1A1410" />
+              <ActivityIndicator color="#200B06" />
             ) : (
               <Text style={styles.buyText}>{vipPrice} Unlock All</Text>
             )}
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   desc: { fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 20 },
   error: { fontSize: 12, color: '#E8A08B', textAlign: 'center', marginTop: 10, lineHeight: 17 },
   buyBtn: { alignSelf: 'stretch', alignItems: 'center', paddingVertical: 14, marginTop: 18 },
-  buyText: { color: '#1A1410', fontWeight: '800', fontSize: 16 },
+  buyText: { color: '#200B06', fontWeight: '800', fontSize: 16 },
   disabled: { opacity: 0.6 },
   restoreBtn: { marginTop: 14, paddingVertical: 6 },
   restoreText: { fontSize: 14, fontWeight: '600' },

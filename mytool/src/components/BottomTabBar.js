@@ -1,13 +1,14 @@
-// ── Custom bottom tab bar: black bar, gold hairline seam, gold active tint ──
+// ── Custom bottom tab bar: Ionicons, accent active, dark bar ──
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 
 const ITEMS = [
-  { key: 'Home', label: 'Home', icon: '🏠' },
-  { key: 'Discover', label: 'Discover', icon: '🧭' },
-  { key: 'Library', label: 'Library', icon: '🔖' },
-  { key: 'Profile', label: 'Profile', icon: '👤' },
+  { key: 'Home', label: 'For You', icon: 'home', iconActive: 'home' },
+  { key: 'Discover', label: 'Search', icon: 'search', iconActive: 'search' },
+  { key: 'Library', label: 'My List', icon: 'bookmark-outline', iconActive: 'bookmark' },
+  { key: 'Profile', label: 'Me', icon: 'person-outline', iconActive: 'person' },
 ];
 
 export default function BottomTabBar({ state, navigation }) {
@@ -26,11 +27,16 @@ export default function BottomTabBar({ state, navigation }) {
         };
         return (
           <TouchableOpacity key={route.key} onPress={onPress} style={styles.item}>
-            <Text style={[styles.icon, focused && { transform: [{ scale: 1.08 }] }]}>{item.icon}</Text>
+            <View style={[styles.iconWrap, focused && { backgroundColor: 'rgba(255,77,46,0.14)' }]}>
+              <Ionicons
+                name={focused ? item.iconActive : item.icon}
+                size={22}
+                color={focused ? colors.gold : colors.tabBarLabel}
+              />
+            </View>
             <Text style={[styles.label, { color: focused ? colors.gold : colors.tabBarLabel }]}>
               {item.label}
             </Text>
-            {focused ? <View style={[styles.dot, { backgroundColor: colors.gold }]} /> : null}
           </TouchableOpacity>
         );
       })}
@@ -41,12 +47,11 @@ export default function BottomTabBar({ state, navigation }) {
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(212,175,55,0.22)',
+    paddingTop: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
   item: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  icon: { fontSize: 20, marginBottom: 2 },
-  label: { fontSize: 11, fontWeight: '700' },
-  dot: { width: 5, height: 5, borderRadius: 3, marginTop: 3 },
+  iconWrap: { width: 34, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  label: { fontSize: 10, fontWeight: '700', marginTop: 2 },
 });

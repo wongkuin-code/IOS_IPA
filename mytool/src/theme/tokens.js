@@ -1,20 +1,20 @@
-// ── Design tokens: exact hex values per spec ──
+// ── Design tokens: flame accent on deep charcoal (DramaBox-style) ──
 import { DarkTheme } from '@react-navigation/native';
 
 export const colors = {
-  background: '#0D0B09',   // near-black warm brown (black shell)
-  surface: '#2A211A',      // warm dark-coffee card (ref #2D2822-#3A3028)
-  surfaceLight: '#3A2E24', // elevated surface (ref #3C3026-#4E3E32)
-  gold: '#D4AF37',         // champagne gold accent
-  goldLight: '#F5D98B',    // gradient top
-  goldDeep: '#9C7A1E',     // gradient bottom (deeper for dark bg)
-  text: '#F5F1EA',         // soft white
-  textMuted: '#A8987C',    // muted gold-beige
-  tabBarBg: '#171717',     // neutral black-gray bar (ref #1A1A1A)
-  tabBarLabel: '#7A6A4E',  // inactive gold-brown
-  borderGold: 'rgba(212,175,55,0.2)', // black-gold hairline seams
+  background: '#0D0D12',   // near-black blue-charcoal shell
+  surface: '#1A1A23',      // dark card
+  surfaceLight: '#26262F', // elevated surface
+  gold: '#FF4D2E',         // flame accent (primary)
+  goldLight: '#FF9A3C',    // gradient top (orange)
+  goldDeep: '#E62E5C',     // gradient bottom (pink-red)
+  text: '#FFFFFF',         // pure white
+  textMuted: '#8E8E99',    // muted gray
+  tabBarBg: '#131318',     // tab bar background
+  tabBarLabel: '#5E5E6B',  // inactive tab label
+  borderGold: 'rgba(255,77,46,0.22)', // accent hairline seams
   danger: '#C0392B',
-  rating: ['#F5D98B', '#D4AF37', '#9C7A1E'], // gold gradient stops
+  rating: ['#FF9A3C', '#FF4D2E', '#E62E5C'], // flame gradient stops
 };
 
 export const spacing = {
@@ -30,19 +30,16 @@ export const radii = {
   pill: 999,
 };
 
-// Playfair Display loaded via @expo-google-fonts/playfair-display
+// Poppins loaded via @expo-google-fonts/poppins
 export const fonts = {
   display: {
-    fontFamily: 'PlayfairDisplay_700Bold_Italic',
-    fontStyle: 'italic',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   displayMedium: {
-    fontFamily: 'PlayfairDisplay_600SemiBold_Italic',
-    fontStyle: 'italic',
+    fontFamily: 'Poppins_700Bold',
   },
   displayRegular: {
-    fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    fontStyle: 'italic',
+    fontFamily: 'Poppins_600SemiBold',
   },
   ui: {}, // system sans (default RN font)
   uiBold: { fontWeight: '700' },
@@ -58,7 +55,7 @@ export const navTheme = {
     background: colors.background,
     card: colors.background,
     text: colors.text,
-    border: '#2A211A',
+    border: '#1A1A23',
     notification: colors.gold,
   },
 };

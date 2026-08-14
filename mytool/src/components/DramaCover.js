@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   frameOuter: {
     ...StyleSheet.absoluteFillObject,
     borderWidth: 1,
-    borderColor: 'rgba(212,175,55,0.45)',
+    borderColor: 'rgba(255,77,46,0.45)',
   },
   frameInner: {
     position: 'absolute',
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     right: 4,
     bottom: 4,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(212,175,55,0.25)',
+    borderColor: 'rgba(255,77,46,0.25)',
   },
   topRow: { position: 'absolute', top: 9, left: 9, right: 9 },
   topText: { fontWeight: '700', letterSpacing: 1.4 },

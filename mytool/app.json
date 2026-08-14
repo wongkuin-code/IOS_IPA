@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "EvaReel",
-    "slug": "duanju-novel",
-    "scheme": "evareel",
+    "name": "EvaShort",
+    "slug": "evashort",
+    "scheme": "evashort",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

@@ -5,10 +5,10 @@ import { useTheme } from '../theme/ThemeContext';
 import DramaCover from './DramaCover';
 import CoverImage from './CoverImage';
 
-export default function PosterCard({ drama, locked, onPress }) {
+export default function PosterCard({ drama, locked, onPress, width, style }) {
   const { colors, radii } = useTheme();
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={styles.wrap}>
+    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={[styles.wrap, width ? { width } : null, style]}>
       <View style={[styles.poster, { borderRadius: radii.card }]}>
         <CoverImage
           asset={drama.asset}
@@ -29,11 +29,18 @@ export default function PosterCard({ drama, locked, onPress }) {
             <Text style={styles.lockText}>🔒</Text>
           </View>
         ) : null}
+        {typeof drama.progress === 'number' ? (
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${drama.progress}%` }]} />
+          </View>
+        ) : null}
       </View>
       <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
         {drama.title}
       </Text>
-      <Text style={[styles.ep, { color: colors.textMuted }]}>EP.{drama.episodes}</Text>
+      <Text style={[styles.ep, { color: colors.textMuted }]} numberOfLines={1}>
+        {drama.episodeLabel || `EP.${drama.episodes}`}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -44,7 +51,7 @@ const styles = StyleSheet.create({
     aspectRatio: 2 / 3,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(212,175,55,0.35)',
+    borderColor: 'rgba(255,77,46,0.35)',
   },
   image: { ...StyleSheet.absoluteFillObject, width: undefined, height: undefined },
   topHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 2 },
@@ -56,7 +63,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 999,
   },
-  badgeText: { color: '#1A1410', fontSize: 11, fontWeight: '800' },
+  badgeText: { color: '#200B06', fontSize: 11, fontWeight: '800' },
   lock: {
     position: 'absolute',
     bottom: 6,
@@ -67,6 +74,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   lockText: { fontSize: 11 },
+  progressTrack: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 3, backgroundColor: 'rgba(0,0,0,0.5)' },
+  progressFill: { height: 3, backgroundColor: '#FF4D2E' },
   title: { fontSize: 13, fontWeight: '600', marginTop: 8, lineHeight: 17 },
   ep: { fontSize: 11, marginTop: 4 },
 });
