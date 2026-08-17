@@ -2,7 +2,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 const keyId = process.argv[2];
-const issuerId = process.argv[3] || 'ac9f4281-658a-4b96-8a40-cebf371c26de';
+const issuerId = process.argv[3] || '761a52ec-7c5c-4071-a034-4c791745f91d';
 const keyPath = `../keys/AuthKey_${keyId}.p8`;
 
 const privateKey = fs.readFileSync(keyPath, 'utf8');
@@ -15,7 +15,7 @@ function derToRawJose(signatureDer) {
     const seq = read(2)[1];
     const len = seq & 0x80 ? read(seq & 0x7f).reduce((a, b) => (a << 8) | b, 0) : seq;
     let data = read(len);
-    if (data[0] & 0x80) data = data.subarray(1);
+    if (data[0] === 0 && data.length > 32) data = data.subarray(1);
     const buf = Buffer.alloc(32);
     data.copy(buf, 32 - data.length);
     return buf;
@@ -42,8 +42,8 @@ async function main() {
   if (res.ok) {
     const apps = data.data || [];
     console.log('Total apps visible to key:', apps.length);
-    const target = apps.find(a => a.attributes.bundleId === 'com.mytool.booksreader');
-    console.log('com.mytool.booksreader visible:', target ? `YES (id=${target.id})` : 'NO');
+    const target = apps.find(a => a.attributes.bundleId === 'com.mycompany.EvaShort');
+    console.log('com.mycompany.EvaShort visible:', target ? `YES (id=${target.id})` : 'NO');
     apps.forEach(a => console.log(' -', a.id, a.attributes.bundleId, a.attributes.name));
   } else {
     console.log(JSON.stringify(data, null, 2));

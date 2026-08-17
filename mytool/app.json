@@ -12,14 +12,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mytool.booksreader",
+      "bundleIdentifier": "com.mycompany.EvaShort",
       "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.mytool.booksreader",
+      "package": "com.mycompany.EvaShort",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -36,7 +36,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "a49f46cd-54e1-4dbd-b1f6-fc8c615cb4c3"
+        "projectId": "5bddc9e6-ae65-414c-a50e-a7102a0680f6"
       }
     },
     "owner": "wongkuins-team"

@@ -27,10 +27,10 @@
   "submit": {
     "production": {
       "ios": {
-        "ascAppId": "6799368982",
-        "ascApiKeyId": "74AU6WRUF9",
-        "ascApiKeyIssuerId": "ac9f4281-658a-4b96-8a40-cebf371c26de",
-        "ascApiKeyPath": "../keys/AuthKey_74AU6WRUF9.p8"
+        "ascAppId": "6802204407",
+        "ascApiKeyId": "6XTPZ5CBDW",
+        "ascApiKeyIssuerId": "761a52ec-7c5c-4071-a034-4c791745f91d",
+        "ascApiKeyPath": "../keys/AuthKey_6XTPZ5CBDW.p8"
       }
     }
   }

@@ -83,7 +83,7 @@ PORT=3000 node server.js
 - `GET /health` — 存活检查
 - `POST /api/verify-iap` — 请求体 `{ "jws": "<交易JWS>", "platform": "ios" }`
   - 验签 + 证书链校验（锚定 server/certs 的 Apple 根证书）
-  - 校验 `bundleId=com.mytool.booksreader`、`productId=vip.unlock.all`、类型 `Type.NON_CONSUMABLE`（Apple 枚举值 = `"Non-Consumable"`，带连字符）
+  - 校验 `bundleId=com.mycompany.EvaShort`、`productId=2.99`、类型 `Type.NON_CONSUMABLE`（Apple 枚举值 = `"Non-Consumable"`，带连字符）
   - `transactionId` 防重放（写入 store.json）
   - 返回 `{ ok: true, productId, transactionId, alreadyGranted }`
 
@@ -98,9 +98,9 @@ PORT=3000 node server.js
 |---|---|---|
 | PORT | 3000 | 监听端口（nginx 反代到它） |
 | APP_ENV | SANDBOX | SANDBOX / PRODUCTION |
-| APPLE_APP_ID | 空 | PRODUCTION 时必填（ASC App ID：6799368982） |
-| BUNDLE_ID | com.mytool.booksreader | App 的 bundle id |
-| ALLOWED_PRODUCT_IDS | vip.unlock.all | 允许的商品 ID，逗号分隔 |
+| APPLE_APP_ID | 空 | PRODUCTION 时必填（ASC App ID：6802204407） |
+| BUNDLE_ID | com.mycompany.EvaShort | App 的 bundle id |
+| ALLOWED_PRODUCT_IDS | 2.99 | 允许的商品 ID，逗号分隔 |
 | STORE_FILE | ./store.json | IAP 交易记录文件路径 |
 | USERS_FILE | ./users.json | 用户数据文件路径 |
 | GUEST_DAILY_LIMIT | 3 | 游客每日免费观看集数上限 |

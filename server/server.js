@@ -6,9 +6,9 @@ const crypto = require('crypto');
 const { SignedDataVerifier, Environment, Type } = require('@apple/app-store-server-library');
 
 const PORT = process.env.PORT || 3000;
-const BUNDLE_ID = process.env.BUNDLE_ID || 'com.mytool.booksreader';
+const BUNDLE_ID = process.env.BUNDLE_ID || 'com.mycompany.EvaShort';
 const ALLOWED_PRODUCT_IDS = new Set(
-  (process.env.ALLOWED_PRODUCT_IDS || 'vip.unlock.all').split(',').map((s) => s.trim()).filter(Boolean)
+  (process.env.ALLOWED_PRODUCT_IDS || '2.99').split(',').map((s) => s.trim()).filter(Boolean)
 );
 const APP_ENV = process.env.APP_ENV || 'SANDBOX';
 const APPLE_APP_ID = process.env.APPLE_APP_ID || undefined;
