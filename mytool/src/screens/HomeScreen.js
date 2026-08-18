@@ -1,5 +1,5 @@
 // ── Home: vertical paging feed (ReelShort-style) — full-bleed card per page ──
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -21,8 +21,9 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { width, height } = useWindowDimensions();
   const { unlocked, setPaywallVisible } = useUnlock();
+  const [listHeight, setListHeight] = useState(null);
 
-  const pageHeight = Math.max(300, height - insets.top - HEADER_PADDING);
+  const pageHeight = listHeight || Math.max(300, height - insets.top - HEADER_PADDING);
 
   const feed = useMemo(buildFeed, []);
 
@@ -96,6 +97,7 @@ export default function HomeScreen() {
         removeClippedSubviews={false}
         initialNumToRender={3}
         windowSize={5}
+        onLayout={(e) => setListHeight(e.nativeEvent.layout.height)}
       />
     </View>
   );
