@@ -1,7 +1,10 @@
 const fs = require('fs');
 const crypto = require('crypto');
-const keyId = 'YS9XQVB4SS';
-const issuerId = 'ac9f4281-658a-4b96-8a40-cebf371c26de';
+const keyId = process.argv[2] || 'YS9XQVB4SS';
+const issuerId = process.argv[3] || 'ac9f4281-658a-4b96-8a40-cebf371c26de';
+const buildId = process.argv[4];
+const groupId = process.argv[5] || '12a65f74-9141-4b96-b57a-c2182f69405d';
+if (!buildId) { console.error('usage: node await_asc_valid_add_tf.js [keyId] [issuerId] <buildId> [groupId]'); process.exit(1); }
 const privateKey = fs.readFileSync('../keys/AuthKey_' + keyId + '.p8');
 const now = Math.floor(Date.now() / 1000);
 function d2r(sig) { let o = 0; const r = (n) => { const b = sig.subarray(o, o + n); o += n; return b; };
@@ -12,16 +15,16 @@ const p = Buffer.from(JSON.stringify({ iss: issuerId, iat: now, exp: now + 1200,
 const t = h + '.' + p + '.' + d2r(crypto.sign('sha256', Buffer.from(h + '.' + p), privateKey)).toString('base64url');
 
 async function getState() {
-  const res = await fetch('https://api.appstoreconnect.apple.com/v1/builds/76c9cd50-1b49-4764-a8bf-b1d513034b4f', { headers: { Authorization: 'Bearer ' + t } });
+  const res = await fetch('https://api.appstoreconnect.apple.com/v1/builds/' + buildId, { headers: { Authorization: 'Bearer ' + t } });
   const d = await res.json();
   return d.data.attributes.processingState;
 }
 
 async function addToGroup() {
-  const res = await fetch('https://api.appstoreconnect.apple.com/v1/builds/76c9cd50-1b49-4764-a8bf-b1d513034b4f/relationships/betaGroups', {
+  const res = await fetch('https://api.appstoreconnect.apple.com/v1/builds/' + buildId + '/relationships/betaGroups', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ data: [{ type: 'betaGroups', id: '12a65f74-9141-4b96-b57a-c2182f69405d' }] }),
+    body: JSON.stringify({ data: [{ type: 'betaGroups', id: groupId }] }),
   });
   console.log('add to TestFlight group:', res.status, await res.text());
 }

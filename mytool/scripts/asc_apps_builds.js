@@ -2,7 +2,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 const keyId = process.argv[2] || 'YS9XQVB4SS';
-const issuerId = 'ac9f4281-658a-4b96-8a40-cebf371c26de';
+const issuerId = process.argv[3] || 'ac9f4281-658a-4b96-8a40-cebf371c26de';
 const keyPath = `../keys/AuthKey_${keyId}.p8`;
 
 const privateKey = fs.readFileSync(keyPath, 'utf8');
@@ -39,7 +39,7 @@ async function main() {
   console.log('--- Apps visible to key ---');
   (ad.data || []).forEach(a => console.log(a.id, a.attributes.bundleId, a.attributes.name));
 
-  const appId = process.argv[3];
+  const appId = process.argv[4];
   if (appId) {
     const bs = await fetch(`https://api.appstoreconnect.apple.com/v1/apps/${appId}/builds?limit=20`, { headers: { Authorization: `Bearer ${token}` } });
     const bd = await bs.json();

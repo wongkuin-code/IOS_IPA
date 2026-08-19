@@ -51,6 +51,7 @@ mytool/scripts/serve_web.log
 mytool/build/
 mytool/build_eas.log
 mytool/submit_eas.log
+mytool/scripts/*.log
 .workbuddy/
 
 # local editor config
