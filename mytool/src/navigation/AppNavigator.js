@@ -1,9 +1,10 @@
 // ── Root navigation: auth gate + tab bar + pushed screens ──
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { navTheme } from '../theme/ThemeContext';
+import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../auth/AuthContext';
 import BottomTabBar from '../components/BottomTabBar';
 import AuthScreen from '../screens/AuthScreen';
@@ -16,7 +17,11 @@ import PlayerScreen from '../screens/PlayerScreen';
 import MoreListScreen from '../screens/MoreListScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 
-const Stack = createNativeStackNavigator();
+// Web 上 native-stack 的转场依赖原生驱动，在浏览器里无原生动画，旧屏靠 transform 隐藏会失效 → 切页残留 item。
+// 故 Web 改用 @react-navigation/stack 的 JS 栈（标准 Animated，正确挂载/卸载/隐藏），原生端仍用 native-stack 保留原生转场。
+const NativeStack = createNativeStackNavigator();
+const JsStack = createStackNavigator();
+const Stack = Platform.OS === 'web' ? JsStack : NativeStack;
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
@@ -34,19 +39,26 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
+  const { colors, navTheme } = useTheme();
   const { status } = useAuth();
 
   if (status === 'loading') {
     return (
-      <View style={{ flex: 1, backgroundColor: '#0D0B09', alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color="#FF4D2E" />
+      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={colors.gold} />
       </View>
     );
   }
 
   return (
     <NavigationContainer theme={navTheme}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          // Web 端 JS 栈关闭转场动画，避免 Animated 转场在浏览器里产生残留/闪烁
+          ...(Platform.OS === 'web' ? { animationEnabled: false } : {}),
+        }}
+      >
         {status === 'signedOut' ? (
           <Stack.Screen name="Auth" component={AuthScreen} />
         ) : (

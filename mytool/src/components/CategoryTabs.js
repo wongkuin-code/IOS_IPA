@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   pillInactive: {
     borderWidth: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: 'transparent',
   },
   label: { fontSize: 14, fontWeight: '700' },
   activeLabel: { color: '#200B06' },

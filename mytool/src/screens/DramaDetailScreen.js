@@ -1,6 +1,7 @@
 // ── Drama detail: hero + synopsis + tags + episodes + similar ──
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
@@ -94,7 +95,7 @@ export default function DramaDetailScreen() {
             </Text>
           </View>
           <TouchableOpacity onPress={onSave} style={[styles.saveBtn, { backgroundColor: colors.surface, borderRadius: radii.pill }]}>
-            <Text style={{ fontSize: 18 }}>{saved ? '🔖' : '📑'}</Text>
+            <Ionicons name={saved ? 'heart' : 'heart-outline'} size={18} color={saved ? colors.gold : colors.textMuted} />
             <Text style={[styles.saveText, { color: saved ? colors.gold : colors.textMuted }]}>{saved ? 'Saved' : 'Save'}</Text>
           </TouchableOpacity>
         </View>

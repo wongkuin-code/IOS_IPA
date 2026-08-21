@@ -1,4 +1,4 @@
-// ── Custom bottom tab bar: Ionicons, accent active, dark bar ──
+// ── Custom bottom tab bar: Ionicons, accent active, theme-aware ──
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,8 +6,8 @@ import { useTheme } from '../theme/ThemeContext';
 
 const ITEMS = [
   { key: 'Home', label: 'For You', icon: 'home', iconActive: 'home' },
-  { key: 'Discover', label: 'Search', icon: 'search', iconActive: 'search' },
-  { key: 'Library', label: 'My List', icon: 'bookmark-outline', iconActive: 'bookmark' },
+  { key: 'Discover', label: 'Discover', icon: 'search', iconActive: 'search' },
+  { key: 'Library', label: 'Saved', icon: 'heart-outline', iconActive: 'heart' },
   { key: 'Profile', label: 'Me', icon: 'person-outline', iconActive: 'person' },
 ];
 
@@ -15,7 +15,7 @@ export default function BottomTabBar({ state, navigation }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { backgroundColor: colors.tabBarBg, paddingBottom: insets.bottom || 8 }]}>
+    <View style={[styles.bar, { backgroundColor: colors.tabBarBg, borderTopColor: colors.border, paddingBottom: insets.bottom || 8 }]}>
       {state.routes.map((route, index) => {
         const item = ITEMS.find((i) => i.key === route.name) || ITEMS[index];
         const focused = state.index === index;
@@ -26,7 +26,7 @@ export default function BottomTabBar({ state, navigation }) {
           }
         };
         return (
-          <TouchableOpacity key={route.key} onPress={onPress} style={styles.item}>
+          <TouchableOpacity key={route.key} onPress={onPress} style={styles.item} activeOpacity={0.7}>
             <View style={[styles.iconWrap, focused && { backgroundColor: 'rgba(255,77,46,0.14)' }]}>
               <Ionicons
                 name={focused ? item.iconActive : item.icon}
@@ -47,11 +47,10 @@ export default function BottomTabBar({ state, navigation }) {
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    paddingTop: 6,
+    paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.08)',
   },
   item: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  iconWrap: { width: 34, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 10, fontWeight: '700', marginTop: 2 },
+  iconWrap: { width: 36, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  label: { fontSize: 10, fontWeight: '700', marginTop: 3 },
 });

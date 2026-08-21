@@ -3,7 +3,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const VIP_PRODUCT_ID = '2.99';
-const STORAGE_KEY = 'eva_reel_vip_unlocked';
+const STORAGE_KEY = 'evashort_vip_unlocked';
 const VERIFY_API = 'https://api.haoweimedia.cn/api/verify-iap';
 
 export async function loadUnlockState() {

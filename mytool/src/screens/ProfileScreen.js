@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Switch, Modal, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
@@ -11,7 +12,7 @@ import StatusBarDark from '../components/StatusBarDark';
 import { loadSaved, loadHistory } from '../data/libraryStore';
 
 export default function ProfileScreen() {
-  const { colors, spacing, fonts } = useTheme();
+  const { colors, spacing, fonts, mode, setMode } = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { unlocked, setPaywallVisible, restoreVip } = useUnlock();
@@ -48,12 +49,40 @@ export default function ProfileScreen() {
     setDeletePw('');
   };
 
-  const Row = ({ icon, label, onPress, right, danger }) => (
+  const Row = ({ icon, iconName, label, onPress, right, danger }) => (
     <TouchableOpacity onPress={onPress} style={[styles.row, { backgroundColor: colors.surface }]}>
-      <Text style={styles.rowIcon}>{icon}</Text>
+      {iconName ? (
+        <Ionicons name={iconName} size={18} color={danger ? colors.danger : colors.gold} style={styles.rowIconBox} />
+      ) : (
+        <Text style={styles.rowIcon}>{icon}</Text>
+      )}
       <Text style={[styles.rowLabel, { color: danger ? colors.danger : colors.text }]}>{label}</Text>
       {right || <Text style={{ color: colors.textMuted, fontSize: 14 }}>›</Text>}
     </TouchableOpacity>
+  );
+
+  // 浅色 / 深色 外观切换分段控件
+  const AppearanceToggle = () => (
+    <View style={styles.seg}>
+      {['Light', 'Dark'].map((m) => {
+        const active = mode === m.toLowerCase();
+        return (
+          <TouchableOpacity
+            key={m}
+            onPress={() => setMode(m.toLowerCase())}
+            style={[styles.segBtn, active && { backgroundColor: colors.gold }]}
+          >
+            <Ionicons
+              name={m === 'Light' ? 'sunny-outline' : 'moon-outline'}
+              size={14}
+              color={active ? '#200B06' : colors.textMuted}
+              style={{ marginRight: 5 }}
+            />
+            <Text style={[styles.segText, { color: active ? '#200B06' : colors.textMuted }]}>{m}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
   );
 
   return (
@@ -107,10 +136,11 @@ export default function ProfileScreen() {
 
       <View style={[styles.list, { paddingHorizontal: spacing.md }]}>
         <Row icon="✏️" label="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
-        <Row icon="🔖" label="My Library" onPress={() => navigation.navigate('Library')} />
+        <Row iconName="heart" label="My Library" onPress={() => navigation.navigate('Library')} />
         {isGuest ? (
           <Row icon="⭐" label="Upgrade to Full Account" onPress={() => navigation.navigate('EditProfile')} />
         ) : null}
+        <Row icon="🌗" label="Appearance" right={<AppearanceToggle />} />
         <Row icon="♻️" label="Restore Purchase" onPress={restoreVip} />
         <Row
           icon="🔔"
@@ -201,7 +231,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,77,46,0.12)',
   },
   rowIcon: { fontSize: 16, marginRight: 12 },
+  rowIconBox: { marginRight: 12, width: 18, textAlign: 'center' },
   rowLabel: { flex: 1, fontSize: 15, fontWeight: '600' },
+  seg: { flexDirection: 'row', backgroundColor: 'rgba(255,77,46,0.10)', borderRadius: 999, padding: 3 },
+  segBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
+  segText: { fontSize: 13, fontWeight: '700' },
   deleteMask: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', alignItems: 'center', justifyContent: 'center', padding: 24 },
   deleteCard: { width: '100%', borderRadius: 20, padding: 24, borderWidth: 1 },
   deleteTitle: { fontSize: 20, fontWeight: '800' },

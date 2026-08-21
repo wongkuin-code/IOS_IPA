@@ -133,7 +133,7 @@ function FeedCard({ drama, width, height, locked, onPlay, onEp, onDetail }) {
         <Text style={[styles.title, fonts.display, { color: colors.text }]} numberOfLines={2}>
           {drama.title}
         </Text>
-        <Text style={[styles.subtitle, fonts.displayMedium, { color: '#C9C9D2' }]} numberOfLines={1}>
+        <Text style={[styles.subtitle, fonts.displayMedium, { color: colors.textMuted }]} numberOfLines={1}>
           {drama.subtitle}
         </Text>
         <Text style={[styles.meta, { color: colors.textMuted }]} numberOfLines={1}>
@@ -159,7 +159,7 @@ function FeedCard({ drama, width, height, locked, onPlay, onEp, onDetail }) {
               <Text style={styles.playText}>{locked ? '🔒 Watch' : '▶ Play'}</Text>
             </LinearGradient>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onDetail} style={[styles.detailBtn, { borderColor: 'rgba(255,255,255,0.28)' }]} activeOpacity={0.85}>
+          <TouchableOpacity onPress={onDetail} style={[styles.detailBtn, { borderColor: colors.border }]} activeOpacity={0.85}>
             <Text style={[styles.detailText, { color: colors.text }]}>Details</Text>
           </TouchableOpacity>
         </View>

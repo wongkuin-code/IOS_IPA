@@ -1,12 +1,12 @@
-// ── Discover: search input + hot chips + status filter + category tabs + grid ──
+// ── Discover: search + categories + trending/recent chips + status filter + grid ──
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
-import { Ionicons } from '@expo/vector-icons';
 import StatusBarDark from '../components/StatusBarDark';
 import CategoryTabs from '../components/CategoryTabs';
 import DramaGrid from '../components/DramaGrid';
@@ -100,6 +100,11 @@ export default function DiscoverScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + spacing.sm }]}>
       <StatusBarDark />
+      <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
+        <Text style={[styles.pageTitle, { color: colors.text }]}>Discover</Text>
+        <Text style={[styles.pageSub, { color: colors.textMuted }]}>Search dramas, genres & more</Text>
+      </View>
+
       <View style={[styles.searchWrap, { backgroundColor: colors.surface, borderColor: colors.borderGold }]}>
         <Ionicons name="search" size={17} color={colors.textMuted} />
         <TextInput
@@ -115,42 +120,60 @@ export default function DiscoverScreen() {
           placeholderTextColor={colors.textMuted}
           style={[styles.search, { color: colors.text }]}
         />
-      </View>
-      <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>🔥 Trending Searches</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips} contentContainerStyle={{ paddingHorizontal: spacing.md }}>
-        {hotSearches.map((s, idx) => (
-          <TouchableOpacity
-            key={s}
-            onPress={() => onSearch(s)}
-            style={[styles.chip, { backgroundColor: colors.surface, borderColor: 'rgba(255,77,46,0.4)' }]}
-          >
-            <Text style={[styles.chipRank, { color: idx < 3 ? colors.gold : colors.textMuted }]}>
-              {String(idx + 1).padStart(2, '0')}
-            </Text>
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>#{s}</Text>
+        {keyword.length > 0 ? (
+          <TouchableOpacity onPress={() => { setKeyword(''); setPage(1); applyFilter('', activeTab, status); }} hitSlop={8}>
+            <Ionicons name="close-circle" size={18} color={colors.textMuted} />
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        ) : null}
+      </View>
+
+      <View style={[styles.blockLabel, { paddingHorizontal: spacing.md }]}>
+        <Text style={[styles.blockTitle, { color: colors.text }]}>Categories</Text>
+      </View>
+      <View style={{ paddingHorizontal: spacing.md, marginVertical: spacing.sm }}>
+        <CategoryTabs tabs={categories} active={activeTab} onChange={(t) => { setActiveTab(t); setPage(1); if (t !== 'More') applyFilter(keyword, t, status); }} />
+      </View>
+
+      <View style={[styles.card, { backgroundColor: colors.surface, marginHorizontal: spacing.md, borderColor: colors.borderGold }]}>
+        <View style={styles.cardHead}>
+          <Ionicons name="flame" size={16} color={colors.gold} />
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Trending Searches</Text>
+        </View>
+        <View style={styles.chipWrap}>
+          {hotSearches.map((s, idx) => (
+            <TouchableOpacity
+              key={s}
+              onPress={() => onSearch(s)}
+              style={[styles.chip, { backgroundColor: colors.background, borderColor: 'rgba(255,77,46,0.35)' }]}
+            >
+              <Text style={[styles.chipRank, { color: idx < 3 ? colors.gold : colors.textMuted }]}>
+                {String(idx + 1).padStart(2, '0')}
+              </Text>
+              <Text style={{ color: colors.text, fontSize: 13, fontWeight: '600' }}>#{s}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
       {history.length > 0 && !keyword ? (
-        <View style={styles.historyBlock}>
-          <View style={styles.historyRow}>
-            <Text style={[styles.historyTitle, { color: colors.textMuted }]}>Recent</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, marginHorizontal: spacing.md, marginTop: spacing.md, borderColor: colors.borderGold }]}>
+          <View style={styles.cardHead}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Recent</Text>
             <TouchableOpacity onPress={clearHistory} hitSlop={8}>
-              <Text style={{ color: colors.textMuted, fontSize: 12 }}>Clear</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '700' }}>Clear</Text>
             </TouchableOpacity>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.md }}>
+          <View style={styles.chipWrap}>
             {history.map((h) => (
-              <TouchableOpacity key={h} onPress={() => onSearch(h)} style={[styles.historyChip, { backgroundColor: colors.surface }]}>
-                <Text style={{ color: colors.textMuted, fontSize: 13 }}>🔍 {h}</Text>
+              <TouchableOpacity key={h} onPress={() => onSearch(h)} style={[styles.chip, { backgroundColor: colors.background }]}>
+                <Text style={{ color: colors.textMuted, fontSize: 13 }}>{h}</Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         </View>
       ) : null}
 
-      <View style={[styles.statusRow, { paddingHorizontal: spacing.md }]}>
+      <View style={[styles.statusRow, { paddingHorizontal: spacing.md, marginTop: spacing.md }]}>
         {STATUS_FILTERS.map((s) => (
           <TouchableOpacity
             key={s}
@@ -159,25 +182,27 @@ export default function DiscoverScreen() {
               setPage(1);
               applyFilter(keyword, activeTab, s);
             }}
-            style={[styles.statusChip, { backgroundColor: colors.surface }, status === s && { backgroundColor: colors.gold }]}
+            style={[styles.statusChip, { backgroundColor: colors.surface, borderColor: colors.borderGold }, status === s && { backgroundColor: colors.gold, borderColor: colors.gold }]}
           >
             <Text style={{ color: status === s ? '#200B06' : colors.textMuted, fontSize: 12, fontWeight: '700' }}>{s}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <View style={{ paddingHorizontal: spacing.md, marginVertical: spacing.sm }}>
-        <CategoryTabs tabs={categories} active={activeTab} onChange={(t) => { setActiveTab(t); setPage(1); if (t !== 'More') applyFilter(keyword, t, status); }} />
+      <View style={{ marginTop: spacing.md }}>
+        <DramaGrid data={grid} lockedIds={lockedIds} onPressItem={openDetail} onEndReached={loadMore} />
       </View>
-      <DramaGrid data={grid} lockedIds={lockedIds} onPressItem={openDetail} onEndReached={loadMore} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  header: { marginTop: 4, marginBottom: 12 },
+  pageTitle: { fontSize: 26, fontWeight: '800' },
+  pageSub: { fontSize: 13, marginTop: 2 },
   searchWrap: {
-    marginHorizontal: 18,
+    marginHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -191,14 +216,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     outlineStyle: 'none',
   },
-  sectionTitle: { fontSize: 13, fontWeight: '800', marginTop: 16, marginHorizontal: 18, marginBottom: 10, letterSpacing: 0.5 },
-  chips: { flexGrow: 0 },
-  chip: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, marginRight: 10 },
+  blockLabel: { marginTop: 18, marginBottom: 2 },
+  blockTitle: { fontSize: 15, fontWeight: '800' },
+  card: { marginTop: 12, borderRadius: 16, padding: 14, borderWidth: 1 },
+  cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  cardTitle: { fontSize: 15, fontWeight: '800', marginLeft: 6 },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap' },
+  chip: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8, marginBottom: 8 },
   chipRank: { fontSize: 12, fontWeight: '800', marginRight: 6 },
-  historyBlock: { marginTop: 12 },
-  historyRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 18, marginBottom: 8 },
-  historyTitle: { fontSize: 12, fontWeight: '700' },
-  historyChip: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6, marginRight: 8 },
-  statusRow: { flexDirection: 'row', marginTop: 12 },
-  statusChip: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8 },
+  statusRow: { flexDirection: 'row' },
+  statusChip: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8, marginRight: 8, borderWidth: 1 },
 });
