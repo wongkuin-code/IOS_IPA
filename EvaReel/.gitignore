@@ -1,0 +1,77 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# Apple keys
+keys/
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+server/node_modules/
+server/store.json
+server/.env
+
+# work artifacts
+mytool/dist/
+mytool/dist-web.zip
+mytool/web.log
+mytool/scripts/serve_web.log
+mytool/build/
+mytool/build_eas.log
+mytool/submit_eas.log
+.workbuddy/
+
+# local editor config
+.claude/
+**/.claude/
+
+# build artifacts
+*.ipa
+
+# temp / generated output
+_export_test/
+_export_test2/
+_web_preview/
+promo-png/
+promo-png$out/
+ref-split/
+tmp-ref.jpg
+ref.png
+info.png
+assets/Image_to_image_edit_of_the_sou_2026-08-12T11-35-20.png

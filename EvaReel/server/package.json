@@ -1,0 +1,14 @@
+{
+  "name": "evareel-iap-verify",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EvaReel IAP server-side verification (StoreKit 2 JWS)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@apple/app-store-server-library": "^2.0.0",
+    "express": "^4.21.2"
+  }
+}

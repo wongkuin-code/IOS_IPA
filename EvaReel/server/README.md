@@ -1,0 +1,85 @@
+# EvaReel IAP 验证服务器
+
+StoreKit 2 交易 JWS 服务器端验证（Apple 官方 `@apple/app-store-server-library`）。
+
+## 部署到香港服务器（43.129.30.172 · OpenCloudOS 9 · api.haoweimedia.cn）
+
+> 2026-08-12 已从上海服务器（124.221.168.96，备案受限）迁到香港节点，直接用标准 443，无需 8443 过渡方案。
+> 上海机上的旧 8443 方案文档已移入 `server/deploy/archive/`。
+
+本地（Windows）把修复后的代码上传：
+
+```powershell
+# 1. 把 server/ 目录(exclude node_modules)完整上传到香港服务器
+scp -r server root@43.129.30.172:/opt/evareel-server/
+```
+
+服务器上（root）：
+
+```bash
+cd /opt/evareel-server
+npm install --omit=dev
+pm2 restart evareel-verify
+```
+
+之后确认（自检 /health）：
+
+```bash
+curl https://api.haoweimedia.cn/health
+# 期望: {"ok":true,"app":"evareel-iap-verify","env":"Sandbox"}
+pm2 logs evareel-verify
+```
+
+首次全新部署用一键脚本（Node 20 + pm2 常驻 + nginx 反代 + certbot HTTPS + promo 页面托管）：
+
+```bash
+bash server/deploy/deploy-on-server.sh
+```
+
+域名现状（DNS 均解析到 43.129.30.172）：
+
+- `api.haoweimedia.cn` → 443 (Let's Encrypt) → 反代 `127.0.0.1:3000`（IAP 验签接口）
+- `www.haoweimedia.cn` / `haoweimedia.cn` → 80 静态落地页（`/var/www/haoweimedia`）
+- 香港服务器无 ICP 备案限制，80/443 入站正常，无需 8443 非标端口
+
+## 本地运行
+
+```bash
+npm install
+PORT=3000 node server.js
+# 或: npm start
+```
+
+## 验证接口
+
+- `GET /health` — 存活检查
+- `POST /api/verify-iap` — 请求体 `{ "jws": "<交易JWS>", "platform": "ios" }`
+  - 验签 + 证书链校验（锚定 server/certs 的 Apple 根证书）
+  - 校验 `bundleId=com.mytool.booksreader`、`productId=vip.unlock.video`、类型 `Type.NON_CONSUMABLE`（Apple 枚举值 = `"Non-Consumable"`，带连字符）
+  - `transactionId` 防重放（写入 store.json）
+  - 返回 `{ ok: true, productId, transactionId, alreadyGranted }`
+
+## 客户端接入
+
+`mytool/src/iap/iap.js` 里已指向独立路径（与 EvaShort 的 `/api/verify-iap` 隔离，避免互相覆盖）：
+`https://api.haoweimedia.cn/evareel/api/verify-iap`
+
+> 部署说明：香港服务器 `api.haoweimedia.cn` 上 `/api/verify-iap` 由 EvaShort 服务（:3000）占用。
+> EvaReel 独立部署到 :3001 + nginx `/evareel/` 前缀，见 `deploy/deploy-evareel-v2.sh`。
+
+## 环境变量
+
+| 变量 | 默认 | 说明 |
+|---|---|---|
+| PORT | 3000 | 监听端口（nginx 反代到它） |
+| APP_ENV | SANDBOX | SANDBOX / PRODUCTION |
+| APPLE_APP_ID | 空 | PRODUCTION 时必填（ASC App ID：6799368982） |
+| BUNDLE_ID | com.mytool.booksreader | App 的 bundle id |
+| ALLOWED_PRODUCT_IDS | vip.unlock.video | 允许的商品 ID，逗号分隔 |
+| STORE_FILE | ./store.json | 交易记录文件路径 |
+
+## 安全注意
+
+- `store.json` 含已使用交易 ID，需定期备份，不要放入公网目录
+- 生产环境务必走 HTTPS（iOS ATS 要求），且 `APP_ENV=PRODUCTION`
+- 服务器端无需 App Store Connect API Key（纯 JWS 验签），但如需查退款/吊销，可后续加 In-App Purchase Key 调 App Store Server API
