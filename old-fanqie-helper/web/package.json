@@ -1,0 +1,21 @@
+{
+  "name": "fanqie-helper-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Web 预览包（Vite + react-native-web），复用原生 App.js / src",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host --port 4173"
+  },
+  "dependencies": {
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native-web": "^0.21.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}

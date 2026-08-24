@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 const keyId = process.argv[2] || 'YS9XQVB4SS';
 const issuerId = 'ac9f4281-658a-4b96-8a40-cebf371c26de';
-const keyPath = `../keys/AuthKey_${keyId}.p8`;
+const keyPath = `../../keys/AuthKey_${keyId}.p8`;
 
 const privateKey = fs.readFileSync(keyPath, 'utf8');
 const now = Math.floor(Date.now() / 1000);

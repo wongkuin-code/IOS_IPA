@@ -9,13 +9,13 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
+# Apple API keys / secrets (DO NOT COMMIT)
+*.p8
 *.p12
-*.key
-*.mobileprovision
+keys/
+server/.env
+server/store.json
+server/users.json
 
 # Metro
 .metro-health-check*

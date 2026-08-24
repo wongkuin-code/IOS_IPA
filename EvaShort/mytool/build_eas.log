@@ -1,0 +1,46 @@
+(node:17188) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:17188) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+
+⚠️ Detected that your app uses Expo Go for development, this is not recommended when building production apps.
+Learn more: https://expo.fyi/why-not-build-expo-go-for-production
+To suppress this warning, set EAS_BUILD_NO_EXPO_GO_WARNING=true.
+
+Resolved "production" environment for the build. Learn more: https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds
+No environment variables with visibility "Plain text" and "Sensitive" found for the "production" environment on EAS.
+
+- Incrementing buildNumber from 27 to 28.
+✔ Incremented buildNumber from 27 to 28.
+
+
+ios.buildNumber field in app config is ignored when version source is set to remote, but this value will still be in the manifest available via expo-constants. It's recommended to remove this value from app config.
+✔ Using remote iOS credentials (Expo server)
+
+Distribution Certificate is not validated for non-interactive builds.
+Skipping Provisioning Profile validation on Apple Servers because we aren't authenticated.
+
+Project Credentials Configuration
+
+Project                   @wongkuins-team/duanju-novel
+Bundle Identifier         com.mytool.booksreader
+                          
+App Store Configuration   
+                          
+Distribution Certificate  
+Serial Number             72D0AB8AB168ECDA152CE709FF40803B
+Expiration Date           Sun, 08 Aug 2027 16:51:50 GMT+0800
+Apple Team                D5VA6Q22PL (Van Nam Nguyen (Individual))
+Updated                   4 days ago
+                          
+Provisioning Profile      
+Developer Portal ID       2GQKWP3SUH
+Status                    active
+Expiration                Sun, 08 Aug 2027 16:51:50 GMT+0800
+Apple Team                D5VA6Q22PL (Van Nam Nguyen (Individual))
+Updated                   2 days ago
+                          
+All credentials are ready to build @wongkuins-team/duanju-novel (com.mytool.booksreader)
+
+
+Compressing project files and uploading to EAS Build. Learn more: https://expo.fyi/eas-build-archive
+- Compressing project files

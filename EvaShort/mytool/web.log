@@ -1,0 +1,407 @@
+
+> mytool@1.0.0 web
+> expo start --web
+
+Starting project at K:\tools\tools\IOS\IOS_IPA\mytool
+🔍 [expo-iap] Config values: horizonAppId=undefined, isHorizonEnabled=false, isFireOsEnabled=false, isVegaEnabled=false, isOnsideEnabled=false
+📦 [expo-iap] Using OpenIAP from CocoaPods
+Starting Metro Bundler
+
+Waiting on http://localhost:8081
+
+An update for expo is available: 57.0.11 → ~57.0.12
+0 other packages may need updating. Run npx expo install --check for details.
+Logs for your project will appear below.
+Web Bundled 32920ms index.js (633 modules)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  WARN  "textShadow*" style props are deprecated. Use "textShadow".
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+Web  WARN  [IAP] expo-iap 原生模块不可用（Expo Go / Web 预览模式）: Cannot find native module 'ExpoIap'
+Web Bundled 312ms index.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  WARN  "textShadow*" style props are deprecated. Use "textShadow".
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+Web  WARN  [IAP] expo-iap 原生模块不可用（Expo Go / Web 预览模式）: Cannot find native module 'ExpoIap'
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)
+Web  ERROR  
+
+Code: DramaGrid.js
+[0m [90m  7 |[39m   [36mconst[39m { colors[33m,[39m spacing } [33m=[39m useTheme()[33m;[39m
+ [90m  8 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m  9 |[39m     [33m<[39m[33mFlatList[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 10 |[39m       data[33m=[39m{data}
+ [90m 11 |[39m       keyExtractor[33m=[39m{(item) [33m=>[39m [33mString[39m(item[33m.[39mid)}
+ [90m 12 |[39m       numColumns[33m=[39m{[35m2[39m}[0m
+Call Stack
+  DramaGrid (src\components\DramaGrid.js:9:5)
+  MoreListScreen (src\screens\MoreListScreen.js:44:7)
+  AppNavigator (src\navigation\AppNavigator.js:35:7)
+  App (App.js:34:11)

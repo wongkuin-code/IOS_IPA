@@ -1,0 +1,9 @@
+[2026-08-12T17:12:35.275Z] GET / -> K:\tools\tools\IOS\IOS_IPA\mytool\dist\index.html
+[2026-08-12T17:13:35.853Z] GET / -> K:\tools\tools\IOS\IOS_IPA\mytool\dist\index.html
+[2026-08-12T17:13:44.101Z] GET / -> K:\tools\tools\IOS\IOS_IPA\mytool\dist\index.html
+[2026-08-12T17:13:44.117Z] GET /_expo/static/js/web/index-6fb5e3273d1627ec9acadcbbcd226520.js -> K:\tools\tools\IOS\IOS_IPA\mytool\dist\_expo\static\js\web\index-6fb5e3273d1627ec9acadcbbcd226520.js
+[2026-08-12T17:13:44.293Z] GET /assets/node_modules/@expo-google-fonts/playfair-display/700Bold_Italic/PlayfairDisplay_700Bold_Italic.7e481ff3b185f4e1fc76932a914c6359.ttf -> K:\tools\tools\IOS\IOS_IPA\mytool\dist\assets\node_modules\@expo-google-fonts\playfair-display\700Bold_Italic\PlayfairDisplay_700Bold_Italic.7e481ff3b185f4e1fc76932a914c6359.ttf
+[2026-08-12T17:13:44.304Z] GET /assets/node_modules/@expo-google-fonts/playfair-display/600SemiBold_Italic/PlayfairDisplay_600SemiBold_Italic.ce09c0228b423716854f1a854c4d7fa5.ttf -> K:\tools\tools\IOS\IOS_IPA\mytool\dist\assets\node_modules\@expo-google-fonts\playfair-display\600SemiBold_Italic\PlayfairDisplay_600SemiBold_Italic.ce09c0228b423716854f1a854c4d7fa5.ttf
+[2026-08-12T17:13:44.310Z] GET /assets/node_modules/@expo-google-fonts/playfair-display/400Regular_Italic/PlayfairDisplay_400Regular_Italic.aaf0735ffb4ce9ce44d4d8992a64b3a8.ttf -> K:\tools\tools\IOS\IOS_IPA\mytool\dist\assets\node_modules\@expo-google-fonts\playfair-display\400Regular_Italic\PlayfairDisplay_400Regular_Italic.aaf0735ffb4ce9ce44d4d8992a64b3a8.ttf
+[2026-08-12T17:13:46.106Z] GET /.well-known/appspecific/com.chrome.devtools.json -> K:\tools\tools\IOS\IOS_IPA\mytool\dist\.well-known\appspecific\com.chrome.devtools.json
+[2026-08-12T17:13:46.107Z]   fallback -> index.html

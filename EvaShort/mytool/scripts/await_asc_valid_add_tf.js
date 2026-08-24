@@ -5,7 +5,7 @@ const issuerId = process.argv[3] || 'ac9f4281-658a-4b96-8a40-cebf371c26de';
 const buildId = process.argv[4];
 const groupId = process.argv[5] || '12a65f74-9141-4b96-b57a-c2182f69405d';
 if (!buildId) { console.error('usage: node await_asc_valid_add_tf.js [keyId] [issuerId] <buildId> [groupId]'); process.exit(1); }
-const privateKey = fs.readFileSync('../keys/AuthKey_' + keyId + '.p8');
+const privateKey = fs.readFileSync('../../keys/AuthKey_' + keyId + '.p8');
 const now = Math.floor(Date.now() / 1000);
 function d2r(sig) { let o = 0; const r = (n) => { const b = sig.subarray(o, o + n); o += n; return b; };
   const ri = () => { const s = r(2)[1]; const l = s & 0x80 ? r(s & 0x7f).reduce((a, b) => (a << 8) | b, 0) : s; let d = r(l); while (d[0] === 0 && d.length > 32) d = d.subarray(1); const b = Buffer.alloc(32); d.copy(b, 32 - d.length); return b; };
