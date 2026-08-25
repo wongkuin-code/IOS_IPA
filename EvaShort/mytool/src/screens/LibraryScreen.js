@@ -8,10 +8,10 @@ import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import DramaGrid from '../components/DramaGrid';
-import { dramas } from '../data/mockDramas';
+import { useCatalogue, getDramas } from '../data/catalogue';
 import { loadSaved, loadHistory, syncLibraryFromServer } from '../data/libraryStore';
 
-const byId = (id) => dramas.find((d) => String(d.id) === String(id).replace(/-r$/, ''));
+const byId = (id) => getDramas().find((d) => String(d.id) === String(id).replace(/-r$/, ''));
 
 export default function LibraryScreen() {
   const { colors, spacing } = useTheme();
@@ -21,6 +21,7 @@ export default function LibraryScreen() {
   const [tab, setTab] = useState('Saved');
   const [saved, setSaved] = useState([]);
   const [history, setHistory] = useState([]);
+  const all = useCatalogue();
 
   const reload = useCallback(() => {
     syncLibraryFromServer().finally(() => {

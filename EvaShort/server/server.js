@@ -203,6 +203,79 @@ if (!fs.existsSync(COVERS_DIR)) {
 }
 app.use('/covers', express.static(COVERS_DIR, { maxAge: '30d', immutable: true }));
 
+// ── Videos: real, owned short-drama content ──
+// Videos are served from VIDEOS_DIR; videoUrl in the JSON is a same-origin
+// relative path (e.g. /videos/1.mp4). For production, point VIDEOS_DIR at a
+// CDN-backed directory or swap videoUrl to absolute CDN URLs.
+const VIDEOS_FILE = process.env.VIDEOS_FILE || path.join(__dirname, 'videos.json');
+// Default: videos live alongside the server under ./videos so a plain deploy
+// (rsync of this folder) is self-contained. Override with VIDEOS_DIR in prod
+// if you prefer a CDN-backed or separate volume.
+const VIDEOS_DIR = process.env.VIDEOS_DIR || path.join(__dirname, 'videos');
+function loadVideos() {
+  try {
+    const j = JSON.parse(fs.readFileSync(VIDEOS_FILE, 'utf8'));
+    return j.videos || [];
+  } catch (e) {
+    console.error('[videos] 读取失败:', VIDEOS_FILE, e && e.message);
+    return [];
+  }
+}
+let VIDEOS = loadVideos();
+if (!fs.existsSync(VIDEOS_DIR)) {
+  console.warn('[videos] 视频目录不存在:', VIDEOS_DIR);
+}
+app.use('/videos', express.static(VIDEOS_DIR, { maxAge: '1h', acceptRanges: true }));
+
+// List view: summary only (no per-episode videoUrl), supports category + pagination.
+app.get('/api/videos', (req, res) => {
+  const { category, page = '1', limit = '50', q } = req.query;
+  let list = VIDEOS;
+  if (q) {
+    const k = String(q).toLowerCase();
+    list = list.filter(
+      (v) =>
+        v.title.toLowerCase().includes(k) ||
+        (v.subtitle || '').toLowerCase().includes(k) ||
+        (v.tags || []).some((t) => t.toLowerCase().includes(k))
+    );
+  } else if (category && category !== 'For You' && category !== 'More') {
+    list = list.filter((v) => (v.category || []).includes(category));
+  }
+  const total = list.length;
+  const p = Math.max(1, parseInt(page, 10) || 1);
+  const lim = Math.min(200, parseInt(limit, 10) || 50);
+  const items = list.slice((p - 1) * lim, p * lim).map(toVideoSummary);
+  res.json({ ok: true, total, page: p, limit: lim, items });
+});
+
+// Detail: full object including episodes[] with videoUrl.
+app.get('/api/videos/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const v = VIDEOS.find((x) => x.id === id);
+  if (!v) return res.status(404).json({ ok: false, error: 'NOT_FOUND' });
+  res.json({ ok: true, video: v });
+});
+
+// Search (alias of list filtered by q).
+app.get('/api/search', (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (!q) return res.json({ ok: true, items: [] });
+  const k = q.toLowerCase();
+  const items = VIDEOS.filter(
+    (v) =>
+      v.title.toLowerCase().includes(k) ||
+      (v.subtitle || '').toLowerCase().includes(k) ||
+      (v.tags || []).some((t) => t.toLowerCase().includes(k))
+  ).map(toVideoSummary);
+  res.json({ ok: true, items });
+});
+
+function toVideoSummary(v) {
+  const { episodes, ...rest } = v;
+  return { ...rest, episodeCount: (episodes || []).length };
+}
+
 app.get('/health', (req, res) => {
   res.json({ ok: true, app: 'evashort-api', env: environment, users: Object.keys(users).length });
 });

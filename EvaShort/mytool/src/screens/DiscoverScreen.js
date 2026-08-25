@@ -10,7 +10,7 @@ import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import CategoryTabs from '../components/CategoryTabs';
 import DramaGrid from '../components/DramaGrid';
-import { categories, hotSearches, searchDramas, byCategory, moreOf } from '../data/mockDramas';
+import { categories, hotSearches, byCategory, useCatalogue, searchCatalogue } from '../data/catalogue';
 
 const SEARCH_HISTORY_KEY = 'evashort_search_history';
 const STATUS_FILTERS = ['All', 'Ongoing', 'Completed'];
@@ -47,18 +47,26 @@ export default function DiscoverScreen() {
   const [grid, setGrid] = useState([]);
   const [page, setPage] = useState(1);
   const [history, setHistory] = useState([]);
+  const all = useCatalogue();
 
   useEffect(() => {
     loadSearchHistory().then(setHistory);
   }, []);
 
+  // Re-run the active filter whenever the catalogue finishes loading so the
+  // grid reflects remote content (or falls back to the local catalogue).
+  useEffect(() => {
+    applyFilter(keyword, activeTab, status, page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all]);
+
   const lockedIds = useMemo(() => {
     if (unlocked) return new Set();
     return new Set(byCategory(activeTab).filter((d) => d.premium).map((d) => d.id));
-  }, [unlocked, activeTab]);
+  }, [unlocked, activeTab, all]);
 
-  const applyFilter = useCallback((kw, cat, st, p = 1) => {
-    let base = kw.trim() ? searchDramas(kw) : byCategory(cat);
+  const applyFilter = useCallback(async (kw, cat, st, p = 1) => {
+    let base = kw.trim() ? await searchCatalogue(kw) : byCategory(cat);
     if (st === 'Ongoing') base = base.filter((d) => d.status === 'Ongoing');
     else if (st === 'Completed') base = base.filter((d) => d.status === 'Completed');
     setGrid(base.slice(0, p * 30));

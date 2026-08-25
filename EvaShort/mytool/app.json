@@ -32,9 +32,11 @@
     },
     "plugins": [
       "expo-iap",
-      "expo-font"
+      "expo-font",
+      "expo-video"
     ],
     "extra": {
+      "apiBase": "https://api.haoweimedia.cn/api",
       "eas": {
         "projectId": "5bddc9e6-ae65-414c-a50e-a7102a0680f6"
       }

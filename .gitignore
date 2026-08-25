@@ -43,6 +43,9 @@ server/node_modules/
 server/store.json
 server/users.json
 server/.env
+# 视频/封面为部署用二进制,通过 rsync 随 server/ 目录上服务器,不入库(避免 57MB+ 进历史)
+EvaShort/server/videos/
+EvaShort/server/covers/
 
 # work artifacts
 mytool/dist-web.zip

@@ -11,7 +11,7 @@ import HeroCard from '../components/HeroCard';
 import SectionHeader from '../components/SectionHeader';
 import PosterStrip from '../components/PosterStrip';
 import LoginPromptModal from '../components/LoginPromptModal';
-import { dramas, similarTo } from '../data/mockDramas';
+import { useCatalogue, getDramas, similarTo, loadVideoDetail } from '../data/catalogue';
 import { loadSaved, loadHistory, toggleSaved } from '../data/libraryStore';
 
 export default function DramaDetailScreen() {
@@ -25,13 +25,21 @@ export default function DramaDetailScreen() {
   const [saved, setSaved] = useState(false);
   const [watchedEps, setWatchedEps] = useState([]);
   const [loginPrompt, setLoginPrompt] = useState(false);
+  const all = useCatalogue();
 
   const drama = useMemo(() => {
     const idNum = Number(String(id).replace(/-r$/, ''));
-    return dramas.find((d) => d.id === idNum);
-  }, [id]);
+    return getDramas().find((d) => d.id === idNum);
+  }, [id, all]);
 
-  const similar = useMemo(() => (drama ? similarTo(drama) : []), [drama]);
+  // Pull the full episode list (with videoUrls) so Play has real sources.
+  useEffect(() => {
+    if (drama && (!drama.episodeVideos || drama.episodeVideos.length === 0)) {
+      loadVideoDetail(drama.id);
+    }
+  }, [drama]);
+
+  const similar = useMemo(() => (drama ? similarTo(drama) : []), [drama, all]);
 
   const lockedIds = useMemo(() => {
     if (unlocked) return new Set();

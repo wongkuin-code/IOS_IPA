@@ -120,3 +120,16 @@ if curl -fsS "https://$API_DOMAIN/health"; then
 else
   log "/health 未通,检查: systemctl status nginx; pm2 logs $PM2_NAME; 域名解析"
 fi
+
+# ── 10. 校验视频可播(2.1 真播放生死线) ───────────────────────────────────
+log "校验 /videos/1.mp4 是否 200 可播 ..."
+VCODE=$(curl -s -o /dev/null -w "%{http_code}" "https://$API_DOMAIN/videos/1.mp4")
+if [ "$VCODE" = "200" ]; then
+  log "OK: /videos/1.mp4 返回 200,审核员可真播"
+else
+  log "WARN: /videos/1.mp4 返回 $VCODE —— 视频目录未随部署到位!"
+  log "排查: ls -l $APP_DIR/videos ; pm2 restart $PM2_NAME --update-env ; 确认 VIDEOS_DIR"
+fi
+# 封面同理
+CCODE=$(curl -s -o /dev/null -w "%{http_code}" "https://$API_DOMAIN/covers/poster-1.jpg")
+[ "$CCODE" = "200" ] && log "OK: /covers/poster-1.jpg 返回 200" || log "WARN: /covers/poster-1.jpg 返回 $CCODE"

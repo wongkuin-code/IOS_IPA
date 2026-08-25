@@ -11,7 +11,7 @@ import StatusBarDark from '../components/StatusBarDark';
 import SearchButton from '../components/SearchButton';
 import CoverImage from '../components/CoverImage';
 import { dramaTheme } from '../components/DramaCover';
-import { dramas, dailyPicks } from '../data/mockDramas';
+import { useCatalogue, getDramas, dailyPicks } from '../data/catalogue';
 
 const HEADER_PADDING = 64;
 
@@ -22,15 +22,16 @@ export default function HomeScreen() {
   const { width, height } = useWindowDimensions();
   const { unlocked, setPaywallVisible } = useUnlock();
   const [listHeight, setListHeight] = useState(null);
+  const all = useCatalogue();
 
   const pageHeight = listHeight || Math.max(300, height - insets.top - HEADER_PADDING);
 
-  const feed = useMemo(buildFeed, []);
+  const feed = useMemo(() => buildFeed(all), [all]);
 
   const lockedIds = useMemo(() => {
     if (unlocked) return new Set();
-    return new Set(dramas.filter((d) => d.premium).map((d) => d.id));
-  }, [unlocked]);
+    return new Set(getDramas().filter((d) => d.premium).map((d) => d.id));
+  }, [unlocked, all]);
 
   const openDetail = useMemo(
     () => (drama) => navigation.navigate('DramaDetail', { id: drama.id }),
@@ -103,10 +104,11 @@ export default function HomeScreen() {
   );
 }
 
-function buildFeed() {
+function buildFeed(list) {
+  const pool = list && list.length ? list : getDramas();
   const picks = dailyPicks();
   const seen = new Set(picks.map((d) => d.id));
-  const rest = dramas.filter((d) => !seen.has(d.id));
+  const rest = pool.filter((d) => !seen.has(d.id));
   return [...picks, ...rest].slice(0, 12);
 }
 

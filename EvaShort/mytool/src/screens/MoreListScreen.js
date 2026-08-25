@@ -7,7 +7,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import DramaGrid from '../components/DramaGrid';
-import { moreOf } from '../data/mockDramas';
+import { moreOf } from '../data/catalogue';
 
 export default function MoreListScreen() {
   const { colors, spacing } = useTheme();

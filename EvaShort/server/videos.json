@@ -1,0 +1,25 @@
+{
+  "videos": [
+    {
+      "id": 1,
+      "title": "Fated to My Vengeful Husband",
+      "subtitle": "The CEO",
+      "category": ["Romance", "ForYou"],
+      "premium": true,
+      "poster": "/covers/poster-1.jpg",
+      "rating": 8.6,
+      "year": 2026,
+      "status": "Completed",
+      "tags": ["CEO", "Enemies to Lovers", "Marriage"],
+      "cast": ["Aria Lane", "Noah Sterling"],
+      "description": "A captivating story of love, betrayal and second chances. Every episode ends on a twist you will not see coming.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/1.mp4", "duration": 52 },
+        { "no": 2, "videoUrl": "/videos/2.mp4", "duration": 21 },
+        { "no": 3, "videoUrl": "/videos/3.mp4", "duration": 45 },
+        { "no": 4, "videoUrl": "/videos/4.mp4", "duration": 45 },
+        { "no": 5, "videoUrl": "/videos/5.mp4", "duration": 24 }
+      ]
+    }
+  ]
+}

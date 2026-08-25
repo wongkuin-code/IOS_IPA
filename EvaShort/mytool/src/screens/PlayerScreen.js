@@ -1,21 +1,21 @@
-// ── Player: full-screen 9:16 preview + simulated playback, auto next episode ──
+// ── Player: real video playback via expo-video (iOS + Web) ──
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useEventListener } from 'expo';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import { useAuth } from '../auth/AuthContext';
 import { api, getToken } from '../api/client';
 import StatusBarDark from '../components/StatusBarDark';
-import CoverImage from '../components/CoverImage';
 import { dramaTheme } from '../components/DramaCover';
-import { dramas, episodeTitle } from '../data/mockDramas';
+import { useCatalogue, getDramas, episodeTitle, loadVideoDetail } from '../data/catalogue';
 import { addHistory } from '../data/libraryStore';
 
 const SPEEDS = [0.5, 1.0, 1.5, 2.0];
-const EPISODE_MS = 90; // simulated episode length (seconds)
 
 export default function PlayerScreen() {
   const { colors, fonts } = useTheme();
@@ -30,62 +30,121 @@ export default function PlayerScreen() {
   const [speed, setSpeed] = useState(1.0);
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [episodePicker, setEpisodePicker] = useState(false);
   const [quotaLimit, setQuotaLimit] = useState(null);
-  const timerRef = useRef(null);
+  const all = useCatalogue();
 
   const drama = useMemo(() => {
     const idNum = Number(String(id).replace(/-r$/, ''));
-    return dramas.find((d) => d.id === idNum);
-  }, [id]);
+    return getDramas().find((d) => d.id === idNum);
+  }, [id, all]);
 
-  const progress = Math.min(100, (elapsed / EPISODE_MS) * 100);
-  const finished = elapsed >= EPISODE_MS;
-
+  // Make sure the full episode videoUrls are loaded before playback.
   useEffect(() => {
-    if (playing && !finished) {
-      timerRef.current = setInterval(() => {
-        setElapsed((e) => Math.min(EPISODE_MS, e + 1));
-      }, 1000 / speed);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [playing, finished, speed]);
+    if (drama) loadVideoDetail(drama.id);
+  }, [drama]);
 
-  // Episode finished → advance to next automatically
+  // Current episode video source (real, server/local-hosted mp4).
+  const src = useMemo(() => {
+    if (!drama) return null;
+    const eps = drama.episodeVideos;
+    if (eps && eps.length) return eps[(ep - 1) % eps.length];
+    return drama.videoUrl || null;
+  }, [drama, ep]);
+  const hasVideo = Boolean(src);
+
+  const playingRef = useRef(playing);
+  playingRef.current = playing;
+
+  const player = useVideoPlayer(hasVideo ? src : null, (p) => {
+    p.loop = false;
+    p.playbackRate = 1.0;
+    p.timeUpdateEventInterval = 0.25; // drive the progress bar
+  });
+
+  // Replace source when episode / url changes, then resume if intended to play.
   useEffect(() => {
-    if (finished && ep < drama.episodes) {
-      const t = setTimeout(() => watch(ep + 1), 1500);
+    if (!hasVideo) return;
+    let cancelled = false;
+    player.replaceAsync(src).then(() => {
+      if (!cancelled && playingRef.current) player.play();
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src, hasVideo]);
+
+  // Sync play/pause intent with the player.
+  useEffect(() => {
+    if (!hasVideo) return;
+    if (playing) player.play();
+    else player.pause();
+  }, [playing, hasVideo, player]);
+
+  // Keep playback rate in sync.
+  useEffect(() => {
+    player.playbackRate = speed;
+  }, [speed, player]);
+
+  // Progress (expo-video emits timeUpdate only while playing / loaded).
+  useEventListener(player, 'timeUpdate', ({ currentTime, duration: d }) => {
+    setElapsed(currentTime);
+    if (d) setDuration(d);
+  });
+
+  const progress = duration > 0 ? Math.min(100, (elapsed / duration) * 100) : 0;
+  const finished = duration > 0 && elapsed >= duration - 0.3;
+
+  // Episode finished → advance to next automatically.
+  useEventListener(player, 'playToEnd', () => {
+    if (!drama) return;
+    if (ep < drama.episodes) {
+      const t = setTimeout(() => watch(ep + 1), 1200);
       return () => clearTimeout(t);
     }
-    if (finished && ep >= drama.episodes) setPlaying(false);
-  }, [finished, ep, drama.episodes]);
+    setPlaying(false);
+  });
 
-  const watch = useCallback(async (nextEp) => {
-    if (drama.premium && !unlocked) {
-      setPaywallVisible(true);
-      return;
-    }
-    if (isGuest) {
-      const token = await getToken();
-      const r = await api.post('/user/watch', { dramaId: drama.id, episode: nextEp }, token).catch(() => null);
-      if (r && !r.allowed) {
-        setQuotaLimit(0);
-        setPlaying(false);
+  const watch = useCallback(
+    async (nextEp) => {
+      if (!drama) return;
+      if (drama.premium && !unlocked) {
+        setPaywallVisible(true);
         return;
       }
-      if (r && r.limit) setQuotaLimit(r.limit - r.used);
-    }
-    setEp(nextEp);
-    setElapsed(0);
-    setPlaying(true);
-    addHistory(drama.id, nextEp);
-  }, [drama, unlocked, setPaywallVisible, isGuest]);
+      if (isGuest) {
+        const token = await getToken();
+        const r = await api
+          .post('/user/watch', { dramaId: drama.id, episode: nextEp }, token)
+          .catch(() => null);
+        if (r && !r.allowed) {
+          setQuotaLimit(0);
+          setPlaying(false);
+          return;
+        }
+        if (r && r.limit) setQuotaLimit(r.limit - r.used);
+      }
+      setEp(nextEp);
+      setElapsed(0);
+      setPlaying(true);
+      addHistory(drama.id, nextEp);
+    },
+    [drama, unlocked, setPaywallVisible, isGuest]
+  );
 
   if (!drama) {
     return <View style={{ flex: 1, backgroundColor: '#000' }} />;
   }
 
   const nextEp = ep < drama.episodes ? ep + 1 : null;
+
+  const fmt = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+  };
 
   return (
     <View style={[styles.root, { backgroundColor: '#000', paddingTop: insets.top }]}>
@@ -107,25 +166,49 @@ export default function PlayerScreen() {
         </TouchableOpacity>
       </View>
 
-      <LinearGradient colors={['rgba(8,8,12,0.92)', 'rgba(8,8,12,0.55)', '#08080C']} style={styles.videoArea}>
-        <CoverImage
-          asset={drama.asset}
-          fallback={<LinearGradient colors={dramaTheme(drama.id)} style={StyleSheet.absoluteFill} />}
-          style={StyleSheet.absoluteFill}
-          resizeMode="cover"
-        />
-        <View style={StyleSheet.absoluteFill} />
+      <LinearGradient
+        colors={['rgba(8,8,12,0.92)', 'rgba(8,8,12,0.55)', '#08080C']}
+        style={styles.videoArea}
+      >
+        {hasVideo ? (
+          <VideoView
+            style={StyleSheet.absoluteFill}
+            player={player}
+            contentFit="cover"
+            nativeControls={false}
+          />
+        ) : (
+          <LinearGradient
+            colors={dramaTheme(drama.id)}
+            style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}
+          >
+            <Text style={{ color: '#fff', fontSize: 14 }}>No video available</Text>
+          </LinearGradient>
+        )}
         <TouchableOpacity
           style={styles.playBig}
           onPress={() => {
-            if (finished) watch(ep);
-            else setPlaying((p) => !p);
+            if (finished) {
+              player.currentTime = 0;
+              setElapsed(0);
+              setPlaying(true);
+            } else {
+              setPlaying((p) => !p);
+            }
           }}
         >
-          <Text style={styles.playBigText}>{finished ? '↻' : playing ? '⏸' : '▶'}</Text>
+          <Text style={styles.playBigText}>
+            {finished ? '↻' : playing ? '⏸' : '▶'}
+          </Text>
         </TouchableOpacity>
         <Text style={[styles.mockHint, { color: colors.textMuted }]}>
-          {finished ? 'Episode complete' : playing ? `Now Playing · EP.${ep} · ${Math.floor(EPISODE_MS - elapsed)}s` : 'Tap to play'}
+          {finished
+            ? 'Episode complete'
+            : hasVideo
+              ? playing
+                ? `Now Playing · EP.${ep} · ${fmt(Math.max(0, duration - elapsed))} left`
+                : 'Tap to play'
+              : 'No video available'}
         </Text>
       </LinearGradient>
 
@@ -134,7 +217,14 @@ export default function PlayerScreen() {
           <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: colors.gold }]} />
         </View>
         <View style={styles.controlsRow}>
-          <TouchableOpacity onPress={() => watch(ep)} style={styles.ctrl}>
+          <TouchableOpacity
+            onPress={() => {
+              player.currentTime = 0;
+              setElapsed(0);
+              setPlaying(true);
+            }}
+            style={styles.ctrl}
+          >
             <Text style={styles.ctrlIcon}>↻</Text>
             <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>Replay</Text>
           </TouchableOpacity>
@@ -147,7 +237,9 @@ export default function PlayerScreen() {
           </TouchableOpacity>
           <TouchableOpacity onPress={() => nextEp && watch(nextEp)} disabled={!nextEp} style={styles.ctrl}>
             <Text style={styles.ctrlIcon}>⏭</Text>
-            <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>{nextEp ? `Next EP.${nextEp}` : 'Last Episode'}</Text>
+            <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>
+              {nextEp ? `Next EP.${nextEp}` : 'Last Episode'}
+            </Text>
           </TouchableOpacity>
         </View>
         <Text style={[styles.hint, { color: colors.textMuted }]}>
@@ -197,7 +289,11 @@ export default function PlayerScreen() {
                       setEpisodePicker(false);
                       watch(n);
                     }}
-                    style={[styles.pickerCell, { backgroundColor: colors.background }, n === ep && { borderColor: colors.gold, borderWidth: 1 }]}
+                    style={[
+                      styles.pickerCell,
+                      { backgroundColor: colors.background },
+                      n === ep && { borderColor: colors.gold, borderWidth: 1 },
+                    ]}
                   >
                     <Text style={[styles.pickerNum, { color: n === ep ? colors.gold : colors.text }]}>{n}</Text>
                   </TouchableOpacity>
