@@ -1,0 +1,11 @@
+{
+  "baseUrl": "https://api.haoweimedia.cn/evareel/videos",
+  "dramas": {
+    "1": {
+      "title": "Fated to My Vengeful Husband",
+      "urls": {
+        "1": "/1/1.mp4"
+      }
+    }
+  }
+}

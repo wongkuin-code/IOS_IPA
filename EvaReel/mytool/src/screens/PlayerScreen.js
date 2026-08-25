@@ -66,7 +66,8 @@ export default function PlayerScreen() {
     return dramas.find((d) => d.id === idNum);
   }, [id]);
   const maxEp = drama ? drama.episodes : 1;
-  const locked = drama ? drama.premium && !unlocked : false;
+  const unavailable = drama ? !drama.available : false;
+  const locked = (drama ? drama.premium && !unlocked : false) || unavailable;
 
   // Resolve the video URL from the remote catalog once it's loaded (or when the
   // episode changes). Falls back to a cached copy if the network is unavailable.
@@ -85,6 +86,9 @@ export default function PlayerScreen() {
 
   const watch = useCallback(
     (nextEp) => {
+      if (!drama.available) {
+        return;
+      }
       if (drama.premium && !unlocked) {
         setPaywallVisible(true);
         return;
@@ -134,6 +138,11 @@ export default function PlayerScreen() {
           </TouchableOpacity>
         ) : catalogLoading ? (
           <ActivityIndicator color="#D4AF37" />
+        ) : unavailable ? (
+          <View style={styles.centerBtn}>
+            <Text style={styles.lockBig}>🚧</Text>
+            <Text style={[styles.centerText, { color: colors.textMuted }]}>该内容暂未开放，敬请期待</Text>
+          </View>
         ) : showVideo ? (
           <EpisodePlayer
             key={ep}

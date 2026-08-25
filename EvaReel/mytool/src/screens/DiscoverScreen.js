@@ -1,6 +1,6 @@
 // ── Discover: search input + hot chips + category filter + grid ──
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
@@ -8,6 +8,7 @@ import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import CategoryTabs from '../components/CategoryTabs';
 import DramaGrid from '../components/DramaGrid';
+import ComingSoon from '../components/ComingSoon';
 import { categories, hotSearches, searchDramas, byCategory, moreOf } from '../data/mockDramas';
 
 export default function DiscoverScreen() {
@@ -21,9 +22,8 @@ export default function DiscoverScreen() {
   const [page, setPage] = useState(1);
 
   const lockedIds = useMemo(() => {
-    if (unlocked) return new Set();
-    return new Set(byCategory(activeTab).filter((d) => d.premium).map((d) => d.id));
-  }, [unlocked, activeTab]);
+    return new Set(byCategory(activeTab).filter((d) => !d.available).map((d) => d.id));
+  }, [activeTab]);
 
   const refresh = useCallback((kw, cat, p = 1) => {
     const base = kw.trim() ? searchDramas(kw) : byCategory(cat);
@@ -31,6 +31,10 @@ export default function DiscoverScreen() {
   }, []);
 
   const openDetail = useCallback((drama) => {
+    if (!drama.available) {
+      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
+      return;
+    }
     if (drama.premium && !unlocked) {
       setPaywallVisible(true);
       return;
@@ -46,33 +50,7 @@ export default function DiscoverScreen() {
     });
   }, [keyword, activeTab, refresh]);
 
-  return (
-    <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + spacing.sm }]}>
-      <StatusBarDark />
-      <TextInput
-        value={keyword}
-        onChangeText={(t) => {
-          setKeyword(t);
-          setPage(1);
-          refresh(t, activeTab);
-        }}
-        placeholder="Search dramas"
-        placeholderTextColor={colors.textMuted}
-        style={[styles.search, { backgroundColor: colors.surface, color: colors.text, borderRadius: radii.pill, borderColor: colors.gold }]}
-      />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips} contentContainerStyle={{ paddingHorizontal: spacing.md }}>
-        {hotSearches.map((s) => (
-          <TouchableOpacity key={s} onPress={() => { setKeyword(s); setPage(1); refresh(s, activeTab); }} style={[styles.chip, { backgroundColor: colors.surface, borderColor: 'rgba(212,175,55,0.4)' }]}>
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>#{s}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-      <View style={{ paddingHorizontal: spacing.md, marginVertical: spacing.sm }}>
-        <CategoryTabs tabs={categories} active={activeTab} onChange={(t) => { setActiveTab(t); setPage(1); if (t !== 'More') refresh(keyword, t); }} />
-      </View>
-      <DramaGrid data={grid} lockedIds={lockedIds} onPressItem={openDetail} onEndReached={loadMore} />
-    </View>
-  );
+  return <ComingSoon subtitle="搜索与发现功能即将上线，敬请期待～" />;
 }
 
 const styles = StyleSheet.create({

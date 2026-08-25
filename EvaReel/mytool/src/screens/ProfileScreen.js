@@ -6,6 +6,7 @@ import Constants from 'expo-constants';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
+import ComingSoon from '../components/ComingSoon';
 import { loadSaved, loadHistory } from '../data/libraryStore';
 
 export default function ProfileScreen() {
@@ -29,64 +30,7 @@ export default function ProfileScreen() {
     </TouchableOpacity>
   );
 
-  return (
-    <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + spacing.sm }]}>
-      <StatusBarDark />
-      <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>👤</Text>
-        </View>
-        <View style={styles.identity}>
-          <Text style={[styles.name, { color: colors.text }]}>EvaReel User</Text>
-          <Text style={{ color: colors.textMuted, fontSize: 13 }}>@evareel.member</Text>
-        </View>
-        {unlocked ? (
-          <View style={[styles.vipBadge, { backgroundColor: colors.gold }]}>
-            <Text style={styles.vipBadgeText}>★ VIP</Text>
-          </View>
-        ) : null}
-      </View>
-
-      <View style={[styles.stats, { paddingHorizontal: spacing.md }]}>
-        <View style={[styles.stat, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.statNum, { color: colors.gold }]}>{(savedCount + historyCount) * 128}</Text>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Views</Text>
-        </View>
-        <View style={[styles.stat, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.statNum, { color: colors.gold }]}>{savedCount}</Text>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Saved</Text>
-        </View>
-        <View style={[styles.stat, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.statNum, { color: colors.gold }]}>{historyCount}</Text>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Watched</Text>
-        </View>
-      </View>
-
-      <TouchableOpacity onPress={() => setPaywallVisible(true)} style={[styles.vipCard, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.vipTitle, fonts.display, { color: colors.gold }]}>
-          {unlocked ? 'Premium Unlocked — thank you!' : 'Unlock Premium Dramas'}
-        </Text>
-        <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 4 }}>
-          {unlocked ? 'All premium content is available.' : 'One-time purchase · lifetime access · ¥1'}
-        </Text>
-      </TouchableOpacity>
-
-      <View style={[styles.list, { paddingHorizontal: spacing.md }]}>
-        <Row icon="♻️" label="Restore Purchase" onPress={restoreVip} />
-        <Row
-          icon="🔔"
-          label="Notifications"
-          right={<Switch value={notifications} onValueChange={setNotifications} trackColor={{ true: colors.gold }} />}
-        />
-        <Row icon="⭐" label="Rate Us" onPress={() => {}} />
-        <Row icon="📄" label="Privacy Policy" onPress={() => {}} />
-        <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: 'center', marginTop: 20 }}>
-          EvaReel v{Constants.expoConfig?.version || '1.0.0'} (build{' '}
-          {Constants.expoConfig?.ios?.buildNumber || 'dev'})
-        </Text>
-      </View>
-    </View>
-  );
+  return <ComingSoon subtitle="个人中心即将上线，敬请期待～" />;
 }
 
 const styles = StyleSheet.create({

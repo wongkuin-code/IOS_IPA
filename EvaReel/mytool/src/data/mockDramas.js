@@ -3,7 +3,7 @@ import { coverAssets } from './coverAssets';
 
 export const categories = ['For You', 'Romance', 'Urban', 'Revenge', 'More'];
 
-const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
+const seed = (id, title, subtitle, episodes, rating, category, premium, available) => ({
   id,
   title,
   subtitle,
@@ -11,11 +11,15 @@ const seed = (id, title, subtitle, episodes, rating, category, premium) => ({
   rating,
   category,
   premium: Boolean(premium),
+  // `available` = a real, hosted video exists and is ready to play.
+  // Only ONE drama ships playable at launch; everything else is locked
+  // behind "暂未开放" until more authorised content is added.
+  available: Boolean(available),
   asset: coverAssets[(id - 1) % coverAssets.length],
 });
 
 export const dramas = [
-  seed(1, 'Fated to My Vengeful Husband', 'The CEO', 100, 8.6, ['Romance', 'ForYou'], true),
+  seed(1, 'Fated to My Vengeful Husband', 'The CEO', 100, 8.6, ['Romance', 'ForYou'], true, true),
   seed(2, 'The Heiress Returns', 'Revenge Queen', 81, 7.2, ['Revenge', 'ForYou'], true),
   seed(3, 'Love at First Sight', 'Sweet Obsession', 72, 8.5, ['Romance', 'ForYou']),
   seed(4, 'Reborn to Love', 'Second Chance', 64, 8.8, ['Romance', 'ForYou'], true),

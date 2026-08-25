@@ -1,6 +1,6 @@
 // ── More list: pushed full listing screen (reuses DramaGrid) ──
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
@@ -19,11 +19,14 @@ export default function MoreListScreen() {
   const [data, setData] = useState(list || []);
 
   const lockedIds = useMemo(() => {
-    if (unlocked) return new Set();
-    return new Set((list || []).filter((d) => d.premium).map((d) => d.id));
-  }, [unlocked, list]);
+    return new Set((list || []).filter((d) => !d.available).map((d) => d.id));
+  }, [list]);
 
   const openDetail = useCallback((drama) => {
+    if (!drama.available) {
+      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
+      return;
+    }
     if (drama.premium && !unlocked) {
       setPaywallVisible(true);
       return;

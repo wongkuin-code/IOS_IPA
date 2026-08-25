@@ -7,6 +7,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import DramaGrid from '../components/DramaGrid';
+import ComingSoon from '../components/ComingSoon';
 import { dramas } from '../data/mockDramas';
 import { loadSaved, loadHistory } from '../data/libraryStore';
 
@@ -39,26 +40,7 @@ export default function LibraryScreen() {
   const savedList = saved.map(byId).filter(Boolean);
   const historyList = history.map((h) => byId(h.id)).filter(Boolean);
 
-  return (
-    <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + spacing.sm }]}>
-      <StatusBarDark />
-      <Text style={[styles.title, { color: colors.text }]}>My Library</Text>
-      <View style={[styles.segment, { backgroundColor: colors.surface, borderRadius: 10 }]}>
-        {['Saved', 'History'].map((t) => (
-          <TouchableOpacity key={t} onPress={() => setTab(t)} style={[styles.segmentBtn, tab === t && { backgroundColor: colors.gold }]}>
-            <Text style={[styles.segmentText, { color: tab === t ? '#1A1410' : colors.textMuted }]}>{t}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {tab === 'Saved' && savedList.length === 0 ? (
-        <EmptyHint text="Nothing saved yet. Tap the bookmark on any drama to save it." />
-      ) : tab === 'History' && historyList.length === 0 ? (
-        <EmptyHint text="No watch history yet. Start watching episodes." />
-      ) : (
-        <DramaGrid data={tab === 'Saved' ? savedList : historyList} onPressItem={openDetail} />
-      )}
-    </View>
-  );
+  return <ComingSoon subtitle="我的片库即将上线，敬请期待～" />;
 }
 
 function EmptyHint({ text }) {

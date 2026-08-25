@@ -25,8 +25,13 @@ export default function PosterCard({ drama, locked, onPress }) {
           <Text style={styles.badgeText}>{drama.rating.toFixed(1)}</Text>
         </LinearGradient>
         {locked ? (
-          <View style={styles.lock}>
-            <Text style={styles.lockText}>🔒</Text>
+          <View style={styles.lockedOverlay}>
+            <Text style={styles.lockedText}>暂未开放</Text>
+          </View>
+        ) : null}
+        {!locked && drama.premium ? (
+          <View style={styles.proBadge}>
+            <Text style={styles.proText}>PRO</Text>
           </View>
         ) : null}
       </View>
@@ -67,6 +72,26 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   lockText: { fontSize: 11 },
+  lockedOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(26,20,16,0.62)',
+    paddingVertical: 6,
+    alignItems: 'center',
+  },
+  lockedText: { color: '#F5D98B', fontSize: 12, fontWeight: '700' },
+  proBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    backgroundColor: 'rgba(212,175,55,0.92)',
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  proText: { color: '#1A1410', fontSize: 10, fontWeight: '800' },
   title: { fontSize: 13, fontWeight: '600', marginTop: 8, lineHeight: 17 },
   ep: { fontSize: 11, marginTop: 4 },
 });

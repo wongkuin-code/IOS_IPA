@@ -1,6 +1,6 @@
 // ── Drama detail: hero + episode list + play CTA + save toggle ──
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
@@ -29,15 +29,20 @@ export default function DramaDetailScreen() {
     setLoaded(true);
   }, [drama]);
 
-  const locked = drama.premium && !unlocked;
+  const unavailable = drama && !drama.available;
+  const locked = (drama.premium && !unlocked) || unavailable;
 
   const play = useCallback((episode) => {
-    if (locked) {
+    if (!drama.available) {
+      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
+      return;
+    }
+    if (drama.premium && !unlocked) {
       setPaywallVisible(true);
       return;
     }
     navigation.navigate('Player', { id: drama.id, episode });
-  }, [locked, drama, navigation, setPaywallVisible]);
+  }, [drama, unlocked, setPaywallVisible]);
 
   const onSave = useCallback(async () => {
     setSaved(await toggleSaved(drama.id));
@@ -58,7 +63,11 @@ export default function DramaDetailScreen() {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
             <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
-          {locked ? (
+          {unavailable ? (
+            <View style={styles.lockBadge}>
+              <Text style={[styles.lockText, { color: colors.text }]}>暂未开放</Text>
+            </View>
+          ) : locked ? (
             <View style={styles.lockBadge}>
               <Text style={[styles.lockText, { color: colors.text }]}>🔒 Premium</Text>
             </View>
@@ -81,7 +90,7 @@ export default function DramaDetailScreen() {
           onPress={() => play(1)}
           style={[styles.playCta, { backgroundColor: colors.gold, borderRadius: radii.pill, marginHorizontal: spacing.md }]}
         >
-          <Text style={styles.playCtaText}>{locked ? `🔒 Unlock to Play from EP.1` : `▶ Play from EP.1`}</Text>
+          <Text style={styles.playCtaText}>{unavailable ? `暂未开放` : locked ? `🔒 Unlock to Play from EP.1` : `▶ Play from EP.1`}</Text>
         </TouchableOpacity>
         <Text style={[styles.epTitle, { color: colors.text, paddingHorizontal: spacing.md }]}>Episodes</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.epRow, { paddingHorizontal: spacing.md }]}>

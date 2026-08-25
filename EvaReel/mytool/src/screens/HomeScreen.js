@@ -1,6 +1,6 @@
 // ── Home: category tabs + hero + trending/new-release grids ──
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
@@ -11,6 +11,7 @@ import SearchButton from '../components/SearchButton';
 import HeroCard from '../components/HeroCard';
 import SectionHeader from '../components/SectionHeader';
 import DramaGrid from '../components/DramaGrid';
+import ComingSoon from '../components/ComingSoon';
 import { categories, dramas, trending, newReleases, byCategory, moreOf } from '../data/mockDramas';
 
 export default function HomeScreen() {
@@ -25,15 +26,24 @@ export default function HomeScreen() {
   const [filterPage, setFilterPage] = useState(1);
 
   const lockedIds = useMemo(() => {
-    if (unlocked) return new Set();
-    return new Set(dramas.filter((d) => d.premium).map((d) => d.id));
-  }, [unlocked]);
+    // Everything that has no hosted video shows as locked ("暂未开放"),
+    // regardless of IAP unlock state — including premium titles.
+    return new Set(dramas.filter((d) => !d.available).map((d) => d.id));
+  }, []);
 
   const openDetail = useCallback((drama) => {
+    if (!drama.available) {
+      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
+      return;
+    }
     navigation.navigate('DramaDetail', { id: drama.id });
   }, [navigation]);
 
   const openPlayer = useCallback((drama) => {
+    if (!drama.available) {
+      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
+      return;
+    }
     if (drama.premium && !unlocked) {
       setPaywallVisible(true);
       return;
@@ -44,14 +54,8 @@ export default function HomeScreen() {
   const changeTab = useCallback((tab) => {
     setActiveTab(tab);
     setFilterPage(1);
-    if (tab === 'More') {
-      navigation.navigate('MoreList', { title: 'All Dramas', list: dramas });
-      return;
-    }
-    if (tab !== 'For You') {
-      setFiltered(byCategory(tab).slice(0, 30));
-    }
-  }, [navigation]);
+    // Only "For You" shows the one real video. Every other tab is "coming soon".
+  }, []);
 
   const loadMoreFiltered = useCallback(() => {
     setFilterPage((p) => {
@@ -86,13 +90,7 @@ export default function HomeScreen() {
           </View>
         </View>
       ) : (
-        <DramaGrid
-          data={filtered}
-          lockedIds={lockedIds}
-          onPressItem={openDetail}
-          onEndReached={loadMoreFiltered}
-          style={{ paddingTop: spacing.md }}
-        />
+        <ComingSoon />
       )}
     </View>
   );
