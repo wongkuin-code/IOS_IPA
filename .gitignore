@@ -77,3 +77,10 @@ buy1.jpg
 buy1-*.png
 info.png
 assets/Image_to_image_edit_of_the_sou_2026-08-12T11-35-20.png
+
+# 原始视频素材(体积大, 仅本地/服务器用, 不入库)
+test_video/
+
+# EvaReel/EvaShort 本地运行日志
+EvaShort/mytool/scripts/*.log
+EvaReel/mytool/scripts/*.log
