@@ -1,5 +1,5 @@
 // ── Home: category tabs + hero + trending/new-release grids ──
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -24,6 +24,7 @@ export default function HomeScreen() {
   const [newList, setNewList] = useState(newReleases);
   const [filtered, setFiltered] = useState([]);
   const [filterPage, setFilterPage] = useState(1);
+  const pendingPlay = useRef(null);
 
   const lockedIds = useMemo(() => {
     // Everything that has no hosted video shows as locked ("暂未开放"),
@@ -45,11 +46,22 @@ export default function HomeScreen() {
       return;
     }
     if (drama.premium && !unlocked) {
+      pendingPlay.current = { id: drama.id, episode: 1 };
       setPaywallVisible(true);
       return;
     }
     navigation.navigate('Player', { id: drama.id, episode: 1 });
   }, [navigation, unlocked, setPaywallVisible]);
+
+  // After a successful purchase, jump straight into the player the user
+  // was trying to watch instead of dumping them back on Home.
+  useEffect(() => {
+    if (unlocked && pendingPlay.current) {
+      const target = pendingPlay.current;
+      pendingPlay.current = null;
+      navigation.navigate('Player', target);
+    }
+  }, [unlocked, navigation]);
 
   const changeTab = useCallback((tab) => {
     setActiveTab(tab);

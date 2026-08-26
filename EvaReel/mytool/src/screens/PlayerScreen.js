@@ -22,6 +22,11 @@ function EpisodePlayer({ url, speed, replaySignal, onEnded }) {
     p.playbackRate = speed;
   });
 
+  // Auto-play as soon as the source is attached (short-drama taps into playback).
+  useEffect(() => {
+    player.play();
+  }, [player]);
+
   // keep speed in sync when the user cycles it
   useEffect(() => {
     player.playbackRate = speed;
@@ -69,20 +74,30 @@ export default function PlayerScreen() {
   const unavailable = drama ? !drama.available : false;
   const locked = (drama ? drama.premium && !unlocked : false) || unavailable;
 
-  // Resolve the video URL from the remote catalog once it's loaded (or when the
-  // episode changes). Falls back to a cached copy if the network is unavailable.
-  useEffect(() => {
+  // Reload the video URL from the catalog. Always fetch fresh (force) so a stale
+  // cached catalog can never leave the player stuck on "coming soon".
+  const reload = useCallback(() => {
     let active = true;
     setCatalogLoading(true);
-    fetchCatalog().then(() => {
-      if (!active) return;
-      setVideoUrl(getVideoUrl(drama ? drama.id : id, ep) || null);
-      setCatalogLoading(false);
-    });
+    fetchCatalog({ force: true })
+      .then(() => {
+        if (!active) return;
+        setVideoUrl(getVideoUrl(drama ? drama.id : id, ep) || null);
+        setCatalogLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setCatalogLoading(false);
+      });
     return () => {
       active = false;
     };
-  }, [drama, ep]);
+  }, [drama, id, ep]);
+
+  useEffect(() => {
+    const cleanup = reload();
+    return cleanup;
+  }, [reload]);
 
   const watch = useCallback(
     (nextEp) => {
@@ -151,6 +166,11 @@ export default function PlayerScreen() {
             replaySignal={replaySignal}
             onEnded={onEnded}
           />
+        ) : drama && drama.available ? (
+          <TouchableOpacity style={styles.centerBtn} onPress={reload}>
+            <Text style={styles.lockBig}>⚠️</Text>
+            <Text style={[styles.centerText, { color: colors.textMuted }]}>视频加载失败，点击重试</Text>
+          </TouchableOpacity>
         ) : (
           <View style={styles.centerBtn}>
             <Text style={styles.lockBig}>🎬</Text>
