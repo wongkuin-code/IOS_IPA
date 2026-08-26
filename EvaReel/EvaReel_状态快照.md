@@ -9,7 +9,7 @@
 
 ## 一、核心决策（本轮）
 
-- **过审策略改为最小化合规 App**：只放 1 条真实可播视频（自制/自拍短剧），其余全部「暂未开放」，IAP 购买流程可测。不再追求多部剧。
+- **过审策略改为最小化合规 App**：只放 1 条真实可播的**治愈/放松向原创视频**，其余全部「暂未开放」，IAP 购买流程可测。不再追求多部剧。
 - **bundleId 维持 `com.mytool.booksreader`**：`server/server.js:84` 硬编码校验 `payload.bundleId !== BUNDLE_ID`，且 ASC App ID `6799368982`（Team `D5VA6Q22PL`）即此 ID；改则需同步服务器 `BUNDLE_ID` 与 ASC，风险大，故保持。
 - **slug 维持 `duanju-novel`**：`extra.eas.projectId`（a49f46cd…）在 EAS 注册的 slug 即此值，改 `evareel` 会触发 `slug does not match projectId` 构建失败（已踩坑回退）。slug 只影响 EAS 项目名，不影响包名/显示名。
 - **版权来源 = 自拍自制**（非朋友「火华短剧」）：删除 `legal/授权书_火华短剧.md`，改出 `legal/版权声明_EvaReel.md`（自权属声明），已填平台信息（Bundle ID / Team / ASC App ID / 域名 / 播放器），姓名与证件号待用户手填 + 签字 + 转 PDF。
@@ -29,18 +29,28 @@
   - `/evareel/catalog.json` → 静态 catalog
   - `/evareel/api/verify-iap`、`/evareel/health` → 代理 `127.0.0.1:3001`
 - [x] pm2 进程 `evareel-verify-v2` 跑 `server.js`（端口 3001，用户 `evareel` 隔离）。
-- [x] **真实视频已部署**：`/var/www/evareel-videos/1/1.mp4` = 自拍短剧，H.264 + AAC + faststart（约 12.1MB，ffprobe 校验 h264/aac，HTTP 200 + `Range` 请求返回 206）；原 HEVC 备份 `/1/src.mp4`。
+- [x] **真实视频已部署**：`/var/www/evareel-videos/1/1.mp4` = 自拍治愈/放松向原创视频，H.264 + AAC + faststart（约 12.1MB，ffprobe 校验 h264/aac，HTTP 200 + `Range` 请求返回 206）；原 HEVC 备份 `/1/src.mp4`。
 - [x] `catalog.json`：仅 drama 1（`available:true` + `premium:true`），`baseUrl https://api.haoweimedia.cn/evareel/videos`，url `/1/1.mp4`。已上传并验证端点返回正确 JSON。
 - [x] 服务器安装静态 `ffmpeg 7.0.2`（`/usr/local/bin`）；`server/deploy/publish_videos.sh` 含服务端转码 H.264 + AAC + faststart。
 
 ### 客户端 UI（「暂未开放」门禁）
-- [x] `mockDramas.js`：新增 `available` 字段，仅 drama 1 `available+premium`（标题保留占位名 `Fated to My Vengeful Husband`）。
+- [x] `mockDramas.js`：新增 `available` 字段，仅 drama 1 `available+premium`；全库 30 部题材已统一为治愈/放松向（drama 1 标题《享受大自然》，与版权声明作品名一致）。
 - [x] `HomeScreen`：仅 `For You` 展示真实视频（Hero=drama1 + Trending/NewReleases 网格，锁定卡带「暂未开放」遮罩、点击弹提示）；其它分类页签直接 `ComingSoon`；`openDetail/openPlayer` 对非 available 弹「暂未开放」，premium 未解锁走付费墙。
 - [x] `PosterCard`：「暂未开放」遮罩 + `PRO` 角标。
 - [x] `DiscoverScreen` / `LibraryScreen` / `ProfileScreen`：直接返回 `ComingSoon`（副标题区分）。
 - [x] `DramaDetailScreen` / `PlayerScreen`：`unavailable` 守卫，显示「暂未开放」。
 - [x] 新增 `src/components/ComingSoon.js` 复用组件。
 - [x] `PaywallModal` 含 `restoreVip`（即便 Profile 锁定，首页付费墙可走 Restore，2.1(b) 可测）。
+
+### 封面与首页收敛（提审观感，2026-08-26 补充）
+- [x] **封面改用 EvaReel 真实视频首帧**：删除 `assets/covers/` 全部旧情侣/言情照（`poster-*.jpg`）及废弃模块 `src/data/posters.js`、`src/data/coverAssets.js`；从 EvaReel 自有视频 `https://api.haoweimedia.cn/evareel/videos/1/1.mp4` 提取第一帧 → `assets/covers/frame-1.jpg`（720×1280 竖屏 H.264）；`mockDramas.js` 中 `drama1.asset` 指向该图，其余 29 部 `asset=null` 回退 `DramaCover` 渐变（不再依赖任何照片资源）。
+- [x] **首页收敛为「1 真实 + 4 锁定」**：`HomeScreen` 原逻辑（空 `lockedIds` + `moreOf` 加载更多）会让全部 30 个标题各异的卡片都可点播、且都回退播放同一真实视频——属 2.3.3 内容不实风险；已改为 `previewList = 1 部 available + 4 部「暂未开放」占位，恢复 `lockedIds`（非 available 卡显示「暂未开放」遮罩且不进入播放器），移除「加载更多」与 footer 的「Browse all videos」（改指 `Discover`/`ComingSoon`），并给 `openPlayer` 加 `if (!drama.available) return;` 守卫。
+- [x] **封面渲染修正（letterbox，2026-08-26）**：`HeroCard` 容器恢复 16:9 横幅、`resizeMode="contain"` 让竖屏首帧完整居中显示，**两侧黑边用「同图放大 + 压暗」填充**（电影感，不再留空渐变）；`PosterCard` 容器改 9:16 竖屏、`cover` 铺满不裁切。
+
+### 全英文化（无中文展示，2026-08-26）
+- [x] **App 内全部用户可见文案英文化**：30 部剧集标题/副标题、`hotSearches` 热搜词、所有「暂未开放」→ `Coming Soon`、首页 footer「更多内容即将开放」→ `More content coming soon`、播放器全部提示（加载失败重试 / 解锁后观看 / 未开放 / 该集即将上线）、各页 `Alert`、`ComingSoon` 占位、`Web 预览`→`Web Preview` 提示等全部改为英文；代码注释同步英文化。已验证打包后 JS 无中文字符。
+- [x] **隐私政策页英文化**：`mytool/privacy-policy.html` 由中文翻译为英文（标题/各章节/联系邮箱），`<html lang="en">`，用于 App Store 提审链接。
+- [x] **版权声明 PDF 保留中文「短剧」表述**（按用户决定）：`legal/2026_08_26_19_03_31.pdf` 为法律文件、非 App 内展示，未改动。
 
 ### 隐私与密钥（领先 EvaShort）
 - [x] `mytool/privacy-policy.html` 已存在。
@@ -55,8 +65,8 @@
 - [ ] **年龄分级改 None**（对应 2.3.6）：家长控制 / 年龄保证 / 不受限网页 / UGC / 社交 / 聊天 / 广告 全部选「否」。
 
 ### P1 — 审核材料
-- [ ] **重截真实截图**（对应 2.3.3）：**必须含 13 英寸 iPad**；用首页信息流 + 播放器真播帧（建议补 Home 全屏播放截图）。
-- [ ] **附版权证据 + Notes**（对应 5.2.3）：`legal/版权声明_EvaReel.md` 填姓名 + 签字 → PDF，ASC → App 审核信息 → 备注/附件 上传；Notes 说明内容为自制原创、由自有后端分发、非第三方抓取。
+- [ ] **重截真实截图**（对应 2.3.3）：**必须含 13 英寸 iPad**；提审版首页已收敛为「1 真实 + 4 锁定」，截图须拍到首页信息流（含真实卡 + 「暂未开放」遮罩门禁）+ 播放器真播帧 + 点锁定卡的「暂未开放」提示。
+- [x] **版权证据已备**（对应 5.2.3）：签字扫描件 `legal/2026_08_26_19_03_31.pdf` 已就位（3 页，含平台信息表 + 英文 Notes 正文 + 手写签字/越南地址），上传时 ASC → App 审核信息 → 备注/附件 选该 PDF；备注粘贴文末英文说明（自制原创、自有后端分发、非第三方抓取）。
 - [ ] **提审**：`npx eas submit --platform ios --profile production`（需 `keys/AuthKey_74AU6WRUF9.p8` 有效；失效则改用 Apple ID 登录方式）。
 
 ### P2 — 验收
@@ -75,14 +85,14 @@
 - **iOS production build #33** 已提交 EAS，状态 `in queue`（2026-08-26）。
 - 凭据齐：Distribution Cert（至 2027-08-08）、Provisioning Profile `2GQKWP3SUH` active、Team `D5VA6Q22PL`（Van Nam Nguyen Individual）。
 - 日志：https://expo.dev/accounts/wongkuins-team/projects/duanju-novel/builds/8cb87194-2350-4151-aff2-df00a7cfc56f
-- 注：buildNumber 走 remote 版本源，自动 32 → 33。
+- 注：buildNumber 走 remote 版本源，自动 32 → 33。**源码与封面资源已于 2026-08-26 变更（首帧封面 + 首页收敛），提审前须重新 `eas build`（#34 起）再 `eas submit`。**
 
 ---
 
 ## 五、架构差异 / 已知风险
 
 - 视频由 **nginx 静态分发 + `catalog.json`**（同前），无 `/api/videos` 动态接口（EvaShort 有）。
-- 风险 1：内容仅 1 部（已用「暂未开放」策略缓解，但仍建议后续扩量）。
+- 风险 1：内容仅 1 部（已用「暂未开放」策略缓解，且首页已收敛为「1 真实 + 4 锁定」降低空壳观感，但仍建议后续扩量）。
 - 风险 2：版权声明需用户签字转 PDF 才生效，否则 5.2.3 仍可能被拒。
 - 风险 3：IAP / 年龄分级 / 截图 / Notes 全靠 ASC 控制台，未做则仍会被拒。
 - 风险 4：bundleId 沿用旧小说 ID，若 Apple 质疑需协调服务器 + ASC 改动。

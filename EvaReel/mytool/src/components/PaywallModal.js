@@ -17,7 +17,7 @@ export default function PaywallModal() {
       <View style={styles.mask}>
         <LinearGradient colors={[colors.surface, colors.background]} style={[styles.card, { borderColor: colors.borderGold }]}>
           <Text style={styles.icon}>⭐</Text>
-          <Text style={[styles.title, fonts.display, { color: colors.text }]}>Unlock Premium Dramas</Text>
+          <Text style={[styles.title, fonts.display, { color: colors.text }]}>Unlock Premium Videos</Text>
           <Text style={[styles.desc, { color: colors.textMuted }]}>
             All trending & new releases{'\n'}One-time purchase, lifetime access
           </Text>

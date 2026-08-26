@@ -34,7 +34,7 @@ export default function DramaDetailScreen() {
 
   const play = useCallback((episode) => {
     if (!drama.available) {
-      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
+      Alert.alert('Coming Soon', 'This content is not open yet. Stay tuned.');
       return;
     }
     if (drama.premium && !unlocked) {
@@ -65,7 +65,7 @@ export default function DramaDetailScreen() {
           </TouchableOpacity>
           {unavailable ? (
             <View style={styles.lockBadge}>
-              <Text style={[styles.lockText, { color: colors.text }]}>暂未开放</Text>
+              <Text style={[styles.lockText, { color: colors.text }]}>Coming Soon</Text>
             </View>
           ) : locked ? (
             <View style={styles.lockBadge}>
@@ -90,7 +90,7 @@ export default function DramaDetailScreen() {
           onPress={() => play(1)}
           style={[styles.playCta, { backgroundColor: colors.gold, borderRadius: radii.pill, marginHorizontal: spacing.md }]}
         >
-          <Text style={styles.playCtaText}>{unavailable ? `暂未开放` : locked ? `🔒 Unlock to Play from EP.1` : `▶ Play from EP.1`}</Text>
+          <Text style={styles.playCtaText}>{unavailable ? `Coming Soon` : locked ? `🔒 Unlock to Play from EP.1` : `▶ Play from EP.1`}</Text>
         </TouchableOpacity>
         <Text style={[styles.epTitle, { color: colors.text, paddingHorizontal: spacing.md }]}>Episodes</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.epRow, { paddingHorizontal: spacing.md }]}>

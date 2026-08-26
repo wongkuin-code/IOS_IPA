@@ -1,19 +1,27 @@
-// ── Full-width 16:9 hero card: bundled poster (fallback theme art), overlay, Play pill ──
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+// ── Full-width 16:9 hero card: real frame, letterboxed with a dimmed
+//    zoomed copy of the same frame filling the side bars, overlay, Play pill ──
+import { TouchableOpacity, View, Text, Image, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import { dramaTheme } from './DramaCover';
-import CoverImage from './CoverImage';
 
 export default function HeroCard({ drama, onPlay, onPress }) {
   const { colors, radii, fonts } = useTheme();
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { borderRadius: radii.card }]}>
-      <CoverImage
-        asset={drama.asset}
-        fallback={<LinearGradient colors={dramaTheme(drama.id)} style={styles.image} />}
-        style={styles.image}
-      />
+      <View style={styles.image}>
+        {drama.asset ? (
+          <>
+            {/* dimmed, zoomed copy fills the letterbox side bars */}
+            <Image source={drama.asset} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            <View style={styles.backdropDim} />
+            {/* full, un-cropped frame, centered */}
+            <Image source={drama.asset} style={StyleSheet.absoluteFill} resizeMode="contain" />
+          </>
+        ) : (
+          <LinearGradient colors={dramaTheme(drama.id)} style={StyleSheet.absoluteFill} />
+        )}
+      </View>
       <LinearGradient
         colors={['transparent', 'rgba(10,6,4,0.55)', 'rgba(10,6,4,0.92)']}
         locations={[0, 0.45, 1]}
@@ -41,6 +49,7 @@ export default function HeroCard({ drama, onPlay, onPress }) {
 const styles = StyleSheet.create({
   card: { width: '100%', aspectRatio: 16 / 9, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
   image: { ...StyleSheet.absoluteFillObject, width: undefined, height: undefined },
+  backdropDim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,6,4,0.55)' },
   overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end' },
   info: { padding: 18 },
   title: { fontSize: 28, lineHeight: 32 },

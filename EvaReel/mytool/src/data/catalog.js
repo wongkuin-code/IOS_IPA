@@ -49,8 +49,9 @@ export async function fetchCatalog({ force = false } = {}) {
   return inflight;
 }
 
-// 回退：catalog 中只有一部真实视频时，任意剧集都指向它，
-// 让首页看起来内容丰富且都能播放（过审过渡，避免"仅 1 部"观感）。
+// Fallback: when the catalog has only one real video, every episode points to
+// it, so the home screen looks content-rich and everything "plays" (a
+// submission-transition measure to avoid the "only 1 video" impression).
 let _fallbackUrl = null;
 function firstAvailableUrl() {
   if (_fallbackUrl) return _fallbackUrl;
@@ -70,7 +71,7 @@ function firstAvailableUrl() {
 }
 
 // Resolve the absolute video URL for a drama episode, or null if not hosted yet.
-// 若该剧无自有视频，则回退到 catalog 中唯一的真实视频。
+// If the drama has no video of its own, fall back to the catalog's one real video.
 export function getVideoUrl(dramaId, episode) {
   if (!cache) return null;
   const d = cache.dramas && cache.dramas[String(dramaId)];

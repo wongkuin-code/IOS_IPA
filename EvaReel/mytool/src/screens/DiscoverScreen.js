@@ -32,7 +32,7 @@ export default function DiscoverScreen() {
 
   const openDetail = useCallback((drama) => {
     if (!drama.available) {
-      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
+      Alert.alert('Coming Soon', 'This content is not open yet. Stay tuned.');
       return;
     }
     if (drama.premium && !unlocked) {
@@ -50,7 +50,7 @@ export default function DiscoverScreen() {
     });
   }, [keyword, activeTab, refresh]);
 
-  return <ComingSoon subtitle="搜索与发现功能即将上线，敬请期待～" />;
+  return <ComingSoon subtitle="Search & discovery is coming soon. Stay tuned." />;
 }
 
 const styles = StyleSheet.create({

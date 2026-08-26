@@ -26,7 +26,7 @@ export default function PosterCard({ drama, locked, onPress }) {
         </LinearGradient>
         {locked ? (
           <View style={styles.lockedOverlay}>
-            <Text style={styles.lockedText}>暂未开放</Text>
+            <Text style={styles.lockedText}>Coming Soon</Text>
           </View>
         ) : null}
         {!locked && drama.premium ? (
@@ -46,7 +46,7 @@ export default function PosterCard({ drama, locked, onPress }) {
 const styles = StyleSheet.create({
   wrap: { flex: 1, marginHorizontal: 6 },
   poster: {
-    aspectRatio: 2 / 3,
+    aspectRatio: 9 / 16,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(212,175,55,0.35)',

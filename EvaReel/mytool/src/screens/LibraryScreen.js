@@ -40,7 +40,7 @@ export default function LibraryScreen() {
   const savedList = saved.map(byId).filter(Boolean);
   const historyList = history.map((h) => byId(h.id)).filter(Boolean);
 
-  return <ComingSoon subtitle="我的片库即将上线，敬请期待～" />;
+  return <ComingSoon subtitle="My Library is coming soon. Stay tuned." />;
 }
 
 function EmptyHint({ text }) {

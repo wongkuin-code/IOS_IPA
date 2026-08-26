@@ -48,8 +48,8 @@ export const fonts = {
   uiBold: { fontWeight: '700' },
 };
 
-// 继承 DarkTheme 的 fonts(regular/medium/bold/heavy),否则 native-stack 读取
-// theme.fonts.regular 时因 fonts 为 undefined 崩溃
+// Inherit DarkTheme's fonts (regular/medium/bold/heavy); otherwise native-stack
+// crashes when reading theme.fonts.regular because fonts would be undefined.
 export const navTheme = {
   ...DarkTheme,
   colors: {

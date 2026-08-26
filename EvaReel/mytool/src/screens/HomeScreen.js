@@ -20,17 +20,30 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { unlocked, setPaywallVisible } = useUnlock();
   const [activeTab, setActiveTab] = useState('For You');
-  const [trendingList, setTrendingList] = useState(trending);
-  const [newList, setNewList] = useState(newReleases);
   const [filtered, setFiltered] = useState([]);
   const [filterPage, setFilterPage] = useState(1);
   const pendingPlay = useRef(null);
 
-  // 首页所有视频都播放同一部真实视频（catalog.getVideoUrl 回退到唯一真实视频），
-  // 因此首页不再展示"暂未开放"遮罩。
-  const lockedIds = useMemo(() => new Set(), []);
+  // Submission build home: show only 1 real playable video + up to 4
+  // "Coming Soon" placeholders, so we never expose the "all cards play the
+  // same video" mismatch during review.
+  const previewList = useMemo(() => {
+    const real = dramas.filter((d) => d.available);
+    const lockedSample = dramas.filter((d) => !d.available).slice(0, 4);
+    return [...real, ...lockedSample];
+  }, [dramas]);
+  const [trendingList, setTrendingList] = useState(previewList);
+  const [newList, setNewList] = useState(previewList);
+
+  // Only real playable videos open the player; the rest show a "Coming Soon"
+  // overlay and never enter the player.
+  const lockedIds = useMemo(
+    () => new Set(dramas.filter((d) => !d.available).map((d) => d.id)),
+    [dramas]
+  );
 
   const openPlayer = useCallback((drama) => {
+    if (!drama.available) return;
     if (drama.premium && !unlocked) {
       pendingPlay.current = { id: drama.id, episode: 1 };
       setPaywallVisible(true);
@@ -39,7 +52,7 @@ export default function HomeScreen() {
     navigation.navigate('Player', { id: drama.id, episode: 1 });
   }, [navigation, unlocked, setPaywallVisible]);
 
-  // 购买成功后直接跳进之前想看的播放器
+  // After a successful purchase, jump straight into the player the user wanted.
   useEffect(() => {
     if (unlocked && pendingPlay.current) {
       const target = pendingPlay.current;
@@ -76,12 +89,12 @@ export default function HomeScreen() {
         <View style={styles.scrollWrap}>
           <HeroCard drama={trending[0]} onPlay={() => openPlayer(trending[0])} onPress={() => openPlayer(trending[0])} />
           <SectionHeader title="🔥 Trending Now" onMore={() => showMoreSection('Trending Now', trendingList)} />
-          <DramaGrid data={trendingList} lockedIds={lockedIds} onPressItem={openPlayer} onEndReached={() => setTrendingList((l) => moreOf(l))} />
+          <DramaGrid data={trendingList} lockedIds={lockedIds} onPressItem={openPlayer} />
           <SectionHeader title="New Releases" onMore={() => showMoreSection('New Releases', newList)} />
-          <DramaGrid data={newList} lockedIds={lockedIds} onPressItem={openPlayer} onEndReached={() => setNewList((l) => moreOf(l))} />
+          <DramaGrid data={newList} lockedIds={lockedIds} onPressItem={openPlayer} />
           <View style={styles.footer}>
-            <TouchableOpacity onPress={() => showMoreSection('All Dramas', dramas)}>
-              <Text style={[styles.footerText, { color: colors.textMuted }]}>Browse all dramas →</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Discover')}>
+              <Text style={[styles.footerText, { color: colors.textMuted }]}>More content coming soon →</Text>
             </TouchableOpacity>
           </View>
         </View>

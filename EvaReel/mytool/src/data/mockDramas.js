@@ -1,7 +1,7 @@
-﻿// ── Mock short-drama catalogue (20 bundled posters, gradient-first, zero network) ──
-import { coverAssets } from './coverAssets';
+﻿// ── Mock healing/relaxation video catalogue (gradient-first posters, zero network) ──
+import coverFrame1 from '../../assets/covers/frame-1.jpg';
 
-export const categories = ['For You', 'Romance', 'Urban', 'Revenge', 'More'];
+export const categories = ['For You', 'Nature', 'Relax', 'Sleep', 'More'];
 
 const seed = (id, title, subtitle, episodes, rating, category, premium, available) => ({
   id,
@@ -13,48 +13,48 @@ const seed = (id, title, subtitle, episodes, rating, category, premium, availabl
   premium: Boolean(premium),
   // `available` = a real, hosted video exists and is ready to play.
   // Only ONE drama ships playable at launch; everything else is locked
-  // behind "暂未开放" until more authorised content is added.
+  // behind "Coming Soon" until more authorised content is added.
   available: Boolean(available),
-  asset: coverAssets[(id - 1) % coverAssets.length],
+  asset: available ? coverFrame1 : null,
 });
 
 export const dramas = [
-  seed(1, 'Fated to My Vengeful Husband', 'The CEO', 100, 8.6, ['Romance', 'ForYou'], true, true),
-  seed(2, 'The Heiress Returns', 'Revenge Queen', 81, 7.2, ['Revenge', 'ForYou'], true),
-  seed(3, 'Love at First Sight', 'Sweet Obsession', 72, 8.5, ['Romance', 'ForYou']),
-  seed(4, 'Reborn to Love', 'Second Chance', 64, 8.8, ['Romance', 'ForYou'], true),
-  seed(5, 'The CEO\'s Secret Bride', 'Hidden Wedding', 90, 7.9, ['Urban', 'ForYou'], true),
-  seed(6, 'Billionaire\'s Substitute Wife', 'Contract Love', 85, 7.1, ['Urban']),
-  seed(7, 'Revenge of the Phoenix', 'Rise from Ashes', 68, 8.2, ['Revenge'], true),
-  seed(8, 'My Ex-Husband Regrets', 'Divorce Storm', 76, 7.6, ['Revenge']),
-  seed(9, 'Sweetheart in the City', 'Romance, Inc.', 58, 8.0, ['Romance']),
-  seed(10, 'The Tycoon\'s Last Promise', 'Final Vow', 47, 8.4, ['Urban'], true),
-  seed(11, 'Chasing My Runaway Wife', 'Pursuit', 93, 7.3, ['Romance', 'Revenge']),
-  seed(12, 'Queen of the Boardroom', 'Empire', 88, 7.8, ['Urban'], true),
-  seed(13, 'A Love Written in Rain', 'Paper Umbrella', 52, 8.1, ['Romance']),
-  seed(14, 'The Heir\'s Cold Heart', 'Ice Prince', 61, 7.0, ['Urban', 'Revenge']),
-  seed(15, 'Stolen Kisses, Stolen Fortune', 'After Midnight', 70, 7.7, ['Romance'], true),
-  seed(16, 'Rise of the Divorcee', 'Rebirth', 99, 8.3, ['Revenge'], true),
-  seed(17, 'The Butler\'s Secret', 'Lies & Loyalty', 55, 7.4, ['Urban']),
-  seed(18, 'First Love, Forever', 'Timeless', 44, 8.9, ['Romance'], true),
-  seed(19, 'The Billionaire\'s Heir', 'Legacy', 82, 7.5, ['Urban']),
-  seed(20, 'Payback with Interest', 'Cold Steel', 65, 7.9, ['Revenge'], true),
-  seed(21, 'Honeymoon Betrayal', 'Crumbled Vows', 49, 7.2, ['Revenge', 'Urban']),
-  seed(22, 'Campus Sweetheart', 'First Crush', 38, 8.6, ['Romance']),
-  seed(23, 'The Dragon\'s Bride', 'Mafia Love', 87, 8.1, ['Urban', 'Romance'], true),
-  seed(24, 'Silent Vengeance', 'No Mercy', 77, 8.0, ['Revenge'], true),
-  seed(25, 'After the Divorce, I Shine', 'New Dawn', 95, 8.4, ['Revenge']),
-  seed(26, 'The Lawyer\'s Wife', 'Court & Heart', 66, 7.6, ['Urban']),
-  seed(27, 'Moonlit Promises', 'Nightfall', 41, 8.7, ['Romance'], true),
-  seed(28, 'The Golden Handcuffs', 'Arranged Fate', 74, 7.3, ['Urban', 'Romance']),
-  seed(29, 'Twilight Vendetta', 'Dark Retribution', 83, 8.2, ['Revenge'], true),
-  seed(30, 'Love Under the Neon', 'City Nights', 57, 7.8, ['Urban']),
+  seed(1, 'Enjoy Nature', 'Healing in Nature', 1, 8.6, ['Nature', 'ForYou'], true, true),
+  seed(2, 'Misty Morning Valley', 'Fresh & Clear', 1, 8.2, ['Nature', 'ForYou']),
+  seed(3, 'Seaside Stroll', 'Relax & Unwind', 1, 8.5, ['Relax', 'ForYou']),
+  seed(4, 'Forest Path', 'Into the Woods', 1, 8.8, ['Nature', 'ForYou']),
+  seed(5, 'Starry Night Whispers', 'Sleep Aid', 1, 7.9, ['Sleep', 'ForYou']),
+  seed(6, 'Tea After Rain', 'Soothing Calm', 1, 8.0, ['Relax', 'ForYou']),
+  seed(7, 'Breezy Meadow', 'Stretch & Breathe', 1, 8.2, ['Nature', 'ForYou']),
+  seed(8, 'Silent Snow Peak', 'Meditation', 1, 8.4, ['Sleep', 'ForYou']),
+  seed(9, 'Four Seasons Bloom', 'Warmth', 1, 8.1, ['Relax', 'ForYou']),
+  seed(10, 'Stream Murmurs', 'Nature Sounds', 1, 8.3, ['Nature', 'ForYou']),
+  seed(11, 'Warm Afternoon Sun', 'Lazy & Slow', 1, 8.0, ['Relax', 'ForYou']),
+  seed(12, 'Above the Clouds', 'Vast & Open', 1, 8.4, ['Nature', 'ForYou']),
+  seed(13, 'Moonlit Beach', 'For Sleep', 1, 8.7, ['Sleep', 'ForYou']),
+  seed(14, 'Deep in the Bamboo', 'Quiet Mind', 1, 8.2, ['Relax', 'ForYou']),
+  seed(15, 'Autumn Maples', 'Gentle Ease', 1, 8.3, ['Nature', 'ForYou']),
+  seed(16, 'Lake Reflections', 'Stillness', 1, 8.1, ['Relax', 'ForYou']),
+  seed(17, 'Pastoral Song', 'Healing Days', 1, 8.5, ['Nature', 'ForYou']),
+  seed(18, 'First Light', 'Hope', 1, 8.9, ['Relax', 'ForYou']),
+  seed(19, 'Azure Coast', 'Freedom', 1, 8.4, ['Nature', 'ForYou']),
+  seed(20, 'Pine Forest Breath', 'Relax', 1, 8.2, ['Sleep', 'ForYou']),
+  seed(21, 'Firefly Night', 'Tender', 1, 8.0, ['Relax', 'ForYou']),
+  seed(22, 'Valley Echoes', 'Ethereal', 1, 8.6, ['Nature', 'ForYou']),
+  seed(23, 'Flower Sea Walk', 'Romantic Nature', 1, 8.5, ['Nature', 'ForYou']),
+  seed(24, 'Lone Journey in Snow', 'Serene', 1, 8.3, ['Sleep', 'ForYou']),
+  seed(25, 'Rainbow After Rain', 'Healing', 1, 8.4, ['Relax', 'ForYou']),
+  seed(26, 'Coastal Dusk', 'Warmth', 1, 8.2, ['Nature', 'ForYou']),
+  seed(27, 'Sunrise Sea of Clouds', 'Majestic', 1, 8.7, ['Nature', 'ForYou']),
+  seed(28, 'Listening to Wind by the Stream', 'Peace', 1, 8.3, ['Sleep', 'ForYou']),
+  seed(29, 'Starry Camp', 'Camping Calm', 1, 8.6, ['Relax', 'ForYou']),
+  seed(30, 'Warm Lights on the Way Home', 'Home Warmth', 1, 8.8, ['Nature', 'ForYou']),
 ];
 
 export const trending = dramas.filter((d) => d.rating >= 8.0);
 export const newReleases = dramas.slice(0, 12);
 
-export const hotSearches = ['CEO', 'Revenge', 'Reborn', 'Billionaire', 'Sweetheart', 'Divorce'];
+export const hotSearches = ['Relax', 'Sleep', 'Nature', 'Meditation', 'Healing', 'Scenery'];
 
 export function byCategory(cat) {
   if (!cat || cat === 'For You') return dramas;

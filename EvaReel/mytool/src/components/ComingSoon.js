@@ -1,10 +1,10 @@
-// ── Centered "coming soon" placeholder (暂未开放) ──
+// ── Centered "coming soon" placeholder ──
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 
 export default function ComingSoon({
-  title = '暂未开放',
-  subtitle = '更多精彩内容即将上线，敬请期待～',
+  title = 'Coming Soon',
+  subtitle = 'More great content is coming soon. Stay tuned.',
 }) {
   const { colors, fonts } = useTheme();
   return (

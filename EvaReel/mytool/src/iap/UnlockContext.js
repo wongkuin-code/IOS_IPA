@@ -20,8 +20,9 @@ try {
   iap = null;
 }
 
-// 购买看门狗：requestPurchase 返回后若长时间收不到商店回调（常见于存在未完成交易），
-// 主动复位忙碌态并给出提示，避免无限转圈。
+// Purchase watchdog: after requestPurchase returns, if no store callback
+// arrives for a long time (common when an unfinished transaction exists),
+// proactively reset the busy state and show a hint to avoid an endless spinner.
 let buyWatchdog = null;
 function clearBuyWatchdog() {
   if (buyWatchdog) {
@@ -33,7 +34,8 @@ function clearBuyWatchdog() {
 const UnlockContext = createContext(null);
 
 export function UnlockProvider({ children }) {
-  // Web 预览：不接 IAP，直接视为已解锁，付费墙永不弹出、购买/恢复仅提示。
+  // Web preview: no IAP; treat as already unlocked, the paywall never shows,
+  // and buy/restore only display a hint.
   if (Platform.OS === 'web') {
     const webValue = {
       unlocked: true,
@@ -43,8 +45,8 @@ export function UnlockProvider({ children }) {
       vipPrice: '¥1',
       unlockError: null,
       setUnlockError: () => {},
-      buyVip: () => Alert.alert('Web 预览', 'Web 端无需购买，已直接解锁。'),
-      restoreVip: () => Alert.alert('Web 预览', 'Web 端无需购买，已直接解锁。'),
+      buyVip: () => Alert.alert('Web Preview', 'No purchase needed on Web — already unlocked.'),
+      restoreVip: () => Alert.alert('Web Preview', 'No purchase needed on Web — already unlocked.'),
       previewMode: true,
     };
     return <UnlockContext.Provider value={webValue}>{children}</UnlockContext.Provider>;
@@ -88,7 +90,7 @@ export function UnlockProvider({ children }) {
         setUnlocked(true);
         setPaywallVisible(false);
         setPaywallBusy(false);
-        Alert.alert('Unlocked', 'All premium dramas are now unlocked');
+        Alert.alert('Unlocked', 'All premium videos are now unlocked');
       } else {
         setPaywallBusy(false);
         console.warn('[IAP] server verification failed:', result);
@@ -207,8 +209,9 @@ export function UnlockProvider({ children }) {
         },
         type: 'in-app',
       });
-      // requestPurchase 只负责发起，结果靠 listener 回调。若 25s 内无任何回调
-      // （常见于存在未完成交易时再购买），主动复位，避免无限转圈。
+      // requestPurchase only initiates; the result comes via the listener
+      // callback. If no callback arrives within 25s (common when an unfinished
+      // transaction exists), proactively reset to avoid an endless spinner.
       clearBuyWatchdog();
       buyWatchdog = setTimeout(() => {
         buyWatchdog = null;
@@ -244,7 +247,7 @@ export function UnlockProvider({ children }) {
         await saveUnlockState();
         setUnlocked(true);
         setPaywallVisible(false);
-        Alert.alert('Restored', 'Your purchase was restored — premium dramas are unlocked');
+        Alert.alert('Restored', 'Your purchase was restored — premium videos are unlocked');
       } else {
         const first = results[0];
         Alert.alert('Restore Failed', `The server could not confirm the purchase.\n${first && first.error}`);

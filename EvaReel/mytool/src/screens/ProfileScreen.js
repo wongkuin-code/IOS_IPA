@@ -30,7 +30,7 @@ export default function ProfileScreen() {
     </TouchableOpacity>
   );
 
-  return <ComingSoon subtitle="个人中心即将上线，敬请期待～" />;
+  return <ComingSoon subtitle="Profile is coming soon. Stay tuned." />;
 }
 
 const styles = StyleSheet.create({

@@ -1,5 +1,5 @@
 // ── Diagnostic: catch JS errors at startup and show them on screen instead of crashing ──
-// 只在排查 iOS 26 闪退时启用,定位到根因后应从 App.js 中移除。
+// Enable only while investigating the iOS 26 crash; remove from App.js once the root cause is found.
 import React, { Component } from 'react';
 import { DevSettings, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -23,7 +23,8 @@ function showError(error) {
   }
 }
 
-// 全局兜底:捕获非渲染期的未捕获 JS 异常,避免直接走 RN 的 fatal → 崩溃
+// Global safety net: catch uncaught JS exceptions outside render so we don't
+// go straight to RN's fatal → crash.
 if (global.ErrorUtils && typeof global.ErrorUtils.setGlobalHandler === 'function') {
   global.ErrorUtils.setGlobalHandler((error) => {
     showError(error);
@@ -54,7 +55,7 @@ export default class ErrorBoundary extends Component {
         DevSettings.reload();
       }
     } catch (e) {
-      // release 构建可能不支持热重载,忽略即可(手动重开 App)
+      // Release builds may not support hot reload — just ignore (reopen the app manually).
     }
   };
 

@@ -1,4 +1,4 @@
-// ── Short-drama poster art: cinematic gradient + gold frame + display typography ──
+// ── Healing/relaxation video poster art: cinematic gradient + gold frame + display typography ──
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';

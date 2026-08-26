@@ -21,7 +21,7 @@ function EpisodePlayer({ url, speed, replaySignal, onEnded, onRetry, onError, co
     p.playbackRate = speed;
   });
 
-  // Auto-play as soon as the source is attached (short-drama taps into playback).
+  // Auto-play as soon as the source is attached (video taps into playback).
   useEffect(() => {
     player.play();
   }, [player]);
@@ -45,14 +45,16 @@ function EpisodePlayer({ url, speed, replaySignal, onEnded, onRetry, onError, co
     }
   }, [replaySignal, player]);
 
-  // auto-advance when the episode finishes (事件回调，不在渲染期触发)
+  // auto-advance when the episode finishes (event callback, not during render)
   useEffect(() => {
     const sub = player.addListener('playToEnd', onEnded);
     return () => sub.remove();
   }, [player, onEnded]);
 
-  // 本地保存播放状态。用 addListener 在 effect 内订阅(事件回调不在 render 期间)，
-  // 避免在 web 上 expo-video 初始化同步 emit statusChange 时于渲染期回写父组件 setState。
+  // Track playback state locally. Subscribe via addListener inside the effect
+  // (event callbacks don't run during render) so that on Web, expo-video's
+  // synchronous statusChange emit at init can't write back to the parent's
+  // setState during render.
   const [status, setStatus] = useState(player.status);
   const [error, setError] = useState(player.error);
   useEffect(() => {
@@ -81,7 +83,7 @@ function EpisodePlayer({ url, speed, replaySignal, onEnded, onRetry, onError, co
           <TouchableOpacity style={styles.centerBtn} onPress={onRetry}>
             <Text style={styles.lockBig}>⚠️</Text>
             <Text style={[styles.centerText, { color: colors.textMuted }]}>
-              视频加载失败，点击重试
+              Video failed to load. Tap to retry
             </Text>
             {error ? (
               <Text style={[styles.errorDetail, { color: colors.textMuted }]}>
@@ -116,7 +118,8 @@ export default function PlayerScreen() {
     return dramas.find((d) => d.id === idNum);
   }, [id]);
   const maxEp = drama ? drama.episodes : 1;
-  // 只要能拿到视频（含 catalog 回退到唯一真实视频）即可播放，不再被 available 门禁拦截。
+  // If a video URL is available (incl. catalog fallback to the one real video),
+  // it can play — no longer gated by the `available` flag.
   const hasVideo = !!videoUrl;
   const unavailable = drama ? !drama.available && !hasVideo : false;
   const locked = (drama ? drama.premium && !unlocked : false) || unavailable;
@@ -204,14 +207,14 @@ export default function PlayerScreen() {
         {locked ? (
           <TouchableOpacity style={styles.centerBtn} onPress={() => setPaywallVisible(true)}>
             <Text style={styles.lockBig}>🔒</Text>
-            <Text style={[styles.centerText, { color: colors.textMuted }]}>解锁后观看</Text>
+            <Text style={[styles.centerText, { color: colors.textMuted }]}>Unlock to watch</Text>
           </TouchableOpacity>
         ) : catalogLoading ? (
           <ActivityIndicator color="#D4AF37" />
         ) : unavailable ? (
           <View style={styles.centerBtn}>
             <Text style={styles.lockBig}>🚧</Text>
-            <Text style={[styles.centerText, { color: colors.textMuted }]}>该内容暂未开放，敬请期待</Text>
+            <Text style={[styles.centerText, { color: colors.textMuted }]}>This content is not open yet. Stay tuned</Text>
           </View>
         ) : showVideo ? (
           <EpisodePlayer
@@ -227,7 +230,7 @@ export default function PlayerScreen() {
         ) : drama && drama.available ? (
           <TouchableOpacity style={styles.centerBtn} onPress={retry}>
             <Text style={styles.lockBig}>⚠️</Text>
-            <Text style={[styles.centerText, { color: colors.textMuted }]}>视频加载失败，点击重试</Text>
+            <Text style={[styles.centerText, { color: colors.textMuted }]}>Video failed to load. Tap to retry</Text>
             {playerError ? (
               <Text style={[styles.errorDetail, { color: colors.textMuted }]}>{playerError}</Text>
             ) : null}
@@ -235,7 +238,7 @@ export default function PlayerScreen() {
         ) : (
           <View style={styles.centerBtn}>
             <Text style={styles.lockBig}>🎬</Text>
-            <Text style={[styles.centerText, { color: colors.textMuted }]}>该集即将上线</Text>
+            <Text style={[styles.centerText, { color: colors.textMuted }]}>This episode is coming soon</Text>
           </View>
         )}
       </View>
