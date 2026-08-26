@@ -2,7 +2,7 @@
 // Uses the expo-iap ROOT API via lazy require so Expo Go / Web (no native
 // module) can still render the UI in preview mode.
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import {
   VIP_PRODUCT_ID,
   loadUnlockState,
@@ -33,6 +33,23 @@ function clearBuyWatchdog() {
 const UnlockContext = createContext(null);
 
 export function UnlockProvider({ children }) {
+  // Web 预览：不接 IAP，直接视为已解锁，付费墙永不弹出、购买/恢复仅提示。
+  if (Platform.OS === 'web') {
+    const webValue = {
+      unlocked: true,
+      paywallVisible: false,
+      setPaywallVisible: () => {},
+      paywallBusy: false,
+      vipPrice: '¥1',
+      unlockError: null,
+      setUnlockError: () => {},
+      buyVip: () => Alert.alert('Web 预览', 'Web 端无需购买，已直接解锁。'),
+      restoreVip: () => Alert.alert('Web 预览', 'Web 端无需购买，已直接解锁。'),
+      previewMode: true,
+    };
+    return <UnlockContext.Provider value={webValue}>{children}</UnlockContext.Provider>;
+  }
+
   const [unlocked, setUnlocked] = useState(false);
   const [connected, setConnected] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);

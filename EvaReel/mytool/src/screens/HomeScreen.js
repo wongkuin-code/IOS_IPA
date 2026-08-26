@@ -1,6 +1,6 @@
 // ── Home: category tabs + hero + trending/new-release grids ──
 import { useCallback, useMemo, useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
@@ -26,25 +26,11 @@ export default function HomeScreen() {
   const [filterPage, setFilterPage] = useState(1);
   const pendingPlay = useRef(null);
 
-  const lockedIds = useMemo(() => {
-    // Everything that has no hosted video shows as locked ("暂未开放"),
-    // regardless of IAP unlock state — including premium titles.
-    return new Set(dramas.filter((d) => !d.available).map((d) => d.id));
-  }, []);
-
-  const openDetail = useCallback((drama) => {
-    if (!drama.available) {
-      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
-      return;
-    }
-    navigation.navigate('DramaDetail', { id: drama.id });
-  }, [navigation]);
+  // 首页所有视频都播放同一部真实视频（catalog.getVideoUrl 回退到唯一真实视频），
+  // 因此首页不再展示"暂未开放"遮罩。
+  const lockedIds = useMemo(() => new Set(), []);
 
   const openPlayer = useCallback((drama) => {
-    if (!drama.available) {
-      Alert.alert('暂未开放', '该内容暂未开放，敬请期待～');
-      return;
-    }
     if (drama.premium && !unlocked) {
       pendingPlay.current = { id: drama.id, episode: 1 };
       setPaywallVisible(true);
@@ -53,8 +39,7 @@ export default function HomeScreen() {
     navigation.navigate('Player', { id: drama.id, episode: 1 });
   }, [navigation, unlocked, setPaywallVisible]);
 
-  // After a successful purchase, jump straight into the player the user
-  // was trying to watch instead of dumping them back on Home.
+  // 购买成功后直接跳进之前想看的播放器
   useEffect(() => {
     if (unlocked && pendingPlay.current) {
       const target = pendingPlay.current;
@@ -66,7 +51,6 @@ export default function HomeScreen() {
   const changeTab = useCallback((tab) => {
     setActiveTab(tab);
     setFilterPage(1);
-    // Only "For You" shows the one real video. Every other tab is "coming soon".
   }, []);
 
   const loadMoreFiltered = useCallback(() => {
@@ -90,11 +74,11 @@ export default function HomeScreen() {
       </View>
       {activeTab === 'For You' ? (
         <View style={styles.scrollWrap}>
-          <HeroCard drama={trending[0]} onPlay={() => openPlayer(trending[0])} onPress={() => openDetail(trending[0])} />
+          <HeroCard drama={trending[0]} onPlay={() => openPlayer(trending[0])} onPress={() => openPlayer(trending[0])} />
           <SectionHeader title="🔥 Trending Now" onMore={() => showMoreSection('Trending Now', trendingList)} />
-          <DramaGrid data={trendingList} lockedIds={lockedIds} onPressItem={openDetail} onEndReached={() => setTrendingList((l) => moreOf(l))} />
+          <DramaGrid data={trendingList} lockedIds={lockedIds} onPressItem={openPlayer} onEndReached={() => setTrendingList((l) => moreOf(l))} />
           <SectionHeader title="New Releases" onMore={() => showMoreSection('New Releases', newList)} />
-          <DramaGrid data={newList} lockedIds={lockedIds} onPressItem={openDetail} onEndReached={() => setNewList((l) => moreOf(l))} />
+          <DramaGrid data={newList} lockedIds={lockedIds} onPressItem={openPlayer} onEndReached={() => setNewList((l) => moreOf(l))} />
           <View style={styles.footer}>
             <TouchableOpacity onPress={() => showMoreSection('All Dramas', dramas)}>
               <Text style={[styles.footerText, { color: colors.textMuted }]}>Browse all dramas →</Text>

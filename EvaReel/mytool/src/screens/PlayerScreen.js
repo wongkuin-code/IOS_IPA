@@ -4,7 +4,6 @@ import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { VideoView, useVideoPlayer } from 'expo-video';
-import { useEvent } from 'expo';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
@@ -17,7 +16,7 @@ const SPEEDS = [0.5, 1.0, 1.5, 2.0];
 // Real video element for one episode. Remounted (keyed by episode) when the
 // user switches episodes. Replay is handled in-place via replaySignal so the
 // same player just seeks to 0 and plays again.
-function EpisodePlayer({ url, speed, replaySignal, onEnded }) {
+function EpisodePlayer({ url, speed, replaySignal, onEnded, onRetry, onError, colors }) {
   const player = useVideoPlayer(url, (p) => {
     p.playbackRate = speed;
   });
@@ -46,10 +45,54 @@ function EpisodePlayer({ url, speed, replaySignal, onEnded }) {
     }
   }, [replaySignal, player]);
 
-  // auto-advance when the episode finishes
-  useEvent(player, 'playToEnd', onEnded);
+  // auto-advance when the episode finishes (事件回调，不在渲染期触发)
+  useEffect(() => {
+    const sub = player.addListener('playToEnd', onEnded);
+    return () => sub.remove();
+  }, [player, onEnded]);
 
-  return <VideoView player={player} nativeControls style={styles.video} />;
+  // 本地保存播放状态。用 addListener 在 effect 内订阅(事件回调不在 render 期间)，
+  // 避免在 web 上 expo-video 初始化同步 emit statusChange 时于渲染期回写父组件 setState。
+  const [status, setStatus] = useState(player.status);
+  const [error, setError] = useState(player.error);
+  useEffect(() => {
+    const sub = player.addListener('statusChange', ({ status: s, error: e }) => {
+      setStatus(s);
+      setError(e);
+      if (s === 'error' && onError) {
+        onError(e && (e.message || String(e)));
+      }
+    });
+    return () => sub.remove();
+  }, [player, onError]);
+
+  const loading = status === 'loading' || status === 'idle';
+
+  return (
+    <View style={{ flex: 1 }}>
+      <VideoView player={player} nativeControls style={styles.video} />
+      {loading && (
+        <View style={styles.playerOverlay}>
+          <ActivityIndicator color="#D4AF37" />
+        </View>
+      )}
+      {status === 'error' && (
+        <View style={styles.playerOverlay}>
+          <TouchableOpacity style={styles.centerBtn} onPress={onRetry}>
+            <Text style={styles.lockBig}>⚠️</Text>
+            <Text style={[styles.centerText, { color: colors.textMuted }]}>
+              视频加载失败，点击重试
+            </Text>
+            {error ? (
+              <Text style={[styles.errorDetail, { color: colors.textMuted }]}>
+                {error.message || String(error)}
+              </Text>
+            ) : null}
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
 }
 
 export default function PlayerScreen() {
@@ -65,13 +108,17 @@ export default function PlayerScreen() {
   const [replaySignal, setReplaySignal] = useState(0);
   const [videoUrl, setVideoUrl] = useState(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
+  const [remountKey, setRemountKey] = useState(0);
+  const [playerError, setPlayerError] = useState(null);
 
   const drama = useMemo(() => {
     const idNum = Number(String(id).replace(/-r$/, ''));
     return dramas.find((d) => d.id === idNum);
   }, [id]);
   const maxEp = drama ? drama.episodes : 1;
-  const unavailable = drama ? !drama.available : false;
+  // 只要能拿到视频（含 catalog 回退到唯一真实视频）即可播放，不再被 available 门禁拦截。
+  const hasVideo = !!videoUrl;
+  const unavailable = drama ? !drama.available && !hasVideo : false;
   const locked = (drama ? drama.premium && !unlocked : false) || unavailable;
 
   // Reload the video URL from the catalog. Always fetch fresh (force) so a stale
@@ -127,6 +174,14 @@ export default function PlayerScreen() {
     if (ep < maxEp) watch(ep + 1);
   };
 
+  // Retry: re-fetch the catalog and force the player to remount with a fresh
+  // source so transient network/codec errors are cleared.
+  const retry = useCallback(() => {
+    setPlayerError(null);
+    setRemountKey((k) => k + 1);
+    reload();
+  }, [reload]);
+
   // Only mount the player when the episode is both unlocked and hosted.
   const showVideo = !locked && !!videoUrl;
 
@@ -160,16 +215,22 @@ export default function PlayerScreen() {
           </View>
         ) : showVideo ? (
           <EpisodePlayer
-            key={ep}
+            key={`${ep}-${remountKey}`}
             url={videoUrl}
             speed={speed}
             replaySignal={replaySignal}
             onEnded={onEnded}
+            onRetry={retry}
+            onError={setPlayerError}
+            colors={colors}
           />
         ) : drama && drama.available ? (
-          <TouchableOpacity style={styles.centerBtn} onPress={reload}>
+          <TouchableOpacity style={styles.centerBtn} onPress={retry}>
             <Text style={styles.lockBig}>⚠️</Text>
             <Text style={[styles.centerText, { color: colors.textMuted }]}>视频加载失败，点击重试</Text>
+            {playerError ? (
+              <Text style={[styles.errorDetail, { color: colors.textMuted }]}>{playerError}</Text>
+            ) : null}
           </TouchableOpacity>
         ) : (
           <View style={styles.centerBtn}>
@@ -225,6 +286,17 @@ const styles = StyleSheet.create({
   centerBtn: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   lockBig: { fontSize: 48 },
   centerText: { fontSize: 13, marginTop: 12 },
+  playerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000',
+  },
+  errorDetail: { fontSize: 11, marginTop: 8, textAlign: 'center', paddingHorizontal: 24 },
   sheet: {
     paddingHorizontal: 20,
     paddingTop: 16,
