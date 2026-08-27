@@ -67,7 +67,7 @@ export default function DramaCover({ drama, style, textScale = 1 }) {
 }
 
 const styles = StyleSheet.create({
-  art: { overflow: 'hidden' },
+  art: { position: 'relative', overflow: 'hidden' },
   fill: { ...StyleSheet.absoluteFillObject },
   frameOuter: {
     ...StyleSheet.absoluteFillObject,

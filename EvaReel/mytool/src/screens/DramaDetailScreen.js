@@ -29,7 +29,11 @@ export default function DramaDetailScreen() {
     setLoaded(true);
   }, [drama]);
 
-  const unavailable = drama && !drama.available;
+  if (!drama) {
+    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
+  }
+
+  const unavailable = !drama.available;
   const locked = (drama.premium && !unlocked) || unavailable;
 
   const play = useCallback((episode) => {
@@ -47,10 +51,6 @@ export default function DramaDetailScreen() {
   const onSave = useCallback(async () => {
     setSaved(await toggleSaved(drama.id));
   }, [drama]);
-
-  if (!drama) {
-    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
-  }
 
   const episodes = Array.from({ length: drama.episodes }, (_, i) => i + 1);
 

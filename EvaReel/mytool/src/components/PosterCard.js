@@ -46,6 +46,7 @@ export default function PosterCard({ drama, locked, onPress }) {
 const styles = StyleSheet.create({
   wrap: { flex: 1, marginHorizontal: 6 },
   poster: {
+    position: 'relative',
     aspectRatio: 9 / 16,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,

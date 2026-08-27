@@ -2,7 +2,7 @@
 
 > 工程：`mytool/`（Expo SDK 57 / RN 0.86，App `EvaReel`）
 > 目标：过 Apple 审核（重点 2.1 真实播放 + 真实目录、5.2.3 版权、2.3.3/2.3.6 元数据）
-> 最后更新：2026-08-26
+> 最后更新：2026-08-27
 > 与 `EvaShort` 同步审查：本文件镜像 `EvaShort/状态快照.md` 的结构与口径。
 
 ---
@@ -33,19 +33,21 @@
 - [x] `catalog.json`：仅 drama 1（`available:true` + `premium:true`），`baseUrl https://api.haoweimedia.cn/evareel/videos`，url `/1/1.mp4`。已上传并验证端点返回正确 JSON。
 - [x] 服务器安装静态 `ffmpeg 7.0.2`（`/usr/local/bin`）；`server/deploy/publish_videos.sh` 含服务端转码 H.264 + AAC + faststart。
 
-### 客户端 UI（「暂未开放」门禁）
-- [x] `mockDramas.js`：新增 `available` 字段，仅 drama 1 `available+premium`；全库 30 部题材已统一为治愈/放松向（drama 1 标题《享受大自然》，与版权声明作品名一致）。
-- [x] `HomeScreen`：仅 `For You` 展示真实视频（Hero=drama1 + Trending/NewReleases 网格，锁定卡带「暂未开放」遮罩、点击弹提示）；其它分类页签直接 `ComingSoon`；`openDetail/openPlayer` 对非 available 弹「暂未开放」，premium 未解锁走付费墙。
-- [x] `PosterCard`：「暂未开放」遮罩 + `PRO` 角标。
-- [x] `DiscoverScreen` / `LibraryScreen` / `ProfileScreen`：直接返回 `ComingSoon`（副标题区分）。
-- [x] `DramaDetailScreen` / `PlayerScreen`：`unavailable` 守卫，显示「暂未开放」。
+### 客户端 UI（过审最小化门禁，2026-08-27 收敛）
+- [x] `mockDramas.js`：保留 `available` 字段，仅 drama 1 `available+premium`；全库 30 部题材统一为治愈/放松向（drama 1 标题《Enjoy Nature》，与版权声明作品名一致）。
+- [x] **首页（For You）= 单张满屏大封面 + 不可滚动 + 无扩展入口**：`HomeScreen` 仅渲染 1 个真实可播视频 `Hero`（`style={{flex:1, aspectRatio: undefined}}` 撑满剩余高度），顶部仅一行标题、无分类页签 / 搜索；无「Trending/New Releases」网格、无「More / 加载更多」、无点击展开更多，审核员无法滑入未实现区域（对应 2.3.3）。
+- [x] **Discover 页**：仅放 3 个「锁起来」的占位封面（`PosterCard` + `Coming Soon` 遮罩），点击弹 `Coming Soon`（暂时未开放），不进入播放器。
+- [x] **Library 页**：保持锁定，直接返回 `ComingSoon` 占位（即「暂未开放」状态）。
+- [x] **Profile 页**：已展示真实内容（头像 / Saved·History 统计 / 未解锁时「Unlock Premium」入口 / 设置列表：通知开关、评分、隐私政策、Restore Purchase、About），不再是不实现的 Coming Soon。
+- [x] `PosterCard`：「暂未开放」遮罩 + `PRO` 角标，可点击触发 `onPress`（锁定项用于弹 Coming Soon）。
+- [x] `DramaDetailScreen` / `PlayerScreen`：`unavailable` 守卫，显示「暂未开放」；`DramaDetailScreen` 在 `drama` 为空时**提前 `return`**（原 bug：`drama.premium` 在 `if(!drama) return` 之前读取会崩），已修复。
 - [x] 新增 `src/components/ComingSoon.js` 复用组件。
-- [x] `PaywallModal` 含 `restoreVip`（即便 Profile 锁定，首页付费墙可走 Restore，2.1(b) 可测）。
+- [x] `PaywallModal` 含 `restoreVip`（首页 / Profile 付费墙可走 Restore，2.1(b) 可测）。
 
-### 封面与首页收敛（提审观感，2026-08-26 补充）
-- [x] **封面改用 EvaReel 真实视频首帧**：删除 `assets/covers/` 全部旧情侣/言情照（`poster-*.jpg`）及废弃模块 `src/data/posters.js`、`src/data/coverAssets.js`；从 EvaReel 自有视频 `https://api.haoweimedia.cn/evareel/videos/1/1.mp4` 提取第一帧 → `assets/covers/frame-1.jpg`（720×1280 竖屏 H.264）；`mockDramas.js` 中 `drama1.asset` 指向该图，其余 29 部 `asset=null` 回退 `DramaCover` 渐变（不再依赖任何照片资源）。
-- [x] **首页收敛为「1 真实 + 4 锁定」**：`HomeScreen` 原逻辑（空 `lockedIds` + `moreOf` 加载更多）会让全部 30 个标题各异的卡片都可点播、且都回退播放同一真实视频——属 2.3.3 内容不实风险；已改为 `previewList = 1 部 available + 4 部「暂未开放」占位，恢复 `lockedIds`（非 available 卡显示「暂未开放」遮罩且不进入播放器），移除「加载更多」与 footer 的「Browse all videos」（改指 `Discover`/`ComingSoon`），并给 `openPlayer` 加 `if (!drama.available) return;` 守卫。
-- [x] **封面渲染修正（letterbox，2026-08-26）**：`HeroCard` 容器恢复 16:9 横幅、`resizeMode="contain"` 让竖屏首帧完整居中显示，**两侧黑边用「同图放大 + 压暗」填充**（电影感，不再留空渐变）；`PosterCard` 容器改 9:16 竖屏、`cover` 铺满不裁切。
+### 封面与首页收敛（提审观感）
+- [x] **封面改用 EvaReel 真实视频首帧**：删除 `assets/covers/` 全部旧情侣/言情照（`poster-*.jpg`）及废弃模块 `src/data/posters.js`、`src/data/coverAssets.js`；从 EvaReel 自有视频 `https://api.haoweimedia.cn/evareel/videos/1/1.mp4` 提取第一帧 → `assets/covers/frame-1.jpg`（720×1280 竖屏 H.264）；`drama1.asset` 指向该图，其余 29 部 `asset=null` 回退 `DramaCover` 渐变（不再依赖任何照片资源）。
+- [x] **Hero 封面 letterbox 渲染**：`HeroCard` 容器 16:9、`resizeMode="contain"` 让竖屏首帧完整居中显示，两侧黑边用「同图放大 + 压暗」填充（电影感）。Web 端因 RN-Web 容器缺 `position:'relative'` 会导致封面高度塌缩消失，已给 `HeroCard`/`PosterCard`/`DramaCover` 补 `position:'relative'`。
+- [x] **首页大封面（2026-08-27）**：`HomeScreen` 改为单个 `Hero` 撑满屏幕，去掉首页网格 / 页签 / 搜索 / More，符合「尽量少视频 + 不可滚动 + 无扩展操作」的过审口径。
 
 ### 全英文化（无中文展示，2026-08-26）
 - [x] **App 内全部用户可见文案英文化**：30 部剧集标题/副标题、`hotSearches` 热搜词、所有「暂未开放」→ `Coming Soon`、首页 footer「更多内容即将开放」→ `More content coming soon`、播放器全部提示（加载失败重试 / 解锁后观看 / 未开放 / 该集即将上线）、各页 `Alert`、`ComingSoon` 占位、`Web 预览`→`Web Preview` 提示等全部改为英文；代码注释同步英文化。已验证打包后 JS 无中文字符。
@@ -82,17 +84,19 @@
 
 ## 四、当前构建
 
-- **iOS production build #33** 已提交 EAS，状态 `in queue`（2026-08-26）。
-- 凭据齐：Distribution Cert（至 2027-08-08）、Provisioning Profile `2GQKWP3SUH` active、Team `D5VA6Q22PL`（Van Nam Nguyen Individual）。
-- 日志：https://expo.dev/accounts/wongkuins-team/projects/duanju-novel/builds/8cb87194-2350-4151-aff2-df00a7cfc56f
-- 注：buildNumber 走 remote 版本源，自动 32 → 33。**源码与封面资源已于 2026-08-26 变更（首帧封面 + 首页收敛），提审前须重新 `eas build`（#34 起）再 `eas submit`。**
+- **iOS production build #35** 已成功构建（2026-08-27，EAS，状态 `FINISHED`），buildNumber 34→35；产物已就绪、待提交 TestFlight。
+- ⚠️ **提交 TestFlight 暂时受阻**：截至 2026-08-27，Expo 官方 `EAS Submit` 存在部分中断（状态页 incident：「iOS submissions failing on upload to App Store Connect」，EAS Submit 组件 `Degraded Performance`，Monitoring 中）。`eas submit` 会在上传 App Store Connect 时失败/挂起。已用 `--id` 触发一次服务端提交（submission `c20a531f-f597-4875-b5a3-c6a49644d7ef`，状态页 https://expo.dev/accounts/wongkuins-team/projects/duanju-novel/submissions/c20a531f-f597-4875-b5a3-c6a49644d7ef ），卡在 `Submitting`。待 Expo/Apple 恢复后，重跑以下命令即可，**无需重新构建**：
+  `cd EvaReel/mytool && npx eas submit --platform ios --profile production --id fba03eac-812d-43e5-8a87-087ea8b54b8a --non-interactive`
+- 凭据齐：Distribution Cert（至 2027-08-08）、Provisioning Profile `2GQKWP3SUH` active、Team `D5VA6Q22PL`（Van Nam Nguyen Individual）；App Store API Key `AuthKey_74AU6WRUF9.p8` 在位。
+- 日志（#35）：https://expo.dev/accounts/wongkuins-team/projects/duanju-novel/builds/fba03eac-812d-43e5-8a87-087ea8b54b8a
+- **Web 预览包（仅供 UI/文案审查，不用于提审）**：`cd EvaReel/mytool && npx expo export --platform web`，静态产物在 `dist/`；真播与 IAP 在 Web 端走 mock（已解锁、不弹真实付费墙），仅用于界面核对。
 
 ---
 
 ## 五、架构差异 / 已知风险
 
 - 视频由 **nginx 静态分发 + `catalog.json`**（同前），无 `/api/videos` 动态接口（EvaShort 有）。
-- 风险 1：内容仅 1 部（已用「暂未开放」策略缓解，且首页已收敛为「1 真实 + 4 锁定」降低空壳观感，但仍建议后续扩量）。
+- 风险 1：内容仅 1 部（已用「暂未开放」策略缓解，且首页已收敛为单张满屏大封面、Discover 仅 3 个锁定占位，降低空壳观感，但仍建议后续扩量）。
 - 风险 2：版权声明需用户签字转 PDF 才生效，否则 5.2.3 仍可能被拒。
 - 风险 3：IAP / 年龄分级 / 截图 / Notes 全靠 ASC 控制台，未做则仍会被拒。
 - 风险 4：bundleId 沿用旧小说 ID，若 Apple 质疑需协调服务器 + ASC 改动。

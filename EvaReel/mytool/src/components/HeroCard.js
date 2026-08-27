@@ -5,10 +5,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import { dramaTheme } from './DramaCover';
 
-export default function HeroCard({ drama, onPlay, onPress }) {
+export default function HeroCard({ drama, onPlay, onPress, style }) {
   const { colors, radii, fonts } = useTheme();
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { borderRadius: radii.card }]}>
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { borderRadius: radii.card }, style]}>
       <View style={styles.image}>
         {drama.asset ? (
           <>
@@ -47,7 +47,7 @@ export default function HeroCard({ drama, onPlay, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  card: { width: '100%', aspectRatio: 16 / 9, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
+  card: { position: 'relative', width: '100%', aspectRatio: 16 / 9, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
   image: { ...StyleSheet.absoluteFillObject, width: undefined, height: undefined },
   backdropDim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,6,4,0.55)' },
   overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end' },
