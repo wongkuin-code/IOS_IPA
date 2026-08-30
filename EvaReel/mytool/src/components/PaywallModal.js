@@ -9,7 +9,21 @@ export default function PaywallModal() {
   const { colors, fonts } = useTheme();
   const { paywallVisible, setPaywallVisible, setUnlockError, paywallBusy, vipPrice, unlockError, buyVip, restoreVip } = useUnlock();
   useEffect(() => {
-    if (paywallVisible) setUnlockError(null);
+    if (paywallVisible) {
+      setUnlockError(null);
+      // RNW hides the app root with aria-hidden while this modal is open. If the
+      // element that opened the paywall (a button) keeps focus, the browser logs
+      // "Blocked aria-hidden on an element because its descendant retained focus."
+      // Blurring the active element moves focus off the hidden subtree (no-op on
+      // native, where `document` is undefined).
+      if (
+        typeof document !== 'undefined' &&
+        document.activeElement &&
+        typeof document.activeElement.blur === 'function'
+      ) {
+        document.activeElement.blur();
+      }
+    }
   }, [paywallVisible, setUnlockError]);
   if (!paywallVisible) return null;
   return (

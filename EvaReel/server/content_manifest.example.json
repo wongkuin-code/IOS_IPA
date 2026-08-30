@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "file": "enjoy-nature.mp4",
+    "title": "Enjoy Nature",
+    "subtitle": "Healing in Nature",
+    "category": ["Nature", "ForYou"],
+    "premium": true,
+    "available": true
+  },
+  {
+    "id": 2,
+    "file": "misty-morning-valley.mp4",
+    "title": "Misty Morning Valley",
+    "subtitle": "Fresh & Clear",
+    "category": ["Nature", "ForYou"],
+    "premium": false,
+    "available": true
+  },
+  {
+    "id": 3,
+    "file": "seaside-stroll.mp4",
+    "title": "Seaside Stroll",
+    "subtitle": "Relax & Unwind",
+    "category": ["Relax", "ForYou"],
+    "premium": false,
+    "available": true
+  }
+]

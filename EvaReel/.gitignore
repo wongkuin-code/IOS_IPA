@@ -49,6 +49,7 @@ server/.env
 
 # work artifacts
 mytool/dist/
+mytool/dist-web/
 mytool/dist-web.zip
 mytool/web.log
 mytool/scripts/serve_web.log
@@ -75,3 +76,13 @@ tmp-ref.jpg
 ref.png
 info.png
 assets/Image_to_image_edit_of_the_sou_2026-08-12T11-35-20.png
+
+# content intake (raw videos must never be committed)
+server/_incoming/*
+!server/_incoming/.gitkeep
+server/content_manifest.json
+
+# raw source videos (never commit — streamed from server, not bundled)
+video/
+*.log
+52e2a9779b883afb7db31f5a920e5678.mp4

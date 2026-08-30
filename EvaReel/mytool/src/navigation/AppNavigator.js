@@ -1,4 +1,5 @@
 // ── Root navigation: tab bar + pushed screens ──
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -30,8 +31,34 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
+  const navRef = React.useRef(null);
+
+  // Web-only a11y fix. @react-navigation/elements marks every unfocused screen
+  // container with `aria-hidden={!focused}`. When you tap a card, that button
+  // keeps DOM focus, then its screen becomes unfocused and gets aria-hidden —
+  // Chromium then logs "Blocked aria-hidden … descendant retained focus".
+  // Blurring the focused element synchronously *before* React commits the new
+  // tree (i.e. before the batched state update flushes) prevents the warning.
+  // No-op on native, where `document` is undefined and iOS uses UIKit, not DOM.
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const nav = navRef.current;
+    if (!nav) return;
+    const methods = ['navigate', 'push', 'replace', 'reset', 'goBack', 'pop', 'popToTop', 'dispatch'];
+    methods.forEach((m) => {
+      const orig = nav[m];
+      if (typeof orig === 'function') {
+        nav[m] = (...args) => {
+          const el = document.activeElement;
+          if (el && typeof el.blur === 'function') el.blur();
+          return orig.call(nav, ...args);
+        };
+      }
+    });
+  }, []);
+
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer ref={navRef} theme={navTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="DramaDetail" component={DramaDetailScreen} />

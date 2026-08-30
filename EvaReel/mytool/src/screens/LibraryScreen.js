@@ -7,7 +7,6 @@ import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import DramaGrid from '../components/DramaGrid';
-import ComingSoon from '../components/ComingSoon';
 import { dramas } from '../data/mockDramas';
 import { loadSaved, loadHistory } from '../data/libraryStore';
 
@@ -39,24 +38,50 @@ export default function LibraryScreen() {
 
   const savedList = saved.map(byId).filter(Boolean);
   const historyList = history.map((h) => byId(h.id)).filter(Boolean);
+  const data = tab === 'Saved' ? savedList : historyList;
 
-  return <ComingSoon subtitle="My Library is coming soon. Stay tuned." />;
-}
-
-function EmptyHint({ text }) {
-  const { colors } = useTheme();
   return (
-    <View style={styles.empty}>
-      <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: 'center', lineHeight: 21 }}>{text}</Text>
+    <View
+      style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + spacing.sm }]}
+    >
+      <StatusBarDark />
+      <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Library</Text>
+      </View>
+      <View style={[styles.segment, { marginHorizontal: spacing.md, backgroundColor: colors.surface }]}>
+        {['Saved', 'History'].map((t) => (
+          <TouchableOpacity
+            key={t}
+            onPress={() => setTab(t)}
+            style={[styles.segmentBtn, tab === t && { backgroundColor: colors.gold }]}
+          >
+            <Text style={[styles.segmentText, { color: tab === t ? '#1A1410' : colors.textMuted }]}>{t}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {data.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+            {tab === 'Saved'
+              ? 'No saved videos yet. Tap 🔖 on any video to save it here.'
+              : 'No watch history yet. Videos you play will appear here.'}
+          </Text>
+        </View>
+      ) : (
+        <DramaGrid data={data} onPressItem={openDetail} />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  title: { fontSize: 22, fontWeight: '800', marginHorizontal: 16, marginBottom: 12 },
-  segment: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 14, padding: 4 },
+  header: { marginBottom: 12 },
+  title: { fontSize: 26, fontWeight: '800' },
+  segment: { flexDirection: 'row', padding: 4, borderRadius: 12, marginBottom: 14 },
   segmentBtn: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 8 },
   segmentText: { fontSize: 14, fontWeight: '700' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
+  emptyText: { fontSize: 14, textAlign: 'center', lineHeight: 21 },
 });
