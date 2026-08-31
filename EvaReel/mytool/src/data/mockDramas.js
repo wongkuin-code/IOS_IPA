@@ -6,7 +6,21 @@
 
 export const categories = ['For You', 'Nature', 'Relax', 'Sleep', 'More'];
 
-const POSTER_BASE = 'https://api.haoweimedia.cn/evareel/videos';
+// Real cover = the video's own first frame (poster.jpg), extracted on the
+// server at transcode time and bundled into the app. Bundling (not remote URI)
+// guarantees the covers render identically on iOS, web, and TestFlight with no
+// network dependency.
+const COVERS = {
+  1: require('../../assets/covers/poster-1.jpg'),
+  2: require('../../assets/covers/poster-2.jpg'),
+  3: require('../../assets/covers/poster-3.jpg'),
+  4: require('../../assets/covers/poster-4.jpg'),
+  5: require('../../assets/covers/poster-5.jpg'),
+  6: require('../../assets/covers/poster-6.jpg'),
+  7: require('../../assets/covers/poster-7.jpg'),
+  8: require('../../assets/covers/poster-8.jpg'),
+  9: require('../../assets/covers/poster-9.jpg'),
+};
 
 const seed = (id, title, subtitle, episodes, rating, category, premium, available) => ({
   id,
@@ -18,10 +32,7 @@ const seed = (id, title, subtitle, episodes, rating, category, premium, availabl
   premium: Boolean(premium),
   // `available` = a real, hosted video exists and is ready to play.
   available: Boolean(available),
-  // Real cover = the video's own first frame (poster.jpg), extracted on the
-  // server at transcode time. On load error CoverImage falls back to gradient
-  // art, so a cover can never end up blank.
-  asset: available ? { uri: `${POSTER_BASE}/${id}/poster.jpg` } : null,
+  asset: available ? COVERS[id] : null,
 });
 
 export const dramas = [

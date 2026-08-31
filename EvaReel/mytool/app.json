@@ -11,7 +11,7 @@
       "backgroundColor": "#1A1410"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.mytool.booksreader",
       "buildNumber": "1",
       "infoPlist": {
