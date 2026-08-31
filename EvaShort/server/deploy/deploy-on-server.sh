@@ -1,6 +1,6 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
-# EvaReel IAP 验证服务器 一键部署脚本 (OpenCloudOS 9 / RHEL9 系, 需 root)
+# EvaShort IAP 验证服务器 一键部署脚本 (OpenCloudOS 9 / RHEL9 系, 需 root)
 #
 # 部署目标: 香港服务器 43.129.30.172 (腾讯云香港, 无备案限制, 走标准 443)
 # 前置条件(在 DNS 控制台完成):
@@ -14,9 +14,9 @@ set -euo pipefail
 
 API_DOMAIN="api.haoweimedia.cn"
 WWW_DOMAIN="haoweimedia.cn"
-APP_DIR="/opt/evareel-server"
+APP_DIR="/opt/evashort-server"
 PROMO_DIR="/var/www/haoweimedia"
-PM2_NAME="evareel-verify"
+PM2_NAME="evashort"
 
 log()  { echo -e "\033[1;36m[deploy]\033[0m $*"; }
 die()  { echo -e "\033[1;31m[ERROR]\033[0m $*" >&2; exit 1; }
@@ -75,8 +75,8 @@ fi
 
 # ── 6. nginx 配置 ──────────────────────────────────────────────────────────
 log "写入 nginx 配置..."
-if [ ! -f /etc/nginx/conf.d/evareel.conf ]; then
-  cp "$(dirname "${BASH_SOURCE[0]}")/nginx-evareel.conf" /etc/nginx/conf.d/evareel.conf
+if [ ! -f /etc/nginx/conf.d/evashort.conf ]; then
+  cp "$(dirname "${BASH_SOURCE[0]}")/nginx-evashort.conf" /etc/nginx/conf.d/evashort.conf
 fi
 rm -f /etc/nginx/conf.d/default.conf
 nginx -t && systemctl reload nginx

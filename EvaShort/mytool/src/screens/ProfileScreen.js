@@ -1,6 +1,6 @@
 // ── Profile: real account info, stats, VIP, settings list ──
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Switch, Modal, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Switch, Modal, TextInput, ActivityIndicator, Linking, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -147,7 +147,7 @@ export default function ProfileScreen() {
           label="Notifications"
           right={<Switch value={notifications} onValueChange={setNotifications} trackColor={{ true: colors.gold }} />}
         />
-        <Row icon="📄" label="Privacy Policy" onPress={() => {}} />
+        <Row icon="📄" label="Privacy Policy" onPress={openPrivacyPolicy} />
         {!isGuest ? (
           <Row icon="🗑️" label="Delete Account" onPress={() => { setDeletePw(''); setDeleteError(null); setDeleteVisible(true); }} danger />
         ) : null}
@@ -194,6 +194,10 @@ export default function ProfileScreen() {
     </View>
   );
 }
+
+// Hosted privacy policy (must be reachable over https during review).
+const PRIVACY_POLICY_URL = 'https://api.haoweimedia.cn/evashort/privacy-policy.html';
+const openPrivacyPolicy = () => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
 
 const styles = StyleSheet.create({
   root: { flex: 1 },

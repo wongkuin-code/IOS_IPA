@@ -109,3 +109,48 @@
 3. 隐私政策未部署 https、营养标签未填。
 4. 密钥仍存在于 git 历史（已推送旧提交）。
 5. CDN 尚未配置（当前直连源站，审核拉流可能偏慢；可选优化，非拒因）。
+
+---
+
+## 六、2026-08-31 同步 EvaReel 上架审核改动
+
+> 把 EvaShort 的接口/数据层与设计/过审口径对齐到 EvaReel 当前已验证状态，同时**保留本质差异**。
+
+### 已与用户确认的分歧决策
+1. **版权口径**：保留「朋友自制短剧 + 书面授权书(`legal/授权书_火华短剧.pdf`)」。**不抄** EvaReel 的「原创声明 / declaration of original authorship」——对第三方内容谎称原创有法律风险。App Store 回复与 Notes 声称「已获授权/自有 + 附授权书」。
+2. **iPad**：对齐 EvaReel → `mytool/app.json` `ios.supportsTablet=false`（iPhone-only）；13″ 截图用黑边撑真实 iPhone 界面（新建 `screenshots_padded/pad_screenshots.py`）。
+3. **内容数量**：用户将提供 **3–5 部授权视频**；代码先移除伪造目录，再接入真实内容彻底过 4.2（同 EvaReel 早期教训）。
+
+### 已落地的代码改动（2026-08-31）
+- **数据层去伪造**：`src/data/mockDramas.js` 的 `moreOf` 不再伪造 `id:'1-r'` 重复卡片（改返回原列表）；`src/screens/MoreListScreen.js` 移除 `moreOf` 无限假追加（`onEndReached` 删除），仅展示真实目录。`catalogue.js` 的 `dailyPicks/similarTo` 本就只引用真实 `current`，无需改。
+- **全英文化核验**：Grep `src` 中 CJK 仅出现在代码注释，用户可见文案已全英文（对齐 EvaReel）。
+- **隐私政策**：`mytool/privacy-policy.html` 由中文（且残留旧小说/古腾堡内容）重写为**英文视频短剧版**；`ProfileScreen` 的 Privacy Policy 行接入 `Linking.openURL`（原为空 `onPress`）；`AuthScreen` 底部「Privacy Policy」改为可点击链接。URL 常量 `https://api.haoweimedia.cn/evashort/privacy-policy.html`（须部署 https）。
+- **iPad**：`app.json` `supportsTablet:false`。
+- **文档**：新建 `AppStoreListing_EN.md`（朋友授权措辞，镜像 EvaReel 结构）；根目录 `AppStore_ResolutionCenter_Reply.txt` 修正版权口径为「授权」而非「原创」。
+
+### 待用户依赖（阻塞过审）
+- [ ] 提供 3–5 部授权 mp4 → ffmpeg 提取首帧封面到 `mytool/assets/covers/` → 接入 `mockDramas` 真实 `seed()` 条目 → 部署到 `server/videos` + 目录（否则仅去伪造 + 1 部仍可能被 4.2 打回）。
+- [ ] 真机/模拟器捕获英文界面截图（Home/Player/Profile/Discover/Library）→ 跑 `pad_screenshots.py` 生成 6.5″+13″ 双尺寸。
+- [ ] `server` 视频须审核期在线且返回 `videoUrl`（`api.haoweimedia.cn` 归属待确认）。
+- [ ] IAP 商品送审（`VIP_PRODUCT_ID='2.99'` 须与 ASC 一致）+ 沙盒买/恢复跑通；年龄分级按短剧内容如实填（通常 12+/17+，勿乱填 4+）。
+
+---
+
+## 七、2026-08-31 Web 版（Expo web）+ 服务器命名清理 + 视频压缩
+
+### Web 版（复用现有 Expo web 构建，本地运行，未部署）
+- 根因：Web 上 `body{overflow:hidden}`，滚动必须发生在列表控件内部；但多个页面的 `FlatList`/`ScrollView` 缺 `flex:1`，按内容撑开后被裁切 → 整页无法上下滑动。
+- 修复：`HomeScreen.js` 的 `FlatList` 补 `style={{flex:1}}`；`DiscoverScreen.js` 包 `DramaGrid` 的 `View` 由 `{marginTop}` 改 `{flex:1,marginTop}`；`DramaDetailScreen.js` 主 `ScrollView` 补 `style={{flex:1}}`。`LibraryScreen` 本就合法（DramaGrid 为 root 直接 flex 子节点）。
+- IAP：Web 上 `expo-iap` 原生模块不可用 → `UnlockContext` 自动 `unlocked=true`（免费预览，所有剧可直接看，购买按钮提示去 App 内购买），符合浏览器无法走 Apple 支付的事实。
+- 构建：本地 `npx expo export --platform web --output-dir dist-web`（webpack/metro 本地打包，**不消耗 EAS 额度**）。本地静态服务 `npx serve dist-web` → http://localhost:3000 已验证 200。本期**只在本地，不部署**。
+- 控制台 `[Extractor] Error handling editor message` 仅 `expo start --web` 开发服务器噪音，与滚动无关，生产静态包不触发。
+
+### 服务器命名清理（evareel → evashort，仅 EvaShort 部分）
+- 线上目录 `/opt/evareel-server` → `/opt/evashort-server`（含 users.json/store.json 一并迁移，无丢失）；pm2 进程 `evashort` 已用新路径重启。
+- nginx 配置 `/etc/nginx/conf.d/evareel.conf` → `evashort.conf` 并 reload（`nginx -t` 通过）。
+- 代码：`server/package.json`+`package-lock.json` name 改 `evashort-server`；`deploy/deploy-on-server.sh` 的 `APP_DIR`/`PM2_NAME` 改 `evashort`；`nginx-evareel.conf` → `nginx-evashort.conf`（注释同步）。
+- 注意：独立旧项目 `evareel-verify-v2`（端口 3001，目录 `/opt/evareel-verify-v2`）**未动**，它与 EvaShort 共存、是两码事。
+
+### 视频转码压缩
+- `videos/1-10.mp4`（含 8.m4v 转 mp4）用 ffmpeg H.264 CRF30 重编码到 `videos_transcoded/`，单部 5.8–26MB（原 30–293MB）。已 scp 同步到服务器 `/opt/evashort-server/videos`（覆盖旧 1–5、新增 6–10），线上 `/videos/1.mp4` 等返回 200；本地 `server/videos/` 亦同步。
+- `EvaShort/videos/`、`videos_transcoded/`、`screenshots_padded/` 不入库（体积大，仅本地/服务器用）。

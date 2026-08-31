@@ -86,6 +86,8 @@ export function searchDramas(keyword) {
   );
 }
 
+// Returns the catalogue as-is. We never synthesize duplicate or placeholder
+// rows — every card the user sees must map to a real, playable drama.
 export function moreOf(data) {
-  return [...data, ...data.slice(0, 6).map((d) => ({ ...d, id: `${d.id}-r` }))];
+  return [...data];
 }

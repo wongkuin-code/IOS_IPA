@@ -1,8 +1,8 @@
 {
-  "name": "evareel-iap-verify",
+  "name": "evashort-server",
   "version": "1.0.0",
   "private": true,
-  "description": "EvaReel IAP server-side verification (StoreKit 2 JWS)",
+  "description": "EvaShort IAP server-side verification (StoreKit 2 JWS)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

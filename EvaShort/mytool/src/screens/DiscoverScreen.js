@@ -197,7 +197,7 @@ export default function DiscoverScreen() {
         ))}
       </View>
 
-      <View style={{ marginTop: spacing.md }}>
+      <View style={{ flex: 1, marginTop: spacing.md }}>
         <DramaGrid data={grid} lockedIds={lockedIds} onPressItem={openDetail} onEndReached={loadMore} />
       </View>
     </View>

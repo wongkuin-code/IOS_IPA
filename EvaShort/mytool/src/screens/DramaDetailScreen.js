@@ -82,7 +82,7 @@ export default function DramaDetailScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <StatusBarDark />
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
         <View>
           <HeroCard drama={drama} onPlay={() => play(1)} onPress={() => play(1)} />
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>

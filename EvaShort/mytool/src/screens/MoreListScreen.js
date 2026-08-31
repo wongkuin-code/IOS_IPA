@@ -7,7 +7,6 @@ import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import DramaGrid from '../components/DramaGrid';
-import { moreOf } from '../data/catalogue';
 
 export default function MoreListScreen() {
   const { colors, spacing } = useTheme();
@@ -45,7 +44,6 @@ export default function MoreListScreen() {
         data={data}
         lockedIds={lockedIds}
         onPressItem={openDetail}
-        onEndReached={() => setData((d) => moreOf(d))}
         style={{ paddingTop: spacing.sm }}
       />
     </View>

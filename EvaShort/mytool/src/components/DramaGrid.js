@@ -23,7 +23,6 @@ export default function DramaGrid({ data, lockedIds, onPressItem, onEndReached, 
       columnWrapperStyle={styles.row}
       style={styles.list}
       initialNumToRender={12}
-      removeClippedSubviews
       ListEmptyComponent={null}
     />
   );

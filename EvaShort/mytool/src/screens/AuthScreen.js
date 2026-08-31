@@ -1,7 +1,7 @@
 // ── Auth screen: login / register / guest login / guest upgrade ──
 import { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../auth/AuthContext';
 import StatusBarDark from '../components/StatusBarDark';
+
+// Hosted privacy policy (must be reachable over https during review).
+const PRIVACY_POLICY_URL = 'https://api.haoweimedia.cn/evashort/privacy-policy.html';
+const openPrivacyPolicy = () => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
 
 export default function AuthScreen() {
   const { colors, fonts } = useTheme();
@@ -178,7 +182,11 @@ export default function AuthScreen() {
           ) : null}
 
           <Text style={[styles.footnote, { color: colors.textMuted }]}>
-            By continuing you agree to our Privacy Policy.
+            By continuing you agree to our{' '}
+            <Text style={{ color: colors.gold }} onPress={openPrivacyPolicy}>
+              Privacy Policy
+            </Text>
+            .
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -14,15 +14,15 @@
 
 ```powershell
 # 1. 把 server/ 目录(exclude node_modules)完整上传到香港服务器
-scp -r server root@43.129.30.172:/opt/evareel-server/
+scp -r server root@43.129.30.172:/opt/evashort-server/
 ```
 
 服务器上（root）：
 
 ```bash
-cd /opt/evareel-server
+cd /opt/evashort-server
 npm install --omit=dev
-pm2 restart evareel-verify
+pm2 restart evashort
 ```
 
 之后确认（自检 /health）：
@@ -30,7 +30,7 @@ pm2 restart evareel-verify
 ```bash
 curl https://api.haoweimedia.cn/health
 # 期望: {"ok":true,"app":"evashort-api","env":"Sandbox","users":0}
-pm2 logs evareel-verify
+pm2 logs evashort
 ```
 
 首次全新部署用一键脚本（Node 20 + pm2 常驻 + nginx 反代 + certbot HTTPS + promo 页面托管）：

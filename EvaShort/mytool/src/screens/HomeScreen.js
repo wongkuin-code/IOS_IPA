@@ -86,6 +86,7 @@ export default function HomeScreen() {
         </View>
       </View>
       <FlatList
+        style={{ flex: 1 }}
         data={feed}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
