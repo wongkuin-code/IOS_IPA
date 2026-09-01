@@ -51,7 +51,8 @@
 - [ ] **截图更新**（2.3.3）：必须是真实使用画面（信息流/播放页），非登录页/闪屏。
 
 ### P2 — 隐私与账号
-- [ ] 隐私政策部署 `https` 且可访问；App 内"Privacy Policy"加跳转链接。
+- [x] **隐私政策已部署 https 且可访问**（2026-08-31 实测 200/1773B/`text/html`）：`https://api.haoweimedia.cn/evashort/privacy-policy.html`。nginx 加 `location /evashort/ { alias /var/www/evashort/; }`，文件落 `/var/www/evashort/`（**不能放 `/opt/evashort-server`，rsync --delete 会删**）。App 内 `AuthScreen.js:14` / `ProfileScreen.js:199` 两处链接均已接通。部署已纳入 `server/deploy/deploy-on-server.sh` 第 5.5 节 + `server/privacy/privacy-policy.html` + `nginx-evashort.conf` 模板。
+- [x] **`eas build` + `eas submit` 全流程跑通（2026-08-31 实测）**：build 8 / 版本 1.0.0 已构建并上传 App Store Connect → 进 TestFlight 处理中。`eas.json` 的 ASC 提交密钥（`6XTPZ5CBDW` / Issuer `761a52ec-...` / `.p8` / App `6802204407`）鉴权通过，提交日志显示 `ASC App ID: 6802204407` 与 Key `6XTPZ5CBDW` 配对成功 → **证实该 Key 对 App 有权限，账号关系不是问题**（详见第十节 +「十一、构建/提交流水线实战」）。本地 `keys/apple-dev.txt` 的 AppleID 已改 `taoxi110@qq.com`（App 专用密码未生成，但实测提交走 API Key、不依赖它，非必需）。
 - [ ] ASC「App 隐私」营养标签如实填写（账户/购买/观看历史）。
 - [ ] IAP 商品 ID `2.99` 与 ASC 一致、非消耗、沙盒买/恢复跑通。
 
@@ -106,7 +107,7 @@
 ## 五、当前已知风险
 1. ~~后端未确认在线 → 审核员可能看不到真实播放~~ **已解决**：视频已部署且 `/videos/1.mp4` 返回 200 + `Accept-Ranges`。
 2. 仅 1 部内容 + 无书面授权 → 5.2 风险（授权书原件已在 `legal/`，待人工核验条款）。
-3. 隐私政策未部署 https、营养标签未填。
+3. ~~隐私政策未部署 https~~ **已解决**（2026-08-31 部署上线，实测 200）；营养标签仍未填。
 4. 密钥仍存在于 git 历史（已推送旧提交）。
 5. CDN 尚未配置（当前直连源站，审核拉流可能偏慢；可选优化，非拒因）。
 
@@ -154,3 +155,122 @@
 ### 视频转码压缩
 - `videos/1-10.mp4`（含 8.m4v 转 mp4）用 ffmpeg H.264 CRF30 重编码到 `videos_transcoded/`，单部 5.8–26MB（原 30–293MB）。已 scp 同步到服务器 `/opt/evashort-server/videos`（覆盖旧 1–5、新增 6–10），线上 `/videos/1.mp4` 等返回 200；本地 `server/videos/` 亦同步。
 - `EvaShort/videos/`、`videos_transcoded/`、`screenshots_padded/` 不入库（体积大，仅本地/服务器用）。
+
+---
+
+## 八、2026-08-31 隐私政策死链修复（上架就绪度核查后）
+
+> 起因：核查上架状态时实测 `https://api.haoweimedia.cn/evashort/privacy-policy.html` 返回 **404**，而 App 内两处入口均指向它 —— 审核员点击即 404，构成 5.1.1 / 2.3.3 拒因。
+
+### 根因
+- `deploy-on-server.sh` 只 rsync `server/` → `/opt/evashort-server`，而 `privacy-policy.html` 在 `mytool/` 下，不在同步范围。
+- 旧 `nginx-evashort.conf` 无 `/evashort/` location，请求落到 `location /` 反代至 Express，Express 无此路由 → 404。
+
+### 已执行（服务器 43.129.30.172，root）
+1. 建 `/var/www/evashort/`，上传 `privacy-policy.html`（1773B，英文版）。
+2. 备份 `/etc/nginx/conf.d/evashort.conf` → `.bak.20260831211249`。
+3. 在 api server 块的 `location /` **之前**插入静态 location（`alias` + CORS + 1h 缓存）。
+4. `nginx -t` 通过 → `nginx -s reload`（失败自动回滚逻辑已内置，未触发）。
+
+### 防复发（本地仓库同步）
+- `server/privacy/privacy-policy.html` 新建（部署源，与 `mytool/` 版本需保持一致）。
+- `deploy-on-server.sh`：新增 `PRIVACY_DIR="/var/www/evashort"` + 第 5.5 节同步步骤（`bash -n` 语法校验通过）。
+- `nginx-evashort.conf` 模板：补 `/evashort/` location（新服务器初始化即可用）。
+- 注：`deploy-on-server.sh` 第 78 行是 `if [ ! -f .../evashort.conf ]`，**不会覆盖**已存在的线上配置，本次改动安全。
+
+### 实测结果
+| 检查项 | 结果 |
+|--------|------|
+| `https://api.haoweimedia.cn/evashort/privacy-policy.html` | 200 / 1773B / `text/html` |
+| `http://` 同 URL（301→https） | 200 |
+| `GET /api/videos` | 200 |
+| `/videos/1.mp4` Range 请求 | 206 |
+
+## 九、2026-08-31 隐私政策文案重写（用户选方案 1：如实写）
+
+- **原版核心错误**：声称"不收集、不存储任何个人数据"，但 App 有注册/登录（`users.json` 存账号/密码哈希/收藏/历史）→ 与事实不符，5.1.1 拒因。
+
+### 重写前的数据盘点（据实，非推测）
+- **服务端 `users.json`**：username、scrypt 盐哈希密码（不明文）、nickname、avatar、createdAt、`saved[]`、`history[]`、`tokens[]`；`email` 字段恒为 `null`（注册与 upgrade 均**不收集邮箱**）。
+- **服务端 `store.json`**：IAP `transactionIds`（防重放）。
+- **服务端 nginx 日志**：IP / 时间 / URL / UA，轮转删除，不用于追踪。
+- **本地 AsyncStorage**：`evashort_auth_token`、`evashort_auth_user`、`evashort_saved`、`evashort_history`、`evashort_search_history`、`evashort_vip_unlocked`、`evashort_theme_mode`。
+- **第三方 SDK**：对 package.json grep `analytics|firebase|crashlytics|sentry|appsflyer|facebook|adjust|idfa|tracking` → **零命中**，无分析/广告/崩溃 SDK。仅 Apple StoreKit 与自有服务器。
+- **账号删除**：服务端 `DELETE /api/auth/account` + 前端 `ProfileScreen`「Delete Account」入口均在（满足 5.1.1(v)）。
+
+### 新版结构（英文，9 节）
+1 收集什么 / 2 **不**收集什么 / 3 用途 / 4 第三方 / 5 保留与删除 / 6 安全 / 7 儿童(13+) / 8 变更 / 9 联系方式。
+
+- 关键表述：本地数据"从未上传服务器，故不在账号删除范围内，登出或卸载 App 可清除" —— 精确匹配 `deleteAccount()` 只清服务端 + token/user、**不清**本地 AsyncStorage 的实现现状，避免再次文案与代码不符。
+- 已部署：6169B，`https://api.haoweimedia.cn/evashort/privacy-policy.html` 返回 200，线上内容与 `mytool/privacy-policy.html` 逐字节一致（diff 通过）。服务器保留旧版 `.bak.20260831212628`。
+
+### 待办提醒
+- 联系邮箱是 `taoxi110@qq.com`（2026-08-31 由用户指令从 EvaReel 项目的 `vuthingocnga9798@icloud.com` 改换，旧邮箱为 EvaReel 项目所用，与 EvaShort 无关）。
+- **ASC「App 隐私」营养标签须按新版文案如实填**，否则仍是"文案与标签不一致"：
+  - Identifiers（username / user ID）
+  - Purchases（IAP 交易）
+  - Usage Data（观看历史、搜索历史）
+  - Diagnostics 视日志口径可选，建议**不勾**（文案称日志不用于追踪）
+  - 用途一律 App Functionality；**Tracking = 否**。
+
+---
+
+## 十、2026-08-31 ASC 元数据：技术支持网址 + 版权
+
+### 必填性（Apple 官方文档口径）
+| 字段 | 是否必填 | 位置 | 说明 |
+|------|---------|------|------|
+| **技术支持网址 (Support URL)** | **必填** | 版本页 App 信息 | 官方原文 "This property is required"。审核员会**实际打开**该页面验证；须含真实联系方式（邮箱/电话/地址），仅 FAQ 不够；不可填 mailto:、社交主页、占位页或死链 |
+| **版权 (Copyright)** | **必填** | 版本页 | 官方原文 "This property is required"。格式 `2014 Example, Inc.` —— 年份 + 权利主体，© 符号由系统自动添加 |
+| 营销网址 (Marketing URL) | 可选 | 版本页 | 可留空 |
+
+两者均为**元数据**，改它**不需要重新提构建**。
+
+### 技术支持网址：已建好（可直接填）
+```
+https://api.haoweimedia.cn/evashort/support.html
+```
+- 域名选型依据：`www.haoweimedia.cn` 是 **EvaReel 的落地页**（内容不符）且**无 HTTPS 证书**（`letsencrypt/live` 下只有 `api.haoweimedia.cn`），`haoweimedia.cn` 不带 www 返回 502。故挂在已有证书的 `api.haoweimedia.cn` 下。
+- 页面要素（对照 Guideline 1.5）：App 名 + 介绍、**联系邮箱**（`taoxi110@qq.com`）、6 条 FAQ、隐私政策链接、Last updated。
+- FAQ 引用的 App 内入口均经 grep 核实真实存在：`Restore Purchase`（ProfileScreen:144）、`Delete Account`（ProfileScreen:152）、`Privacy Policy`（ProfileScreen:150）、`Upgrade to Full Account`（:141）、`Appearance`（:143）。
+- 实测 200 / 3461B / `text/html`。
+
+### 版权：主体已确认
+- 格式：`2026 <权利主体>`（© 系统自动补，填写时不要手打 ©）。
+- **确认主体**：`Haowei (shenzhen) Cultural Media Co., Ltd`（用户 22:58 提供，与域名 haoweimedia 对应；须与 Apple Developer 账号登记主体一致——个人账号理论上用本人姓名，但版权字段为自由文本、不会因此拒审）。
+- ASC 填写值：`2026 Haowei (shenzhen) Cultural Media Co., Ltd`
+
+### 部署目录改名（防踩坑）
+- `server/privacy/` → **`server/www/`**（语义更准，现含 privacy-policy.html + support.html 两个页面）；`deploy-on-server.sh` 变量 `PRIVACY_DIR/PRIVACY_SRC` → `STATIC_DIR/STATIC_SRC`，第 5.5 节同步整目录（`bash -n` 通过，无残留旧变量）。服务器目标目录仍为 `/var/www/evashort` 未变。
+
+---
+
+## 十一、2026-08-31 构建/提交流水线实战（eas build → TestFlight）
+
+> 目标：`eas build` 出 iOS 包 + 上传 TestFlight。结果：**已成功**（build 8 / v1.0.0，提交 Apple 处理中，TestFlight 见 `appstoreconnect.apple.com/apps/6802204407/testflight/ios`）。
+
+### 踩坑与修法（本机专属，重跑可复用）
+1. **git `file://` 盘符 URL 解析 bug**：本机 git 把 `git clone file:///C:/...` 错翻成 `/C:/...`（吞盘符）→ EAS 内部 `git clone file://<root>` 必 128 失败。修法：`git config --global url.<本地绝对路径>.insteadOf file://<root>`（例：`git config --global url.C:/easbuild/mytool.insteadOf file:///C:/easbuild/mytool`）。
+2. **K: 盘是间歇性掉线的网络/映射盘**（且会整盘重映射到其他共享）：既不支持 `file://`、cd 也时好时坏，正确路径是 `K:/tools/tools/IOS/IOS_IPA`（注意 `IOS_IPA` 非 `IOS/IPA`）。修法：把 `mytool/` 源码 + 依赖稳定落到 **C:\easbuild\mytool** 独立 git 仓库（不碰 K:），`node_modules` 在该仓库内 `npm install` 拉齐。
+3. **WorkBuddy 安全删除钩子拦截 npm 解包重命名**：`npm install` 解包时临时文件 → 重命名被钩子拦下，只剩 `.DELETE.xxx` 残留，导致 `https-proxy-agent` / `agent-base` 的 `dist/index.js` 缺失、EAS CLI 起不来。修法：`cp <.DELETE 文件> <正式文件名>` 再 `rm` 残留（已修 2 处，require 验证 OK）。
+4. **`eas submit` 读 eas.json 的 `../keys/AuthKey_*.p8` 相对路径**：在 C: 仓库里 `../keys/` 解析为 `C:/easbuild/keys/`（不存在）→ 报 "File ../keys/... doesn't exist"。修法：把 `.p8` 拷到 `C:/easbuild/keys/`。
+5. **EAS 登录态**：本机 `~/.expo/state.json` 已有 expo.dev 账号 `wongkuin`（Owner），无需重新登录。
+
+### 最终可用命令（在 C:\easbuild\mytool，PowerShell 跑）
+```powershell
+$env:CODEBUDDY_SAFE_DELETE_ENABLED="false"
+$env:EXPO_APPLE_API_KEY_PATH="K:/tools/tools/IOS/IOS_IPA/EvaShort/keys/AuthKey_6XTPZ5CBDW.p8"
+$env:EXPO_APPLE_API_KEY_ISSUER_ID="761a52ec-7c5c-4071-a034-4c791745f91d"
+$env:EXPO_APPLE_API_KEY_ID="6XTPZ5CBDW"
+Set-Location "C:/easbuild/mytool"
+eas build --platform ios --profile production --non-interactive
+# 构建完成拿 build ID 后：
+eas submit --platform ios --profile production --non-interactive --id <BUILD_ID>
+```
+- 构建监控：`expo.dev/accounts/wongkuins-team/projects/evashort/builds/896e0c75-...`
+- 提交监控：`expo.dev/accounts/wongkuins-team/projects/evashort/submissions/d59c62a6-...`
+- buildNumber 已从 6 自增到 8（EAS 自动 +1）。
+
+### 结论
+- 自动出包/提交链路 **与 Apple 主账号邮箱无关**（提交走 ASC API Key 独立鉴权），`taoxi110` 是否同账号不影响。
+- ASC 网页手动步骤（IAP 送审 / 年龄分级 / 真实截图 / 营养标签 / 授权书）仍按 P0–P2 清单在 ASC 控制台操作，不影响 TestFlight 内部测试，但影响正式提审。

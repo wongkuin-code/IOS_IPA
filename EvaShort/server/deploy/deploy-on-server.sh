@@ -16,6 +16,7 @@ API_DOMAIN="api.haoweimedia.cn"
 WWW_DOMAIN="haoweimedia.cn"
 APP_DIR="/opt/evashort-server"
 PROMO_DIR="/var/www/haoweimedia"
+STATIC_DIR="/var/www/evashort"
 PM2_NAME="evashort"
 
 log()  { echo -e "\033[1;36m[deploy]\033[0m $*"; }
@@ -71,6 +72,23 @@ if [ -d "$PROMO_SRC" ]; then
   cp -r "$PROMO_SRC"/* "$PROMO_DIR"/ 2>/dev/null || true
 else
   log "未找到 promo-html 目录,跳过落地页($WWW_DOMAIN 暂时 404)"
+fi
+
+# ── 5.5 静态页面: 隐私政策 + 技术支持页 ─────────────────────────────────────
+# 源目录 server/www/ → $STATIC_DIR, 由 nginx 的 location /evashort/ 静态分发,不经 Node。
+#   privacy-policy.html  ← App 内 AuthScreen / ProfileScreen 链接 (ASC 必填)
+#   support.html         ← ASC「技术支持网址 (Support URL)」必填,审核员会实际打开
+# 注意: 不能放进 $APP_DIR —— 第 4 步 rsync --delete 会把它删掉。
+log "部署静态页面到 $STATIC_DIR ..."
+mkdir -p "$STATIC_DIR"
+STATIC_SRC="$SRC_DIR/www"
+if [ -d "$STATIC_SRC" ]; then
+  cp -r "$STATIC_SRC"/* "$STATIC_DIR"/ 2>/dev/null || true
+  chmod 644 "$STATIC_DIR"/*.html 2>/dev/null || true
+  log "隐私政策: https://$API_DOMAIN/evashort/privacy-policy.html"
+  log "技术支持页: https://$API_DOMAIN/evashort/support.html"
+else
+  log "未找到 server/www 目录,跳过 (隐私政策/支持页链接会 404,审核必拒!)"
 fi
 
 # ── 6. nginx 配置 ──────────────────────────────────────────────────────────

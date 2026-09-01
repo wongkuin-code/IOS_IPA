@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>EvaShort — Web Preview</title>
+<style>
+  :root{
+    --bg:#0E0805; --bg2:#16100C; --card:#1C140F; --card2:#241813;
+    --line:#2E211A; --text:#F4ECE6; --muted:#9C8F7F; --muted2:#6E6358;
+    --accent:#FF4D2E; --accentDim:rgba(255,77,46,0.14); --gold:#E8B36B;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:#000; color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    display:flex; justify-content:center;
+  }
+  /* 手机外框，还原 iPhone App 观感 */
+  .phone{
+    width:100%; max-width:430px; min-height:100vh; background:var(--bg);
+    display:flex; flex-direction:column; position:relative; overflow:hidden;
+    box-shadow:0 0 60px rgba(0,0,0,.6);
+  }
+  .statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:14px;font-weight:600;color:var(--text)}
+  .header{padding:6px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+  .brand{font-size:22px;font-weight:800;letter-spacing:.5px}
+  .brand b{color:var(--accent)}
+  .brand small{display:block;font-size:10px;font-weight:500;color:var(--muted2);letter-spacing:2px}
+  .header .ac{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:5px 10px;border-radius:20px}
+  .tabs{display:flex;gap:8px;padding:10px 18px 4px}
+  .tab{font-size:14px;color:var(--muted);padding:6px 12px;border-radius:18px;cursor:pointer}
+  .tab.on{color:#200B06;background:var(--accent);font-weight:700}
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 100px}
+  .hero{position:relative;border-radius:16px;overflow:hidden;margin-bottom:18px;aspect-ratio:16/10;background:linear-gradient(135deg,#3A2326,#211316,#0E0809)}
+  .hero img{width:100%;height:100%;object-fit:cover;display:block;opacity:.92}
+  .hero .ov{position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,.85))}
+  .hero .t{font-size:20px;font-weight:800}
+  .hero .s{font-size:13px;color:var(--muted);margin-top:2px}
+  .hero .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:var(--accentDim);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent)}
+  .sec{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin:6px 4px 12px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .card{background:var(--card);border-radius:12px;overflow:hidden;cursor:pointer;border:1px solid var(--line)}
+  .card .poster{aspect-ratio:2/3;background:linear-gradient(135deg,#46351C,#2A1D0E,#120C05);position:relative}
+  .card .poster img{width:100%;height:100%;object-fit:cover;display:block}
+  .card .badge{position:absolute;top:6px;left:6px;background:var(--accent);color:#200B06;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px}
+  .card .meta{padding:7px 8px 9px}
+  .card .meta .tt{font-size:12px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .meta .sub{font-size:10px;color:var(--muted);margin-top:3px;display:flex;justify-content:space-between}
+  .card .meta .rate{color:var(--gold)}
+  /* 详情 / 播放 */
+  .back{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;padding:4px 2px 12px;cursor:pointer}
+  .detail-hero{aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#3A2326,#0E0809);margin-bottom:14px}
+  .detail-hero img{width:100%;height:100%;object-fit:cover}
+  .dtitle{font-size:20px;font-weight:800}
+  .dsub{font-size:13px;color:var(--muted);margin:2px 0 10px}
+  .dtags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .dtag{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 9px;border-radius:14px}
+  .ddesc{font-size:13px;color:#CBBFB2;line-height:1.6;margin-bottom:14px}
+  .dcast{font-size:12px;color:var(--muted);margin-bottom:16px}
+  .player{position:relative;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden;margin-bottom:12px}
+  .player video{width:100%;height:100%;background:#000;display:block}
+  .eps{display:flex;flex-direction:column;gap:8px}
+  .ep{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+  .ep.on{border-color:var(--accent);background:var(--accentDim)}
+  .ep .no{width:30px;height:30px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent);flex:0 0 auto}
+  .ep .info{flex:1}
+  .ep .info .et{font-size:13px;font-weight:600}
+  .ep .info .ed{font-size:11px;color:var(--muted)}
+  .ep .dur{font-size:11px;color:var(--muted2)}
+  /* 底部 tab */
+  .tabbar{position:absolute;left:0;right:0;bottom:0;height:64px;background:var(--bg2);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around;padding-bottom:8px}
+  .tb{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted);cursor:pointer}
+  .tb.on{color:var(--accent)}
+  .tb .ico{font-size:18px}
+  /* profile */
+  .prof{padding:8px 4px}
+  .prof .u{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .prof .av{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#7a1d10);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff}
+  .prof .un{font-size:17px;font-weight:700}
+  .prof .ue{font-size:12px;color:var(--muted)}
+  .row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;font-size:14px}
+  .row .r{color:var(--muted);font-size:13px}
+  .pmeta{font-size:11px;color:var(--muted2);text-align:center;margin-top:18px;line-height:1.7}
+  .pmeta a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+  .err{color:var(--accent);font-size:13px;padding:20px;text-align:center}
+  .note{font-size:11px;color:var(--muted2);text-align:center;padding:8px;line-height:1.6}
+  ::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>EvaShort · Web Preview</span></div>
+  <div class="header">
+    <div class="brand">Eva<b>Short</b><small>SHORT DRAMA</small></div>
+    <div class="ac">⚡ Premium</div>
+  </div>
+  <div class="tabs">
+    <div class="tab on" data-tab="home">For You</div>
+    <div class="tab" data-tab="romance">Romance</div>
+    <div class="tab" data-tab="new">New</div>
+  </div>
+  <div class="scroll" id="view"></div>
+  <div class="tabbar">
+    <div class="tb on" data-page="home"><div class="ico">🏠</div>Home</div>
+    <div class="tb" data-page="profile"><div class="ico">👤</div>Profile</div>
+  </div>
+</div>
+
+<script>
+const API = "https://api.haoweimedia.cn/api";
+const STATIC = "https://api.haoweimedia.cn";
+// 真实兜底数据（与线上 /api/videos 一致），API 不可达时仍可用
+const FALLBACK = {"ok":true,"total":1,"items":[{"id":1,"title":"Fated to My Vengeful Husband","subtitle":"The CEO","category":["Romance","ForYou"],"premium":true,"poster":"/covers/poster-1.jpg","rating":8.6,"year":2026,"status":"Completed","tags":["CEO","Enemies to Lovers","Marriage"],"cast":["Aria Lane","Noah Sterling"],"description":"A captivating story of love, betrayal and second chances. Every episode ends on a twist you will not see coming.","episodeCount":5}]};
+const FALLBACK_DETAIL = {"ok":true,"video":{"id":1,"title":"Fated to My Vengeful Husband","subtitle":"The CEO","category":["Romance","ForYou"],"premium":true,"poster":"/covers/poster-1.jpg","rating":8.6,"year":2026,"status":"Completed","tags":["CEO","Enemies to Lovers","Marriage"],"cast":["Aria Lane","Noah Sterling"],"description":"A captivating story of love, betrayal and second chances. Every episode ends on a twist you will not see coming.","episodes":[{"no":1,"videoUrl":"/videos/1.mp4","duration":52},{"no":2,"videoUrl":"/videos/2.mp4","duration":21},{"no":3,"videoUrl":"/videos/3.mp4","duration":45},{"no":4,"videoUrl":"/videos/4.mp4","duration":45},{"no":5,"videoUrl":"/videos/5.mp4","duration":24}]}};
+
+const esc = s => (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const img = p => p ? (p.startsWith("http")?p:STATIC+p) : "";
+const $view = document.getElementById("view");
+let state = { data:null, detail:null, currentEp:0, page:"home" };
+
+async function getList(){
+  try{
+    const r = await fetch(API+"/videos",{headers:{"Accept":"application/json"}});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    if(j && j.items) return j;
+  }catch(e){}
+  return FALLBACK;
+}
+async function getDetail(id){
+  try{
+    const r = await fetch(API+"/videos/"+id,{headers:{"Accept":"application/json"}});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    if(j && j.video) return j.video;
+  }catch(e){}
+  return FALLBACK_DETAIL.video;
+}
+
+function renderHome(){
+  const items = state.data?.items || [];
+  const hero = items[0];
+  let h = "";
+  if(hero){
+    h += `<div class="hero" data-id="${hero.id}">
+      ${hero.poster?`<img src="${esc(img(hero.poster))}" alt="">`:""}
+      <div class="play">▶</div>
+      <div class="ov"><div class="t">${esc(hero.title)}</div><div class="s">${esc(hero.subtitle||"")} · ★ ${hero.rating} · ${hero.episodeCount} Episodes</div></div>
+    </div>`;
+  }
+  h += `<div class="sec">All Dramas</div><div class="grid">`;
+  items.forEach(d=>{
+    h += `<div class="card" data-id="${d.id}">
+      <div class="poster">${d.premium?`<div class="badge">PREMIUM</div>`:""}${d.poster?`<img src="${esc(img(d.poster))}" alt="">`:""}</div>
+      <div class="meta"><div class="tt">${esc(d.title)}</div>
+      <div class="sub"><span>${d.episodeCount} EP</span><span class="rate">★ ${d.rating}</span></div></div>
+    </div>`;
+  });
+  h += `</div><div class="note">数据来自真实接口 ${API}/videos · 点击卡片进入详情与播放</div>`;
+  $view.innerHTML = h;
+  $view.querySelectorAll("[data-id]").forEach(el=>el.onclick=()=>openDetail(el.dataset.id));
+}
+
+async function openDetail(id){
+  state.detail = await getDetail(id);
+  renderDetail();
+}
+function renderDetail(){
+  const d = state.detail; if(!d) return;
+  const eps = d.episodes||[];
+  let h = `<div class="back" id="back">‹ Back</div>`;
+  h += `<div class="detail-hero">${d.poster?`<img src="${esc(img(d.poster))}" alt="">`:""}</div>`;
+  h += `<div class="dtitle">${esc(d.title)}</div><div class="dsub">${esc(d.subtitle||"")} · ★ ${d.rating} · ${d.year} · ${esc(d.status||"")}</div>`;
+  h += `<div class="dtags">${(d.tags||[]).map(t=>`<span class="dtag">${esc(t)}</span>`).join("")}</div>`;
+  h += `<div class="ddesc">${esc(d.description||"")}</div>`;
+  h += `<div class="dcast">Cast: ${(d.cast||[]).join(", ")}</div>`;
+  // 播放器
+  h += `<div class="player"><video id="vid" controls preload="metadata" src="${esc(img((eps[state.currentEp]||{}).videoUrl))}"></video></div>`;
+  h += `<div class="sec">Episodes (${eps.length})</div><div class="eps" id="eps">`;
+  eps.forEach((e,i)=>{
+    h += `<div class="ep ${i===state.currentEp?"on":""}" data-ep="${i}">
+      <div class="no">${e.no}</div><div class="info"><div class="et">Episode ${e.no}</div><div class="ed">${esc(d.title)}</div></div>
+      <div class="dur">${e.duration||"?"} min</div></div>`;
+  });
+  h += `</div>`;
+  $view.innerHTML = h;
+  document.getElementById("back").onclick = renderHome;
+  $view.querySelectorAll(".ep").forEach(el=>el.onclick=()=>{
+    state.currentEp = +el.dataset.ep;
+    const v = document.getElementById("vid");
+    v.src = img(eps[state.currentEp].videoUrl); v.play().catch(()=>{});
+    renderDetail();
+  });
+}
+
+function renderProfile(){
+  $view.innerHTML = `
+  <div class="prof">
+    <div class="u"><div class="av">E</div><div><div class="un">EvaShort User</div><div class="ue">taoxi110@qq.com</div></div></div>
+    <div class="row" onclick="window.open('https://api.haoweimedia.cn/evashort/support.html','_blank')"><span>Support</span><span class="r">›</span></div>
+    <div class="row" onclick="window.open('https://api.haoweimedia.cn/evashort/privacy-policy.html','_blank')"><span>Privacy Policy</span><span class="r">›</span></div>
+    <div class="row"><span>Restore Purchase</span><span class="r">›</span></div>
+    <div class="row"><span>Delete Account</span><span class="r">›</span></div>
+    <div class="pmeta">
+      EvaShort<br>
+      Operated by Haowei (shenzhen) Cultural Media Co., Ltd<br>
+      © 2026 Haowei (shenzhen) Cultural Media Co., Ltd<br><br>
+      <a href="https://api.haoweimedia.cn/evashort/privacy-policy.html" target="_blank">Privacy</a> · <a href="https://api.haoweimedia.cn/evashort/support.html" target="_blank">Support</a>
+    </div>
+  </div>`;
+}
+
+function switchPage(p){
+  state.page = p;
+  document.querySelectorAll(".tb").forEach(t=>t.classList.toggle("on",t.dataset.page===p));
+  if(p==="home") renderHome(); else renderProfile();
+}
+document.querySelectorAll(".tb").forEach(t=>t.onclick=()=>switchPage(t.dataset.page));
+
+(async ()=>{
+  $view.innerHTML = `<div class="note">Loading real feed from ${API}/videos …</div>`;
+  state.data = await getList();
+  renderHome();
+})();
+</script>
+</body>
+</html>
