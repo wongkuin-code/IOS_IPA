@@ -20,6 +20,259 @@
         { "no": 4, "videoUrl": "/videos/4.mp4", "duration": 45 },
         { "no": 5, "videoUrl": "/videos/5.mp4", "duration": 24 }
       ]
+    },
+    {
+      "id": 2,
+      "title": "The Billionaire's Secret",
+      "subtitle": "The Heir",
+      "category": ["Romance", "Urban", "ForYou"],
+      "premium": false,
+      "poster": "/covers/poster-2.jpg",
+      "rating": 8.2,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Billionaire", "Hidden Identity", "Love"],
+      "cast": ["Mia Chen", "Ethan Cole"],
+      "description": "A hidden heir returns to claim his inheritance and falls for the one woman who refuses his money.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/2.mp4", "duration": 34 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Cold CEO's Bride",
+      "subtitle": "The Contract",
+      "category": ["Romance", "ForYou"],
+      "premium": true,
+      "poster": "/covers/poster-3.jpg",
+      "rating": 8.4,
+      "year": 2026,
+      "status": "Completed",
+      "tags": ["Contract Marriage", "CEO", "Drama"],
+      "cast": ["Luna Park", "Adrian Wu"],
+      "description": "A marriage of convenience turns into something neither expected when the cold CEO starts to warm.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/3.mp4", "duration": 41 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Revenge of the Heiress",
+      "subtitle": "The Return",
+      "category": ["Revenge", "Urban", "ForYou"],
+      "premium": false,
+      "poster": "/covers/poster-4.jpg",
+      "rating": 8.7,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Revenge", "Heiress", "Return"],
+      "cast": ["Ivy Zhang", "Leo Ma"],
+      "description": "Betrayed and cast out, a young heiress returns five years later to take back everything she lost.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/4.mp4", "duration": 38 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Married to the Dragon",
+      "subtitle": "The Arrangement",
+      "category": ["Romance", "ForYou"],
+      "premium": true,
+      "poster": "/covers/poster-5.jpg",
+      "rating": 8.1,
+      "year": 2026,
+      "status": "Completed",
+      "tags": ["Marriage", "Drama", "Family"],
+      "cast": ["Nora Li", "James Qin"],
+      "description": "Bound by family arrangements, two strangers fight their growing feelings as the arrangement unravels.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/5.mp4", "duration": 45 }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "The Heir's Vendetta",
+      "subtitle": "The Conspiracy",
+      "category": ["Revenge", "Urban"],
+      "premium": false,
+      "poster": "/covers/poster-6.jpg",
+      "rating": 8.3,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Vendetta", "Rivalry", "Power"],
+      "cast": ["Alex Tan", "Zoe Han"],
+      "description": "A disgraced heir vows to expose the conspiracy that destroyed his family and take down the rival empire.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/6.mp4", "duration": 36 }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Love Beyond the Spotlight",
+      "subtitle": "The Starlet",
+      "category": ["Romance", "Urban"],
+      "premium": false,
+      "poster": "/covers/poster-7.jpg",
+      "rating": 8.0,
+      "year": 2026,
+      "status": "Completed",
+      "tags": ["Celebrity", "Love", "City"],
+      "cast": ["Ella Wang", "Ryan Xu"],
+      "description": "A rising starlet hides her true identity while a jaded producer finds there is more to her than fame.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/7.mp4", "duration": 40 }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "The Queen's Gambit",
+      "subtitle": "The Heiress",
+      "category": ["Revenge", "ForYou"],
+      "premium": true,
+      "poster": "/covers/poster-8.jpg",
+      "rating": 8.5,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Revenge", "Boardroom", "Drama"],
+      "cast": ["Tina Gao", "Marcus Li"],
+      "description": "A master strategist returns to the boardroom to settle old scores, playing a dangerous game of power.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/8.mp4", "duration": 33 }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Secrets of the City",
+      "subtitle": "The Underworld",
+      "category": ["Urban", "Revenge"],
+      "premium": false,
+      "poster": "/covers/poster-9.jpg",
+      "rating": 8.2,
+      "year": 2026,
+      "status": "Completed",
+      "tags": ["Crime", "Secrets", "Underworld"],
+      "cast": ["Owen Fang", "Amy Shen"],
+      "description": "Deep in the neon city, secrets and loyalties collide as a detective uncovers a web of crime.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/9.mp4", "duration": 42 }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "The Last Kiss",
+      "subtitle": "The Heartbreak",
+      "category": ["Romance", "ForYou"],
+      "premium": true,
+      "poster": "/covers/poster-10.jpg",
+      "rating": 8.4,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Heartbreak", "Second Chance", "Love"],
+      "cast": ["Coco Liu", "Ben Zhou"],
+      "description": "Years after a painful separation, two former lovers cross paths again and must face the feelings they left behind.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/10.mp4", "duration": 39 }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "She Stuns the World",
+      "subtitle": "The Rebirth",
+      "category": ["Rebirth", "Romance", "ForYou"],
+      "premium": true,
+      "poster": "/covers/poster-11.jpg",
+      "rating": 8.4,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Rebirth", "Revenge", "Love"],
+      "cast": ["Xia Yao", "Lin Feng"],
+      "description": "Returned to the day of her downfall, a woman reshapes her destiny and stuns everyone who once mocked her.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/11.mp4", "duration": 115 },
+        { "no": 2, "videoUrl": "/videos/12.mp4", "duration": 115 },
+        { "no": 3, "videoUrl": "/videos/13.mp4", "duration": 105 },
+        { "no": 4, "videoUrl": "/videos/14.mp4", "duration": 118 }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Spring After Winter Rain",
+      "subtitle": "The Reunion",
+      "category": ["Romance", "Drama", "ForYou"],
+      "premium": false,
+      "poster": "/covers/poster-12.jpg",
+      "rating": 8.1,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Reunion", "Second Chance", "Healing"],
+      "cast": ["Yu Qing", "Gu Nan"],
+      "description": "After a long and sorrowful winter, two hearts separated by circumstance find their way back to each other.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/15.mp4", "duration": 275 },
+        { "no": 2, "videoUrl": "/videos/16.mp4", "duration": 134 },
+        { "no": 3, "videoUrl": "/videos/17.mp4", "duration": 125 },
+        { "no": 4, "videoUrl": "/videos/18.mp4", "duration": 106 }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Home for New Year",
+      "subtitle": "The Reunion",
+      "category": ["Family", "Drama", "ForYou"],
+      "premium": false,
+      "poster": "/covers/poster-13.jpg",
+      "rating": 8.0,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Family", "Homecoming", "Warmth"],
+      "cast": ["Zhao Min", "Li Lei"],
+      "description": "A young man returns to his hometown for New Year and rediscovers the family bonds he left behind.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/19.mp4", "duration": 81 },
+        { "no": 2, "videoUrl": "/videos/20.mp4", "duration": 111 },
+        { "no": 3, "videoUrl": "/videos/21.mp4", "duration": 115 },
+        { "no": 4, "videoUrl": "/videos/22.mp4", "duration": 77 }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Martial Soul",
+      "subtitle": "the Invincible",
+      "category": ["Action", "Fantasy", "ForYou"],
+      "premium": true,
+      "poster": "/covers/poster-14.jpg",
+      "rating": 8.6,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Martial Arts", "Cultivation", "Power"],
+      "cast": ["Long Tian", "Bai Yu"],
+      "description": "Ridiculed as talentless, a young martial artist unlocks a soul-shattering power and rises to dominate the world.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/23.mp4", "duration": 174 },
+        { "no": 2, "videoUrl": "/videos/24.mp4", "duration": 132 },
+        { "no": 3, "videoUrl": "/videos/25.mp4", "duration": 100 },
+        { "no": 4, "videoUrl": "/videos/26.mp4", "duration": 75 }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "The Divorce Lawyer",
+      "subtitle": "The Verdict",
+      "category": ["Urban", "Drama", "ForYou"],
+      "premium": true,
+      "poster": "/covers/poster-15.jpg",
+      "rating": 8.3,
+      "year": 2026,
+      "status": "Ongoing",
+      "tags": ["Lawyer", "Courtroom", "Relationships"],
+      "cast": ["Qin Mo", "Su Wan"],
+      "description": "A sharp divorce lawyer navigates explosive cases, tearing apart marriages while avoiding her own broken heart.",
+      "episodes": [
+        { "no": 1, "videoUrl": "/videos/27.mp4", "duration": 127 },
+        { "no": 2, "videoUrl": "/videos/28.mp4", "duration": 168 },
+        { "no": 3, "videoUrl": "/videos/29.mp4", "duration": 127 },
+        { "no": 4, "videoUrl": "/videos/30.mp4", "duration": 129 }
+      ]
     }
   ]
 }

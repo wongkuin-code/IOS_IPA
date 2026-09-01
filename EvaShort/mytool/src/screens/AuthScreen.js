@@ -40,6 +40,8 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
+  // signed-out first launch: reviewer picks how to proceed up front.
+  const [choice, setChoice] = useState('guest'); // guest | account
 
   const submitting = busy || status === 'loading';
 
@@ -116,70 +118,161 @@ export default function AuthScreen() {
             {isGuest ? 'Turn your guest profile into a full account' : 'Short dramas, big feelings'}
           </Text>
 
-          <View style={styles.segment}>
-            {['login', 'register'].map((m) => (
-              <TouchableOpacity
-                key={m}
-                onPress={() => switchMode(m)}
-                style={[styles.segmentBtn, mode === m && { backgroundColor: colors.gold }]}
-              >
-                <Text style={{ color: mode === m ? '#200B06' : colors.textMuted, fontWeight: '800', fontSize: 14 }}>
-                  {m === 'login' ? 'Log In' : 'Sign Up'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={[styles.label, { color: colors.textMuted }]}>Account</Text>
-          <TextInput
-            value={account}
-            onChangeText={setAccount}
-            placeholder={isGuest ? 'Create an account name (2-20 chars)' : 'Your account name'}
-            placeholderTextColor={colors.textMuted}
-            style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.borderGold }]}
-            maxLength={20}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <Text style={[styles.label, { color: colors.textMuted }]}>Password</Text>
-          <View style={[styles.inputWrap, { backgroundColor: colors.surface, borderColor: colors.borderGold }]}>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="At least 6 characters"
-              placeholderTextColor={colors.textMuted}
-              secureTextEntry={!showPw}
-              style={[styles.inputInner, { color: colors.text }]}
-            />
-            <TouchableOpacity onPress={() => setShowPw((v) => !v)} style={styles.eyeBtn} hitSlop={10}>
-              <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textMuted} />
-            </TouchableOpacity>
-          </View>
-
-          {authError ? <Text style={styles.error}>{authError}</Text> : null}
-
-          <TouchableOpacity
-            disabled={submitting}
-            onPress={isGuest && mode === 'register' ? upgradeAccount : submit}
-            style={[styles.primaryBtn, { backgroundColor: colors.gold }, submitting && styles.disabled]}
-          >
-            {busy ? (
-              <ActivityIndicator color="#200B06" />
-            ) : (
-              <Text style={styles.primaryText}>
-                {mode === 'login' ? 'Log In' : isGuest ? 'Upgrade My Account' : 'Create Account'}
-              </Text>
-            )}
-          </TouchableOpacity>
-
           {!isGuest ? (
-            <TouchableOpacity disabled={submitting} onPress={guest} style={styles.guestBtn}>
-              <Text style={[styles.guestText, { color: colors.textMuted }]}>
-                {busy ? 'Creating guest profile…' : 'Continue as Guest ›'}
+            <>
+              <Text style={[styles.chooseTitle, fonts.display, { color: colors.text }]}>
+                How would you like to start?
               </Text>
-            </TouchableOpacity>
-          ) : null}
+
+              <TouchableOpacity
+                disabled={submitting}
+                onPress={guest}
+                style={[styles.choiceGuest, { backgroundColor: 'rgba(255,77,46,0.12)', borderColor: colors.gold }]}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.choiceGuestIcon}>🎭</Text>
+                <View style={styles.choiceBody}>
+                  <View style={styles.choiceTitleRow}>
+                    <Text style={[styles.choiceTitle, { color: colors.text }]}>Continue as Guest</Text>
+                    <View style={[styles.recommend, { backgroundColor: colors.gold }]}>
+                      <Text style={styles.recommendText}>RECOMMENDED</Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.choiceDesc, { color: colors.textMuted }]}>
+                    Instant access — no account needed. Great for trying the app first.
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setChoice(choice === 'account' ? 'guest' : 'account')}
+                style={[styles.choiceAccount, { borderColor: colors.border }]}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.choiceAccountIcon}>👤</Text>
+                <View style={styles.choiceBody}>
+                  <Text style={[styles.choiceTitle, { color: colors.text }]}>Log in / Sign up</Text>
+                  <Text style={[styles.choiceDesc, { color: colors.textMuted }]}>
+                    Use an account and password to keep your library.
+                  </Text>
+                </View>
+                <Ionicons
+                  name={choice === 'account' ? 'chevron-up' : 'chevron-down'}
+                  size={22}
+                  color={colors.textMuted}
+                />
+              </TouchableOpacity>
+
+              {choice === 'account' ? (
+                <>
+                  <View style={styles.segment}>
+                    {['login', 'register'].map((m) => (
+                      <TouchableOpacity
+                        key={m}
+                        onPress={() => switchMode(m)}
+                        style={[styles.segmentBtn, mode === m && { backgroundColor: colors.gold }]}
+                      >
+                        <Text style={{ color: mode === m ? '#200B06' : colors.textMuted, fontWeight: '800', fontSize: 14 }}>
+                          {m === 'login' ? 'Log In' : 'Sign Up'}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <Text style={[styles.label, { color: colors.textMuted }]}>Account</Text>
+                  <TextInput
+                    value={account}
+                    onChangeText={setAccount}
+                    placeholder="Your account name"
+                    placeholderTextColor={colors.textMuted}
+                    style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.borderGold }]}
+                    maxLength={20}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+
+                  <Text style={[styles.label, { color: colors.textMuted }]}>Password</Text>
+                  <View style={[styles.inputWrap, { backgroundColor: colors.surface, borderColor: colors.borderGold }]}>
+                    <TextInput
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholder="At least 6 characters"
+                      placeholderTextColor={colors.textMuted}
+                      secureTextEntry={!showPw}
+                      style={[styles.inputInner, { color: colors.text }]}
+                    />
+                    <TouchableOpacity onPress={() => setShowPw((v) => !v)} style={styles.eyeBtn} hitSlop={10}>
+                      <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  </View>
+
+                  {authError ? <Text style={styles.error}>{authError}</Text> : null}
+
+                  <TouchableOpacity
+                    disabled={submitting}
+                    onPress={submit}
+                    style={[styles.primaryBtn, { backgroundColor: colors.gold }, submitting && styles.disabled]}
+                  >
+                    {busy ? (
+                      <ActivityIndicator color="#200B06" />
+                    ) : (
+                      <Text style={styles.primaryText}>
+                        {mode === 'login' ? 'Log In' : 'Create Account'}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <Text style={[styles.chooseTitle, fonts.display, { color: colors.text }]}>
+                Upgrade to a full account
+              </Text>
+
+              <Text style={[styles.label, { color: colors.textMuted }]}>Account</Text>
+              <TextInput
+                value={account}
+                onChangeText={setAccount}
+                placeholder="Create an account name (2-20 chars)"
+                placeholderTextColor={colors.textMuted}
+                style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.borderGold }]}
+                maxLength={20}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              <Text style={[styles.label, { color: colors.textMuted }]}>Password</Text>
+              <View style={[styles.inputWrap, { backgroundColor: colors.surface, borderColor: colors.borderGold }]}>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="At least 6 characters"
+                  placeholderTextColor={colors.textMuted}
+                  secureTextEntry={!showPw}
+                  style={[styles.inputInner, { color: colors.text }]}
+                />
+                <TouchableOpacity onPress={() => setShowPw((v) => !v)} style={styles.eyeBtn} hitSlop={10}>
+                  <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textMuted} />
+                </TouchableOpacity>
+              </View>
+
+              {authError ? <Text style={styles.error}>{authError}</Text> : null}
+
+              <TouchableOpacity
+                disabled={submitting}
+                onPress={upgradeAccount}
+                style={[styles.primaryBtn, { backgroundColor: colors.gold }, submitting && styles.disabled]}
+              >
+                {busy ? (
+                  <ActivityIndicator color="#200B06" />
+                ) : (
+                  <Text style={styles.primaryText}>Upgrade My Account</Text>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
 
           <Text style={[styles.footnote, { color: colors.textMuted }]}>
             By continuing you agree to our{' '}
@@ -199,7 +292,37 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { paddingHorizontal: 24 },
   logo: { fontSize: 34, textAlign: 'center', letterSpacing: 1 },
-  tagline: { fontSize: 13, textAlign: 'center', marginTop: 6, marginBottom: 26 },
+  tagline: { fontSize: 13, textAlign: 'center', marginTop: 6, marginBottom: 22 },
+  chooseTitle: { fontSize: 24, textAlign: 'center', lineHeight: 30, marginBottom: 20 },
+  choiceGuest: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 14,
+  },
+  choiceAccount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 20,
+  },
+  choiceGuestIcon: { fontSize: 30, marginRight: 14 },
+  choiceAccountIcon: { fontSize: 30, marginRight: 14 },
+  choiceBody: { flex: 1 },
+  choiceTitle: { fontSize: 16, fontWeight: '800' },
+  choiceTitleRow: { flexDirection: 'row', alignItems: 'center' },
+  recommend: {
+    marginLeft: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  recommendText: { color: '#200B06', fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+  choiceDesc: { fontSize: 12, lineHeight: 17, marginTop: 4 },
   segment: {
     flexDirection: 'row',
     backgroundColor: '#2A211A',
@@ -224,7 +347,5 @@ const styles = StyleSheet.create({
   primaryBtn: { alignItems: 'center', paddingVertical: 15, borderRadius: 999, marginTop: 6 },
   primaryText: { color: '#200B06', fontWeight: '800', fontSize: 16 },
   disabled: { opacity: 0.6 },
-  guestBtn: { alignItems: 'center', paddingVertical: 16, marginTop: 4 },
-  guestText: { fontSize: 14, fontWeight: '700' },
   footnote: { fontSize: 11, textAlign: 'center', marginTop: 14, lineHeight: 16 },
 });

@@ -1,6 +1,6 @@
 // ── Discover: search + categories + trending/recent chips + status filter + grid ──
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,7 +9,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
 import CategoryTabs from '../components/CategoryTabs';
-import DramaGrid from '../components/DramaGrid';
+import PosterCard from '../components/PosterCard';
 import { categories, hotSearches, byCategory, useCatalogue, searchCatalogue } from '../data/catalogue';
 
 const SEARCH_HISTORY_KEY = 'evashort_search_history';
@@ -53,11 +53,8 @@ export default function DiscoverScreen() {
     loadSearchHistory().then(setHistory);
   }, []);
 
-  // Re-run the active filter whenever the catalogue finishes loading so the
-  // grid reflects remote content (or falls back to the local catalogue).
   useEffect(() => {
     applyFilter(keyword, activeTab, status, page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [all]);
 
   const lockedIds = useMemo(() => {
@@ -105,8 +102,18 @@ export default function DiscoverScreen() {
     setHistory([]);
   };
 
-  return (
-    <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + spacing.sm }]}>
+  const renderGridItem = useCallback(({ item }) => (
+    <PosterCard
+      drama={item}
+      locked={lockedIds && lockedIds.has(item.id)}
+      onPress={() => openDetail(item)}
+    />
+  ), [lockedIds, openDetail]);
+
+  const keyExtractor = useCallback((item) => String(item.id), []);
+
+  const renderHeader = useCallback(() => (
+    <View>
       <StatusBarDark />
       <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
         <Text style={[styles.pageTitle, { color: colors.text }]}>Discover</Text>
@@ -138,7 +145,7 @@ export default function DiscoverScreen() {
       <View style={[styles.blockLabel, { paddingHorizontal: spacing.md }]}>
         <Text style={[styles.blockTitle, { color: colors.text }]}>Categories</Text>
       </View>
-      <View style={{ paddingHorizontal: spacing.md, marginVertical: spacing.sm }}>
+      <View style={{ paddingHorizontal: spacing.md, marginVertical: spacing.xs }}>
         <CategoryTabs tabs={categories} active={activeTab} onChange={(t) => { setActiveTab(t); setPage(1); if (t !== 'More') applyFilter(keyword, t, status); }} />
       </View>
 
@@ -164,7 +171,7 @@ export default function DiscoverScreen() {
       </View>
 
       {history.length > 0 && !keyword ? (
-        <View style={[styles.card, { backgroundColor: colors.surface, marginHorizontal: spacing.md, marginTop: spacing.md, borderColor: colors.borderGold }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, marginHorizontal: spacing.md, marginTop: spacing.sm, borderColor: colors.borderGold }]}>
           <View style={styles.cardHead}>
             <Text style={[styles.cardTitle, { color: colors.text }]}>Recent</Text>
             <TouchableOpacity onPress={clearHistory} hitSlop={8}>
@@ -181,7 +188,7 @@ export default function DiscoverScreen() {
         </View>
       ) : null}
 
-      <View style={[styles.statusRow, { paddingHorizontal: spacing.md, marginTop: spacing.md }]}>
+      <View style={[styles.statusRow, { paddingHorizontal: spacing.md, marginTop: spacing.sm }]}>
         {STATUS_FILTERS.map((s) => (
           <TouchableOpacity
             key={s}
@@ -196,42 +203,61 @@ export default function DiscoverScreen() {
           </TouchableOpacity>
         ))}
       </View>
+    </View>
+  ), [colors, spacing, keyword, activeTab, status, history, onSearch, applyFilter]);
 
-      <View style={{ flex: 1, marginTop: spacing.md }}>
-        <DramaGrid data={grid} lockedIds={lockedIds} onPressItem={openDetail} onEndReached={loadMore} />
-      </View>
+  return (
+    <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + spacing.xs }]}>
+      <FlatList
+        data={grid}
+        keyExtractor={keyExtractor}
+        numColumns={2}
+        renderItem={renderGridItem}
+        ListHeaderComponent={renderHeader}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        contentContainerStyle={[styles.content, { paddingHorizontal: spacing.md }]}
+        columnWrapperStyle={styles.row}
+        style={styles.list}
+        initialNumToRender={12}
+        ListEmptyComponent={null}
+        keyboardShouldPersistTaps="handled"
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { marginTop: 4, marginBottom: 12 },
-  pageTitle: { fontSize: 26, fontWeight: '800' },
-  pageSub: { fontSize: 13, marginTop: 2 },
+  list: { flex: 1 },
+  content: { paddingBottom: 30 },
+  row: { justifyContent: 'space-between', marginBottom: 16 },
+  header: { marginTop: 2, marginBottom: 8 },
+  pageTitle: { fontSize: 24, fontWeight: '800' },
+  pageSub: { fontSize: 12, marginTop: 1 },
   searchWrap: {
     marginHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
   },
   search: {
     flex: 1,
-    paddingVertical: 11,
-    paddingLeft: 9,
-    fontSize: 15,
+    paddingVertical: 10,
+    paddingLeft: 8,
+    fontSize: 14,
     outlineStyle: 'none',
   },
-  blockLabel: { marginTop: 18, marginBottom: 2 },
-  blockTitle: { fontSize: 15, fontWeight: '800' },
-  card: { marginTop: 12, borderRadius: 16, padding: 14, borderWidth: 1 },
-  cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  cardTitle: { fontSize: 15, fontWeight: '800', marginLeft: 6 },
+  blockLabel: { marginTop: 12, marginBottom: 1 },
+  blockTitle: { fontSize: 14, fontWeight: '800' },
+  card: { marginTop: 8, borderRadius: 14, padding: 12, borderWidth: 1 },
+  cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  cardTitle: { fontSize: 14, fontWeight: '800', marginLeft: 5 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap' },
-  chip: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8, marginBottom: 8 },
-  chipRank: { fontSize: 12, fontWeight: '800', marginRight: 6 },
+  chip: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, marginRight: 6, marginBottom: 6 },
+  chipRank: { fontSize: 11, fontWeight: '800', marginRight: 5 },
   statusRow: { flexDirection: 'row' },
-  statusChip: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8, marginRight: 8, borderWidth: 1 },
+  statusChip: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, marginRight: 6, borderWidth: 1 },
 });

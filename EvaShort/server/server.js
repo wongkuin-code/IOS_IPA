@@ -273,7 +273,11 @@ app.get('/api/search', (req, res) => {
 
 function toVideoSummary(v) {
   const { episodes, ...rest } = v;
-  return { ...rest, episodeCount: (episodes || []).length };
+  const first =
+    Array.isArray(v.episodes) && v.episodes.length
+      ? v.episodes[0].videoUrl || v.videoUrl
+      : v.videoUrl;
+  return { ...rest, episodeCount: (episodes || []).length, videoUrl: first || null };
 }
 
 app.get('/health', (req, res) => {

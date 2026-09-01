@@ -28,7 +28,8 @@ export default function PlayerScreen() {
   const isGuest = Boolean(user && user.isGuest);
   const [ep, setEp] = useState(Number(episode) || 1);
   const [speed, setSpeed] = useState(1.0);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(true);
+  const [muted, setMuted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [duration, setDuration] = useState(0);
   const [episodePicker, setEpisodePicker] = useState(false);
@@ -60,6 +61,7 @@ export default function PlayerScreen() {
   const player = useVideoPlayer(hasVideo ? src : null, (p) => {
     p.loop = false;
     p.playbackRate = 1.0;
+    p.muted = false;
     p.timeUpdateEventInterval = 0.25; // drive the progress bar
   });
 
@@ -87,6 +89,11 @@ export default function PlayerScreen() {
   useEffect(() => {
     player.playbackRate = speed;
   }, [speed, player]);
+
+  // Keep mute state in sync (default audible on entry).
+  useEffect(() => {
+    player.muted = muted;
+  }, [muted, player]);
 
   // Progress (expo-video emits timeUpdate only while playing / loaded).
   useEventListener(player, 'timeUpdate', ({ currentTime, duration: d }) => {
@@ -239,6 +246,12 @@ export default function PlayerScreen() {
             <Text style={styles.ctrlIcon}>⏭</Text>
             <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>
               {nextEp ? `Next EP.${nextEp}` : 'Last Episode'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setMuted((m) => !m)} style={styles.ctrl}>
+            <Text style={styles.ctrlIcon}>{muted ? '🔇' : '🔊'}</Text>
+            <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>
+              {muted ? 'Unmute' : 'Mute'}
             </Text>
           </TouchableOpacity>
         </View>
