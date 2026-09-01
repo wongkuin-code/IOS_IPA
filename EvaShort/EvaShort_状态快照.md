@@ -274,3 +274,58 @@ eas submit --platform ios --profile production --non-interactive --id <BUILD_ID>
 ### 结论
 - 自动出包/提交链路 **与 Apple 主账号邮箱无关**（提交走 ASC API Key 独立鉴权），`taoxi110` 是否同账号不影响。
 - ASC 网页手动步骤（IAP 送审 / 年龄分级 / 真实截图 / 营养标签 / 授权书）仍按 P0–P2 清单在 ASC 控制台操作，不影响 TestFlight 内部测试，但影响正式提审。
+
+---
+
+## 十二、2026-09-01 TikTok 首页 + 播放器静音 + 20 集新剧 + 线上部署
+
+> 目标：首页改为 TikTok 竖屏信息流，不自动播放（首帧封面），点击进播放器自动播放有声；新增 5 部真人剧各 4 集；全部部署到生产服务器。
+
+### 一、HomeScreen TikTok 重构
+- **TikTokCell**：每个 cell 用 `expo-video` 的 `VideoView` 静音加载首帧作为封面，不自动播放。
+  - `useVideoPlayer(src, p => { p.loop=true; p.muted=true; })` — 首页静音。
+  - `useEffect` → `player.pause()` — 不自动播放。
+  - `statusChange` → `readyToPlay` 时 `player.currentTime=0.02` — 停在首帧避免黑屏。
+- **点击进播放器**：全屏 `TouchableOpacity style={StyleSheet.absoluteFill} onPress={onPlay}` → `playFirst(item)` → `navigation.navigate('Player', { id, episode: 1 })`。
+  - premium 剧未解锁 → 弹付费墙（`setPaywallVisible(true)`）。
+  - web 端 `unlocked=true`（previewMode）→ 所有剧可直接播。
+- **centerPlay 修复**：`centerPlay` 样式用 `absoluteFillObject` 盖住点击层 → 加 `pointerEvents: 'none'` 让点击穿透；补 `centerPlayBadge` 样式（圆形播放图标背景）；删无用 `muteBtn` 残留样式。
+- **contentFit 适配**：portrait → `cover`（iOS 全屏无黑边），landscape → `contain`（web 桌面全场景可见）。
+- **buildFeed**：不再写死 12 部上限，`[...picks, ...rest]` 返回服务器全部视频。
+
+### 二、PlayerScreen 静音切换
+- `playing` 初始 `true`（进播放器自动播放+有声）。
+- `muted` state（默认 `false` = 有声），`useEffect` 同步 `player.muted = muted`。
+- `controlsRow` 新增 Mute/Unmute 按钮（🔊/🔇），位于 Next EP 按钮之后。
+
+### 三、20 集新剧（5 部 × 4 集）
+- **来源**：`E:\BaiduNetdiskDownload\真人剧\`，5 部剧各取前 4 集。
+  - 下山后她惊艳世界（xshtjysjdj）→ 11-14.mp4
+  - 冬雨又逢春（dyyfcdj）→ 15-18.mp4
+  - 回家过年（hjgndj）→ 19-22.mp4
+  - 武魂天下（whtx）→ 23-26.mp4
+  - 离婚律师（lhlsdj）→ 27-30.mp4
+- **转码参数**：`ffmpeg -c:v libx264 -preset veryfast -b:v 1600k -maxrate 1600k -bufsize 3200k -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -ar 44100 -ac 2 -movflags +faststart`，统一输出 **1080x1920**（608x1080 源等比放大）。
+- **videos.json**：id 11-15，各 4 集，封面 `poster-11~15.jpg`（600x900，已有），英文名自行拟定。
+- **server/videos/**：现共 1-30.mp4。
+
+### 四、线上部署
+- `scp` 上传 20 个视频 + `videos.json` + 5 个封面到 `43.129.30.172:/opt/evashort-server`。
+- `pm2 restart evashort`，验证 `/api/videos` 返回 15 部、`/videos/11.mp4` 和 `/videos/30.mp4` 均返回 200 + Range。
+
+### 五、Web 构建
+- `dist-local`（local API）：`index-7282a8a6…`，8088 预览已生效。
+- `dist`（production API）：`index-…`，client.js 已恢复 production。
+
+### 六、已提交推送
+- commit `5f7149e`：6 files changed, 771 insertions(+), 208 deletions(-)。
+
+### 七、待修复：构建证书
+- **问题**：EAS build 9 使用的 Distribution Certificate 为 **D5VA6Q22PL (Van Nam Nguyen, Individual)** — 这是 EvaReel 项目的证书，不是 EvaShort 正确的开发者账号。
+- **影响**：即使上传到 TestFlight，也可能因证书不匹配被拒。
+- **修复**：在 EAS 后台（expo.dev → Credentials → iOS）更换为 EvaShort 对应的 Apple Developer 账号证书。
+
+### 八、待提交 TestFlight
+- EAS Submit 当前服务中断（Expo 官方故障），且 p8 密钥文件 `AuthKey_6XTPZ5CBDW.p8` 本地缺失。
+- IPA 已构建成功：`https://expo.dev/artifacts/eas/SbntgoZ_qXLw1VJotbDvPjPdFIPTqVYsamwxx5emzHI.ipa`（17.6MB）。
+- 待 EAS Submit 恢复 + 证书修正后重新提交。
