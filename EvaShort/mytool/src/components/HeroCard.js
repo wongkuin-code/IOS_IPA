@@ -3,13 +3,14 @@ import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import { dramaTheme } from './DramaCover';
-import CoverImage from './CoverImage';
+import { DramaVideoCover } from './VideoCover';
 
 export default function HeroCard({ drama, onPlay, onPress }) {
   const { colors, radii, fonts } = useTheme();
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { borderRadius: radii.card }]}>
-      <CoverImage
+      <DramaVideoCover
+        drama={drama}
         asset={drama.asset}
         fallback={<LinearGradient colors={dramaTheme(drama.id)} style={styles.image} />}
         style={styles.image}

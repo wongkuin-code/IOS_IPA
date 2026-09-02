@@ -34,6 +34,10 @@ export default function PlayerScreen() {
   const [duration, setDuration] = useState(0);
   const [episodePicker, setEpisodePicker] = useState(false);
   const [quotaLimit, setQuotaLimit] = useState(null);
+  // 播放时控制条 3 秒自动收起；点视频区域唤出/收起。暂停/结束时强制常显。
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [trackW, setTrackW] = useState(0);
+  const [scrub, setScrub] = useState(null); // 拖动进度预览 { ratio: 0..1 }
   const all = useCatalogue();
 
   const drama = useMemo(() => {
@@ -101,8 +105,73 @@ export default function PlayerScreen() {
     if (d) setDuration(d);
   });
 
-  const progress = duration > 0 ? Math.min(100, (elapsed / duration) * 100) : 0;
   const finished = duration > 0 && elapsed >= duration - 0.3;
+
+  // ══ 控制条自动隐藏：播放中 3s 无操作 → 收起；任何交互 → 重新计时 ══
+  const hideTimer = useRef(null);
+  const clearTimer = useCallback(() => {
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+  }, []);
+  const pokeControls = useCallback(() => {
+    setControlsVisible(true);
+    clearTimer();
+    hideTimer.current = setTimeout(() => setControlsVisible(false), 3000);
+  }, [clearTimer]);
+  const toggleControls = useCallback(() => {
+    clearTimer();
+    if (controlsVisible) setControlsVisible(false);
+    else pokeControls();
+  }, [controlsVisible, clearTimer, pokeControls]);
+
+  // 开始/停止播放时同步控制条状态；无视频时永远显示。
+  useEffect(() => {
+    if (playing && hasVideo) {
+      pokeControls();
+    } else {
+      clearTimer();
+      setControlsVisible(true);
+    }
+    return clearTimer;
+  }, [playing, hasVideo, pokeControls, clearTimer]);
+
+  // ══ 可拖动进度条：按住拖动即时预览，松手定位并续播 ══
+  const onTrackLayout = useCallback((e) => {
+    setTrackW(e.nativeEvent.layout.width);
+  }, []);
+  const startScrub = useCallback(() => {
+    setScrub({ ratio: duration > 0 ? elapsed / duration : 0 });
+  }, [duration, elapsed]);
+  const moveScrub = useCallback(
+    (x) => {
+      if (trackW <= 0) return;
+      setScrub({ ratio: Math.max(0, Math.min(1, x / trackW)) });
+    },
+    [trackW]
+  );
+  const endScrub = useCallback(
+    (x) => {
+      if (trackW <= 0) return;
+      const ratio = Math.max(0, Math.min(1, x / trackW));
+      setScrub(null);
+      if (duration > 0) {
+        player.currentTime = ratio * duration;
+        setElapsed(ratio * duration);
+      }
+      setPlaying(true);
+      pokeControls();
+    },
+    [trackW, duration, player, pokeControls]
+  );
+  const cancelScrub = useCallback(() => setScrub(null), []);
+
+  const scrubRatio = scrub ? scrub.ratio : null;
+  const shownRatio =
+    scrubRatio != null ? scrubRatio : duration > 0 ? elapsed / duration : 0;
+  const shownPct = Math.max(0, Math.min(100, shownRatio * 100));
+  const shownElapsed = scrubRatio != null ? scrubRatio * duration : elapsed;
 
   // Episode finished → advance to next automatically.
   useEventListener(player, 'playToEnd', () => {
@@ -192,40 +261,72 @@ export default function PlayerScreen() {
             <Text style={{ color: '#fff', fontSize: 14 }}>No video available</Text>
           </LinearGradient>
         )}
-        <TouchableOpacity
-          style={styles.playBig}
-          onPress={() => {
-            if (finished) {
-              player.currentTime = 0;
-              setElapsed(0);
-              setPlaying(true);
-            } else {
-              setPlaying((p) => !p);
-            }
-          }}
-        >
-          <Text style={styles.playBigText}>
-            {finished ? '↻' : playing ? '⏸' : '▶'}
-          </Text>
-        </TouchableOpacity>
-        <Text style={[styles.mockHint, { color: colors.textMuted }]}>
-          {finished
-            ? 'Episode complete'
-            : hasVideo
-              ? playing
-                ? `Now Playing · EP.${ep} · ${fmt(Math.max(0, duration - elapsed))} left`
-                : 'Tap to play'
-              : 'No video available'}
-        </Text>
+        {/* 整块透明点击层：播放中点视频任意处 → 唤出/收起控制条 */}
+        {hasVideo ? (
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={toggleControls}
+          />
+        ) : null}
+        {controlsVisible && hasVideo ? (
+          <View style={styles.centerOverlay} pointerEvents="none">
+            <TouchableOpacity
+              style={styles.playBig}
+              pointerEvents="auto"
+              onPress={() => {
+                pokeControls();
+                if (finished) {
+                  player.currentTime = 0;
+                  setElapsed(0);
+                  setPlaying(true);
+                } else {
+                  setPlaying((p) => !p);
+                }
+              }}
+            >
+              <Text style={styles.playBigText}>
+                {finished ? '↻' : playing ? '⏸' : '▶'}
+              </Text>
+            </TouchableOpacity>
+            <Text style={[styles.mockHint, { color: colors.textMuted }]}>
+              {finished
+                ? 'Episode complete'
+                : hasVideo
+                  ? playing
+                    ? `Now Playing · EP.${ep} · ${fmt(Math.max(0, duration - elapsed))} left`
+                    : 'Tap to play'
+                  : 'No video available'}
+            </Text>
+          </View>
+        ) : null}
       </LinearGradient>
 
+      {controlsVisible && hasVideo ? (
       <View style={[styles.sheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + 20 }]}>
-        <View style={[styles.progressTrack, { backgroundColor: colors.background }]}>
-          <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: colors.gold }]} />
+        <View style={styles.timeRow}>
+          <Text style={[styles.timeText, { color: colors.textMuted }]}>{fmt(shownElapsed)}</Text>
+          <Text style={[styles.timeText, { color: colors.textMuted }]}>{fmt(duration)}</Text>
+        </View>
+        {/* 可拖动进度条：按住左右拖动即时预览，松手 seek + 续播 */}
+        <View
+          style={styles.scrubber}
+          onLayout={onTrackLayout}
+          onStartShouldSetResponder={() => true}
+          onMoveShouldSetResponder={() => true}
+          onResponderGrant={startScrub}
+          onResponderMove={(e) => moveScrub(e.nativeEvent.locationX)}
+          onResponderRelease={(e) => endScrub(e.nativeEvent.locationX)}
+          onResponderTerminate={cancelScrub}
+        >
+          <View style={[styles.scrubBg, { backgroundColor: colors.background }]} />
+          <View style={[styles.scrubFill, { width: `${shownPct}%`, backgroundColor: colors.gold }]} />
+          <View style={[styles.scrubThumb, { left: `${shownPct}%` }]} />
         </View>
         <View style={styles.controlsRow}>
           <TouchableOpacity
             onPress={() => {
+              pokeControls();
               player.currentTime = 0;
               setElapsed(0);
               setPlaying(true);
@@ -236,19 +337,35 @@ export default function PlayerScreen() {
             <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>Replay</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length])}
+            onPress={() => {
+              pokeControls();
+              setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length]);
+            }}
             style={[styles.ctrl, styles.speedBtn]}
           >
             <Text style={styles.speedText}>{speed.toFixed(1)}x</Text>
             <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>Speed</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => nextEp && watch(nextEp)} disabled={!nextEp} style={styles.ctrl}>
+          <TouchableOpacity
+            onPress={() => {
+              pokeControls();
+              if (nextEp) watch(nextEp);
+            }}
+            disabled={!nextEp}
+            style={styles.ctrl}
+          >
             <Text style={styles.ctrlIcon}>⏭</Text>
             <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>
               {nextEp ? `Next EP.${nextEp}` : 'Last Episode'}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setMuted((m) => !m)} style={styles.ctrl}>
+          <TouchableOpacity
+            onPress={() => {
+              pokeControls();
+              setMuted((m) => !m);
+            }}
+            style={styles.ctrl}
+          >
             <Text style={styles.ctrlIcon}>{muted ? '🔇' : '🔊'}</Text>
             <Text style={[styles.ctrlLabel, { color: colors.textMuted }]}>
               {muted ? 'Unmute' : 'Mute'}
@@ -264,6 +381,7 @@ export default function PlayerScreen() {
           </Text>
         ) : null}
       </View>
+      ) : null}
 
       <Modal visible={quotaLimit === 0} transparent animationType="fade" onRequestClose={() => setQuotaLimit(null)}>
         <View style={styles.pickerMask}>
@@ -343,6 +461,11 @@ const styles = StyleSheet.create({
     aspectRatio: 9 / 16,
     alignSelf: 'center',
   },
+  centerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   playBig: {
     width: 72,
     height: 72,
@@ -354,8 +477,22 @@ const styles = StyleSheet.create({
   playBigText: { color: '#200B06', fontSize: 28, marginLeft: 3 },
   mockHint: { fontSize: 12, marginTop: 12 },
   sheet: { paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,77,46,0.22)' },
-  progressTrack: { height: 4, borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: 4 },
+  timeRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  timeText: { fontSize: 11, fontVariant: ['tabular-nums'] },
+  scrubber: { height: 24, justifyContent: 'center' },
+  scrubBg: { position: 'absolute', left: 0, right: 0, top: 10, height: 4, borderRadius: 2 },
+  scrubFill: { position: 'absolute', left: 0, top: 10, height: 4, borderRadius: 2 },
+  scrubThumb: {
+    position: 'absolute',
+    top: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginLeft: -4,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: 'rgba(255,77,46,0.9)',
+  },
   controlsRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 18 },
   ctrl: { alignItems: 'center', minWidth: 64 },
   ctrlIcon: { fontSize: 22, color: '#fff' },

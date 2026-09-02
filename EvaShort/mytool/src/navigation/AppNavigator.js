@@ -9,7 +9,6 @@ import { useAuth } from '../auth/AuthContext';
 import BottomTabBar from '../components/BottomTabBar';
 import AuthScreen from '../screens/AuthScreen';
 import HomeScreen from '../screens/HomeScreen';
-import DiscoverScreen from '../screens/DiscoverScreen';
 import LibraryScreen from '../screens/LibraryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import DramaDetailScreen from '../screens/DramaDetailScreen';
@@ -31,7 +30,6 @@ function MainTabs() {
       tabBar={(props) => <BottomTabBar {...props} />}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Discover" component={DiscoverScreen} />
       <Tab.Screen name="Library" component={LibraryScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

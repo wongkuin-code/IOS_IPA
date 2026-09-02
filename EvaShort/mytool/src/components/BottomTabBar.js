@@ -6,7 +6,6 @@ import { useTheme } from '../theme/ThemeContext';
 
 const ITEMS = [
   { key: 'Home', label: 'For You', icon: 'home', iconActive: 'home' },
-  { key: 'Discover', label: 'Discover', icon: 'search', iconActive: 'search' },
   { key: 'Library', label: 'Saved', icon: 'heart-outline', iconActive: 'heart' },
   { key: 'Profile', label: 'Me', icon: 'person-outline', iconActive: 'person' },
 ];

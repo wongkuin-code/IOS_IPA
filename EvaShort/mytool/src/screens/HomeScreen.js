@@ -10,7 +10,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
-import SearchButton from '../components/SearchButton';
+
 import CoverImage from '../components/CoverImage';
 import { dramaTheme } from '../components/DramaCover';
 import { useCatalogue, getDramas, dailyPicks } from '../data/catalogue';
@@ -24,11 +24,21 @@ export default function HomeScreen() {
   const all = useCatalogue();
 
   const [activeIndex, setActiveIndex] = useState(0);
+  // 页高必须等于 FlatList 自己的视口高度（不是 useWindowDimensions，也不是
+  // 外层 root —— 底部 Tab 栏会占掉一段，拍脑袋的页高会让 pagingEnabled 按
+  // 错误步长翻页，进而把居中播放按钮顶到视口上方）。直接从 FlatList 的
+  // onLayout 量一个，保证 cell height === 视口高度，永远一致。
+  const [listH, setListH] = useState(0);
+  const onListLayout = useCallback((e) => {
+    const h = Math.round(e.nativeEvent.layout.height);
+    if (h > 0) setListH(h);
+  }, []);
 
   // 竖屏(手机/iOS)用 cover 全屏铺满；横屏(web 桌面)用 contain 保证人物完整
   const contentFit = height >= width ? 'cover' : 'contain';
 
-  const pageHeight = height;
+  // 每个 item 高度 === FlatList 视口高度 → 每个视频一样大、每次滑动正好一屏
+  const pageHeight = listH > 0 ? listH : height;
   const listRef = useRef(null);
   const offsetRef = useRef(0);
   const lastSnapAt = useRef(0);
@@ -139,6 +149,7 @@ export default function HomeScreen() {
       <FlatList
         ref={listRef}
         style={StyleSheet.absoluteFill}
+        onLayout={onListLayout}
         data={feed}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
@@ -172,7 +183,6 @@ export default function HomeScreen() {
             Eva<Text style={{ color: colors.gold }}>Short</Text>
           </Text>
         </View>
-        <SearchButton onPress={() => navigation.navigate('Discover')} />
       </View>
     </View>
   );
@@ -248,7 +258,9 @@ function TikTokCell({ drama, height, contentFit, locked, onDetail, onMore, onPla
         onPress={onPlay}
       />
 
-      <View style={styles.centerPlay} pointerEvents="none">
+      {/* 起播按钮：不靠 flex 撑垂直居中——cell height===视口高度，直接按
+          (height-64)/2 用像素定死正中，任何安全区/页高差异都不会再把它顶开。 */}
+      <View style={[styles.centerPlay, { top: (height - CENTER_PLAY_SIZE) / 2 }]} pointerEvents="none">
         <View style={styles.centerPlayBadge}>
           <Ionicons name="play" size={30} color="#fff" />
         </View>
@@ -300,6 +312,8 @@ function RailButton({ icon, label, onPress }) {
   );
 }
 
+const CENTER_PLAY_SIZE = 64;
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
   topBar: {
@@ -350,15 +364,15 @@ const styles = StyleSheet.create({
   railBtn: { alignItems: 'center', marginBottom: 20 },
   railLabel: { color: '#fff', fontSize: 11, marginTop: 4 },
   centerPlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
-    pointerEvents: 'none',
   },
   centerPlayBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: CENTER_PLAY_SIZE,
+    height: CENTER_PLAY_SIZE,
+    borderRadius: CENTER_PLAY_SIZE / 2,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.9)',
     backgroundColor: 'rgba(0,0,0,0.35)',
