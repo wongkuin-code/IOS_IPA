@@ -3,16 +3,16 @@ Hello,
 Thank you for your detailed feedback. We have reviewed the issues you identified and have taken the following actions to resolve each one:
 
 1. Guideline 5.2.3 (Legal – third-party rights)
-We have attached documentary evidence in the App Review Information section confirming that all audio/video content, catalogs, and discovery features within the app are original works or otherwise owned and licensed by us. The attached declaration of original authorship serves as proof that we hold the necessary rights to the content provided in the app.
+We have attached documentary evidence in the App Review Information section confirming that all audio/video content within the app is produced by friends of the developer and is owned and licensed by us. A signed authorization letter from the content creator is attached, serving as proof that we hold the necessary rights to display and distribute the content provided in the app. No third-party content is scraped or redistributed.
 
 2. Guideline 2.3.3 (Accurate Metadata – screenshots)
-We have replaced the 13-inch iPad screenshots with new images that accurately show the current version of the app in use, highlighting its core features and functionality.
+Our screenshots accurately reflect the current version of the app in use, captured from the real interface (Home, Player, Profile, Discover, Library). We include both iPhone and 13-inch iPad sizes showing the actual app UI, with no device frames.
 
 3. Guideline 2.1(b) (App Completeness – In-App Purchases)
-The "Premium" In-App Purchase products referenced in the app have now been submitted for review, together with the new binary (build 35), so they can be evaluated as part of this submission.
+The "Premium" In-App Purchase product (Non-Consumable) has been submitted for review, together with the new binary, so it can be evaluated as part of this submission.
 
 4. Guideline 2.3.6 (Accurate Metadata – Age Rating)
-We have updated the Age Rating selection to "None" for Age Assurance, since the app does not currently include parental controls or age assurance mechanisms.
+We have updated the Age Rating selection appropriately for the app's short-drama content (romance / relationship themes), and confirmed all other metadata fields are accurate.
 
 We believe all four issues have been fully addressed. Please proceed with the review of the resubmitted build, and let us know if you require any additional information.
 

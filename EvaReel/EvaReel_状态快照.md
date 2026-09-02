@@ -9,11 +9,12 @@
 
 ## 一、核心决策（本轮）
 
-- **过审策略改为最小化合规 App**：只放 1 条真实可播的**治愈/放松向原创视频**，其余全部「暂未开放」，IAP 购买流程可测。不再追求多部剧。
+- **过审策略（早期）改为最小化合规 App**：只放 1 条真实可播的**治愈/放松向原创视频**，其余全部「暂未开放」，IAP 购买流程可测。
+- **内容策略更新（应对 4.2 拒信）**：最新提审包已改为**全库真实可播内容**（无 "Coming Soon" 占位、无空卡片），详见第六节。仓库 `mockDramas.js` 中 ID 1–9 为 `available` 真实视频+真实首帧封面；若包由服务端 `api.haoweimedia.cn/evareel` 下发全量内容，则全部可播。提交前须确认打出的包确实不含占位空卡片（否则 4.2 仍会被打回）。
 - **bundleId 维持 `com.mytool.booksreader`**：`server/server.js:84` 硬编码校验 `payload.bundleId !== BUNDLE_ID`，且 ASC App ID `6799368982`（Team `D5VA6Q22PL`）即此 ID；改则需同步服务器 `BUNDLE_ID` 与 ASC，风险大，故保持。
 - **slug 维持 `duanju-novel`**：`extra.eas.projectId`（a49f46cd…）在 EAS 注册的 slug 即此值，改 `evareel` 会触发 `slug does not match projectId` 构建失败（已踩坑回退）。slug 只影响 EAS 项目名，不影响包名/显示名。
 - **版权来源 = 自拍自制**（非朋友「火华短剧」）：删除 `legal/授权书_火华短剧.md`，改出 `legal/版权声明_EvaReel.md`（自权属声明），已填平台信息（Bundle ID / Team / ASC App ID / 域名 / 播放器），姓名与证件号待用户手填 + 签字 + 转 PDF。
-- **iPhone-only（2026-08-31，commit `0fc95b9`）**：`app.json` `ios.supportsTablet=false`，只支持 iPhone、不需要 iPad 截图；审核截图按 6.5"（1284×2778）+ 13" iPad（2048×2732）两种尺寸加安全区黑边生成，见 `screenshots_padded/`。
+- **iPhone-only（2026-08-31，commit `0fc95b9`）**：`app.json` `ios.supportsTablet=false`，App 仅支持 iPhone、iPad 上以 iPhone 布局居中运行（系统壁纸填充四周，非纯黑）。按 `AppStoreListing_Healing_EN.md:118` 要求仍需上传 **13" iPad（2048×2732）截图**，`screenshots_padded/` 中 iPad 图为「真实 iPhone 界面 + 纯黑撑边（pillow pad）」生成；用户确认目标只需「iPad 显示与上传截图内容一致」——界面内容一致，仅四周黑边 vs 真机壁纸的色差（iPhone-only 应用常态，过审风险低）。
 
 ---
 
@@ -102,7 +103,37 @@
 ## 五、架构差异 / 已知风险
 
 - 视频由 **nginx 静态分发 + `catalog.json`**（同前），无 `/api/videos` 动态接口（EvaShort 有）。
-- 风险 1：内容仅 1 部（已用「暂未开放」策略缓解，且首页已收敛为单张满屏大封面、Discover 仅 3 个锁定占位，降低空壳观感，但仍建议后续扩量）。
+- 风险 1（已缓解）：早期内容仅 1 部 + 大量 Coming Soon，已在 **4.2 拒信**后被判定「内容太少」；最新提审包已改为全库真实可播（见第六节），该风险关闭。
 - 风险 2：版权声明需用户签字转 PDF 才生效，否则 5.2.3 仍可能被拒。
 - 风险 3：IAP / 年龄分级 / 截图 / Notes 全靠 ASC 控制台，未做则仍会被拒。
 - 风险 4：bundleId 沿用旧小说 ID，若 Apple 质疑需协调服务器 + ASC 改动。
+
+---
+
+## 六、审核动态：4.2 拒信与应对（2026-08-29 收 / 2026-08-31 处置）
+
+### 拒信（版 35，Review date 2026-08-29）
+- **条款**：Guideline 4.2 - Design - Minimum Functionality
+- **设备**：iPad Air 11-inch (M3)（说明 iPhone-only 跑 iPad 本身未被卡，问题在内容）
+- **版本**：1.0 (build 35)
+- **Submission ID**：`78b2789c-ea7c-4412-8e0f-6db81298142a`
+- **原因**：App 内真实可播内容太少（build 35 仅 1 条 + 大量 Coming Soon），看起来像空壳，不符合「足够有价值的内容/功能」。
+
+### 根因澄清
+- 仓库 `mockDramas.js` 中 ID 10–30 为 `seed()` 仅传 7 参、无 `available`/`premium` → `asset:null`、无视频、无封面 → 空卡片。若包含这些条目且图/视频缺失，审核员必以 4.2 打回。
+- build 35 的稀疏观感即来源于此。
+
+### 应对（已落地）
+- **内容补全**：最新提审包改为**全库真实可播**，无占位、无 Coming Soon 空卡（用户确认：现在最新包就是全部真实可播内容）。
+- **回信要点**（已草拟，英文）：
+  1. 感谢审核；说明 EvaReel 为原创治愈短剧流媒体；
+  2. 被审的 build 35 为早期限量目录；新提交 build 已将完整内容库上线，每部均为自有后端 `https://api.haoweimedia.cn/evareel` 托管、经 App 内播放器端到端真播；
+  3. 明确「无 placeholder / 无 Coming Soon，全部真实可播」；
+  4. 引导审核员实测：Home（真实首帧封面）→ Library/Discover（浏览全库）→ Player（点开真播）；
+  5. 请求复审，并留「若某条在测试设备无法播放请告知，立即排查」。
+- 回信模板见对话记录（英文版，替换 `[BUILD NUMBER]` 为实际新 build 号）。
+
+### 待办
+- [ ] 确认打出的新包确实全量真实可播、不含空卡片（核对 `mockDramas.js` 或服务端目录）。
+- [ ] 在 ASC 以新 build 重新提交 + 粘贴上述 Notes 回复拒信。
+- [ ] 若仍被判 4.2，需真实增加可播视频数量（服务端 `publish_videos.sh` 转码 H.264+AAC+faststart 后下发）。
