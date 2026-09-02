@@ -1,13 +1,18 @@
 // ── Profile: avatar, stats, VIP row, settings list ──
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Switch, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Switch, ScrollView, StyleSheet, Linking, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useTheme } from '../theme/ThemeContext';
 import { useUnlock } from '../iap/UnlockContext';
 import StatusBarDark from '../components/StatusBarDark';
-import ComingSoon from '../components/ComingSoon';
 import { loadSaved, loadHistory } from '../data/libraryStore';
+
+const PRIVACY_POLICY_URL = 'https://api.haoweimedia.cn/evareel/privacy-policy.html';
+// ASC Apple ID doubles as the App Store app id for the store page URL.
+const APP_STORE_URL = 'https://apps.apple.com/app/id6799368982';
+
+const openURL = (url) => Linking.openURL(url).catch(() => {});
 
 export default function ProfileScreen() {
   const { colors, spacing, fonts } = useTheme();
@@ -79,10 +84,19 @@ export default function ProfileScreen() {
           onPress={() => {}}
           right={<Switch value={notifications} onValueChange={setNotifications} />}
         />
-        <Row icon="⭐" label="Rate EvaReel" onPress={() => {}} />
-        <Row icon="🔒" label="Privacy Policy" onPress={() => {}} />
+        <Row icon="⭐" label="Rate EvaReel" onPress={() => openURL(APP_STORE_URL)} />
+        <Row icon="🔒" label="Privacy Policy" onPress={() => openURL(PRIVACY_POLICY_URL)} />
         <Row icon="↩️" label="Restore Purchase" onPress={() => restoreVip()} />
-        <Row icon="ℹ️" label="About" onPress={() => {}} />
+        <Row
+          icon="ℹ️"
+          label="About"
+          onPress={() =>
+            Alert.alert(
+              'About EvaReel',
+              `EvaReel ${Constants.expoConfig?.version || '1.0.0'}\n\nA calm, original short-video app. Copyright © 2026 EvaReel.`
+            )
+          }
+        />
       </View>
     </ScrollView>
   );

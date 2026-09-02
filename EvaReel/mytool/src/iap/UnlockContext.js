@@ -1,7 +1,7 @@
 // ── Unlock context: global VIP state + purchase flow ──
 // Uses the expo-iap ROOT API via lazy require so Expo Go / Web (no native
 // module) can still render the UI in preview mode.
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { Alert, Platform } from 'react-native';
 import {
   VIP_PRODUCT_ID,
@@ -60,12 +60,16 @@ export function UnlockProvider({ children }) {
   const [unlockError, setUnlockError] = useState(null);
   const previewMode = !iap;
 
+  // StoreKit re-delivers unfinished transactions on every launch through
+  // purchaseUpdatedListener. Only accept a purchase when the user explicitly
+  // started buy/restore in this session — otherwise an old sandbox transaction
+  // left over from an earlier review round would silently unlock VIP with no
+  // purchase flow (Apple guideline 2.1(b)).
+  const awaitingUserAction = useRef(false);
+
   // Purchase result/error listeners (root API, event-based)
   useEffect(() => {
-    if (!iap) {
-      setUnlocked(true);
-      return;
-    }
+    if (!iap) return;
     const subs = [];
     try {
       subs.push(iap.purchaseUpdatedListener(async (purchase) => {
@@ -75,6 +79,13 @@ export function UnlockProvider({ children }) {
         transactionDate: purchase.transactionDate,
         originalTransactionDate: purchase.originalTransactionDate,
       }));
+      // Ignore transactions StoreKit replays at launch / in the background:
+      // VIP may only be granted for a purchase the user initiated here.
+      if (!awaitingUserAction.current) {
+        console.warn('[IAP] ignoring store-delivered transaction (no user-initiated buy/restore this session):', purchase && purchase.productId);
+        return;
+      }
+      awaitingUserAction.current = false;
       if (!isVipPurchase(purchase)) {
         console.warn('[IAP] product ID mismatch:', purchase && purchase.productId, 'expected:', VIP_PRODUCT_ID);
         setPaywallBusy(false);
@@ -99,6 +110,7 @@ export function UnlockProvider({ children }) {
     }));
     subs.push(iap.purchaseErrorListener((error) => {
       clearBuyWatchdog();
+      awaitingUserAction.current = false;
       setPaywallBusy(false);
       console.warn('[IAP] purchase failed (callback):', error);
       if (error.code !== iap.ErrorCode.UserCancelled) {
@@ -106,9 +118,9 @@ export function UnlockProvider({ children }) {
       }
     }));
     } catch (e) {
-      console.warn('[IAP] expo-iap native module unavailable (Expo Go / Web preview mode):', e && e.message);
-      iap = null;
-      setUnlocked(true);
+      console.warn('[IAP] failed to register purchase listeners:', e && e.message);
+      // Fail closed: stay locked. Never grant VIP because the store is broken.
+      setUnlockError(fmtIapError(e));
       return;
     }
     return () => subs.forEach((s) => s.remove());
@@ -122,9 +134,9 @@ export function UnlockProvider({ children }) {
     try {
       connectionPromise = iap.initConnection();
     } catch (e) {
-      console.warn('[IAP] expo-iap native module unavailable (Expo Go / Web preview mode):', e && e.message);
-      iap = null;
-      setUnlocked(true);
+      console.warn('[IAP] initConnection threw:', e && e.message);
+      // Fail closed: stay locked when the store cannot be reached.
+      setUnlockError(fmtIapError(e));
       return;
     }
     connectionPromise
@@ -152,7 +164,10 @@ export function UnlockProvider({ children }) {
     loadUnlockState().then(setUnlocked);
   }, []);
 
-  // Fetch products + restore purchases on connect
+  // Fetch product price on connect. Restoring is intentionally NOT done here:
+  // an automatic restore at launch can re-grant a sandbox purchase left over
+  // from a previous review, which looks like "VIP unlocked with no purchase".
+  // Restoring is only performed when the user taps Restore Purchase.
   useEffect(() => {
     if (!iap || !connected) return;
     try {
@@ -164,29 +179,6 @@ export function UnlockProvider({ children }) {
         .catch((e) => console.warn('[IAP] product fetch failed:', e));
     } catch (e) {
       console.warn('[IAP] product fetch threw synchronously:', e);
-    }
-    try {
-      iap.getAvailablePurchases()
-        .then((purchases) => {
-          console.log(`[IAP] existing purchases: ${purchases.length}`, purchases.map((p) => p.productId));
-          const vip = purchases.filter(isVipPurchase);
-          if (!vip.length) return;
-          Promise.all(vip.map((p) => verifyOnServer(p).catch((e) => ({ ok: false, networkError: true, error: String(e) }))))
-            .then((results) => {
-              if (results.some((r) => r.ok)) {
-                console.log('[IAP] server verified, restoring unlock');
-                saveUnlockState();
-                setUnlocked(true);
-              } else if (results.every((r) => r.networkError)) {
-                console.warn('[IAP] server unreachable, not restoring unlock');
-              } else {
-                console.warn('[IAP] server verification failed:', results);
-              }
-            });
-        })
-        .catch((e) => console.warn('[IAP] failed to query existing purchases:', e));
-    } catch (e) {
-      console.warn('[IAP] existing purchase query threw synchronously:', e);
     }
   }, [connected]);
 
@@ -201,6 +193,7 @@ export function UnlockProvider({ children }) {
     }
     setPaywallBusy(true);
     setUnlockError(null);
+    awaitingUserAction.current = true;
     try {
       await iap.requestPurchase({
         request: {
@@ -216,7 +209,7 @@ export function UnlockProvider({ children }) {
       buyWatchdog = setTimeout(() => {
         buyWatchdog = null;
         setPaywallBusy(false);
-        setUnlockError('The store returned no result (there may be an unfinished transaction).\nIf you were already charged, restarting the app will auto-restore the unlock; or try again later.');
+        setUnlockError('The store returned no result (there may be an unfinished transaction).\nIf you were already charged, tap Restore Purchase in Profile to restore the unlock; or try again later.');
       }, 25000);
     } catch (e) {
       clearBuyWatchdog();
@@ -233,6 +226,7 @@ export function UnlockProvider({ children }) {
     }
     setPaywallBusy(true);
     setUnlockError(null);
+    awaitingUserAction.current = true;
     try {
       await iap.restorePurchases();
       const purchases = await iap.getAvailablePurchases();
@@ -242,7 +236,19 @@ export function UnlockProvider({ children }) {
         Alert.alert('No Purchases', 'No restorable purchase was found');
         return;
       }
-      const results = await Promise.all(vip.map((p) => verifyOnServer(p).catch((e) => ({ ok: false, networkError: true, error: String(e) }))));
+      const results = await Promise.all(vip.map(async (p) => {
+        const r = await verifyOnServer(p).catch((e) => ({ ok: false, networkError: true, error: String(e) }));
+        if (r.ok) {
+          // Close the loop: a finished transaction is no longer replayed by
+          // StoreKit on every launch.
+          try {
+            await iap.finishTransaction({ purchase: p, isConsumable: false });
+          } catch (e) {
+            console.warn('[IAP] finishTransaction failed during restore:', e);
+          }
+        }
+        return r;
+      }));
       if (results.some((r) => r.ok)) {
         await saveUnlockState();
         setUnlocked(true);

@@ -2,8 +2,45 @@
 
 > 工程：`mytool/`（Expo SDK 57 / RN 0.86，App `EvaReel`）
 > 目标：过 Apple 审核（重点 2.1 真实播放 + 真实目录、5.2.3 版权、2.3.3/2.3.6 元数据）
-> 最后更新：2026-08-31
+> 最后更新：2026-09-02
 > 与 `EvaShort` 同步审查：本文件镜像 `EvaShort/状态快照.md` 的结构与口径。
+
+---
+
+## 〇、2.1(b) 拒审修复（2026-09-02，Submission `78b2789c`）
+
+**拒因**：审核员（iPad Air 11" M3 / iPadOS 26.6，沙盒）未走购买流程，Profile 页即显示 "VIP Unlocked"。
+
+**客户端（`mytool/src/iap/UnlockContext.js`）**
+- [x] 去掉 3 处 fail-open 兜底（expo-iap 模块缺失 / 监听器注册抛异常 / `initConnection` 抛异常时 `setUnlocked(true)`）：改为 **fail closed**，只记录错误、保持锁定。
+- [x] 新增 `awaitingUserAction` 门闩：`purchaseUpdatedListener` 只处理**本次会话由用户主动发起**的 buy/restore，忽略 StoreKit 启动时重放的未完成交易（旧沙盒购买残留是「开局即解锁」的主因）。
+- [x] 删除「连上商店即 `getAvailablePurchases()` 自动恢复」：恢复**只在用户点 Restore Purchase 时**进行（Profile + Paywall 均可触发，符合苹果要求）。
+- [x] Restore 校验通过后补 `finishTransaction`，清掉未完成交易、避免每次启动重放。
+- [x] Watchdog 文案修正（原「重启自动恢复」已不成立 → 改指向 Restore Purchase）。
+
+**服务器（`server/server.js`，改动需重新部署到 43.129.30.172）**
+- [x] 原固定 `Environment.SANDBOX` 验签：库在 `jws_verification.js:78` 强制 `decodedJWT.environment !== this.environment` 即抛错 → **上架后真实用户（Production 交易）会验签失败、永远解锁不了**。
+- [x] 改为 Sandbox / Production 双 verifier，按 JWS payload 里的 `environment` 声明选路并互相兜底；`APP_ENV` 可强制单环境（默认 `AUTO`）。
+- [x] `APPLE_APP_ID` 默认 `6799368982`（Production verifier 构造时必填，否则启动即抛 `appAppleId is required`）。
+
+**部署记录（2026-09-02，43.129.30.172）**
+- [x] `/opt/evareel-verify-v2/server.js` 已替换并 `node --check` 通过；回滚文件 `server.js.bak.20260902`。
+- [x] pm2 wrapper `/usr/local/bin/run-evareel-v2.sh` 同步改：`APP_ENV=SANDBOX` → `APP_ENV=AUTO`，并补 `export APPLE_APP_ID=6799368982`（原写死 SANDBOX 会覆盖自动选路）。
+- [x] `pm2 restart evareel-verify-v2` → online；启动日志 `listening on :3001 env=AUTO verifiers=Sandbox,Production bundleId=com.mytool.booksreader`。
+- [x] 公网验证：`https://api.haoweimedia.cn/evareel/health` → `{"ok":true,...,"verifiers":["Sandbox","Production"]}`；非法 JWS → 400 `INVALID_SIGNATURE`，进程不崩。
+- [x] **旧日志佐证拒因**：此前已有 4 笔沙盒交易验签通过（`tx=2000001225475638 / 226623912 / 226895128 / 228690452`，`env=Sandbox`）→ 说明审核端确实买过，旧代码「启动即自动恢复」把 VIP 直接解锁了。
+
+**结论（Web 兼容影响面）**：Web 预览相关代码仅 3 处且都有运行时守卫，对 iOS 无影响 —— `UnlockContext.js:39` 的 `Platform.OS === 'web'` 分支、`PaywallModal.js:20` 与 `AppNavigator.js:44` 的 `typeof document === 'undefined'` 提前 return（`previewMode` 无任何消费方，属于死代码）。expo-iap v5 的 `requestPurchase` / `finishTransaction` / `ErrorCode` / `purchaseToken`(iOS JWS) 调用形式已逐一核对无误。
+
+## 〇·隐私政策部署（2026-09-02，P0 拒审点修复）
+
+> 复查发现应用内 "Privacy Policy" 按钮是死按钮，且 `api.haoweimedia.cn/evareel/privacy-policy.html` 返回 404 → 5.1.1 + 2.1 风险。
+
+- [x] **隐私页上线**：`mytool/privacy-policy.html` 上传至 `/var/www/evareel/privacy-policy.html`（1659B）；nginx `evashort.conf`（api.haoweimedia.cn server 块）新增精确 location `location = /evareel/privacy-policy.html { alias /var/www/evareel/privacy-policy.html; }`，`nginx -t` 通过 + `systemctl reload nginx`。
+- [x] **验证**：公网 `https://api.haoweimedia.cn/evareel/privacy-policy.html` → HTTP 200（`<title>Privacy Policy - EvaReel</title>`）；文案准确（无账户、仅本地 AsyncStorage、含联系邮箱 vuthingocnga9798@icloud.com）。
+- [x] **应用内按钮接线** `ProfileScreen.js`：删 `ComingSoon` 无用 import；加 `Linking` + `Constants`；`Privacy Policy` → 打开上述 URL；`About` → Alert 显示版本号 + 版权；`Rate EvaReel` → `https://apps.apple.com/app/id6799368982`（ASC Apple ID 即商店页 id）。无残留死按钮。
+- [x] `server.js` 内 `app.get('/evareel/privacy-policy.html')` 现被 nginx 拦截、公网不可达，属无害死路由，保留。
+- [!] **客户端改动需重新出包**：`ProfileScreen.js` 改了行为，`eas build --platform ios --profile production` + `eas submit` 才生效；服务器部署已即时生效。
 
 ---
 
