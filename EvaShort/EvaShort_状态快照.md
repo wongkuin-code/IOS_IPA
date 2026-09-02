@@ -2,7 +2,35 @@
 
 > 工程：`mytool/`（Expo SDK 57 / RN 0.86，App `EvaShort`，bundleId `com.mycompany.EvaShort`）
 > 目标：过 Apple 审核（重点 Guideline 2.1 真实播放 + 真实目录，5.1 隐私）
-> 最后更新：2026-08-25
+> 最后更新：2026-09-02
+> 与 `EvaReel` 同步审查：IAP 相关修复两边同口径，见「〇、IAP 修复同步」。
+
+---
+
+## 〇、IAP 修复同步（2026-09-02，与 EvaReel 2.1(b) 拒审同一口径）
+
+> 来源：EvaReel 被 Guideline 2.1(b) 拒审（Submission `78b2789c`）——审核员未走购买流程即显示 "VIP Unlocked"。EvaShort 是同套代码，未提审前**预防性同步修复**。
+
+**客户端 `mytool/src/iap/UnlockContext.js`**
+- [x] 删除 3 处 fail-open 兜底（expo-iap 缺失 / 监听器注册抛异常 / `initConnection` 抛异常时的 `setUnlocked(true)`），改 **fail closed**。
+- [x] 新增 `awaitingUserAction` 门闩：`purchaseUpdatedListener` 只处理本会话用户主动发起的 buy/restore，忽略 StoreKit 启动时重放的未完成交易（旧沙盒购买残留 =「开局即解锁」主因）。
+- [x] 移除「连上商店即 `getAvailablePurchases()` 自动恢复」：恢复只在用户点 Restore Purchase 时进行（Profile + Paywall 均有入口）。
+- [x] Restore 校验通过后补 `finishTransaction`，清掉未完成交易、避免每次启动重放。
+- [x] Watchdog 文案：原「重启自动恢复」→ 指向 Restore Purchase。
+- [x] 本地验证：`src/iap/UnlockContext.js` babel 解析通过。
+
+**服务器 `server/server.js`**
+- [x] 原固定 `Environment.SANDBOX` 验签：库 `jws_verification.js:78` 强制 `decodedJWT.environment !== this.environment` 就抛错 → **上线后真实用户（Production）会验签失败、永远解锁不了**。
+- [x] 改为 Sandbox / Production 双 verifier，按 JWS payload 的 `environment` 声明选路并互相兜底（默认 `APP_ENV=AUTO`，可强制单环境）。
+- [x] `APPLE_APP_ID` 默认 `6802204407`（EvaShort 的 ASC App ID；Production verifier 构造必填，否则进程启动即抛 `appAppleId is required`）。
+- [x] `/health` 增加 `verifiers` 字段；启动日志打印 `env=… verifiers=Sandbox,Production`。
+- [x] 本地验证：端口 3998 启动正常，两个 verifier 均构造成功，非法 JWS 正确返回 400 `INVALID_SIGNATURE`。
+
+**部署记录（2026-09-02，43.129.30.172）**
+- [x] `/opt/evashort-server/server.js` 已替换并 `node --check` 通过；回滚文件 `server.js.bak.20260902`。
+- [x] `pm2 restart evashort` → online；启动日志 `listening on :3000 env=AUTO verifiers=Sandbox,Production bundleId=com.mycompany.EvaShort`，`users=18` 未受影响。
+- [x] 公网验证：`https://api.haoweimedia.cn/health` → `verifiers:["Sandbox","Production"]`；非法 JWS → 400 `INVALID_SIGNATURE`。
+- [x] 该进程无 `BUNDLE_ID` / `APP_ENV` 外部环境变量，全部走代码默认值（bundleId `com.mycompany.EvaShort`、商品 `2.99`、Apple ID `6802204407`）。
 
 ---
 

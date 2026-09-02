@@ -49,6 +49,7 @@ EvaShort/server/covers/
 
 # work artifacts
 mytool/dist-web.zip
+dist-web/
 mytool/web.log
 mytool/scripts/serve_web.log
 mytool/build/

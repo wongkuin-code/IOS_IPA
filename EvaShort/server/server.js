@@ -10,8 +10,10 @@ const BUNDLE_ID = process.env.BUNDLE_ID || 'com.mycompany.EvaShort';
 const ALLOWED_PRODUCT_IDS = new Set(
   (process.env.ALLOWED_PRODUCT_IDS || '2.99').split(',').map((s) => s.trim()).filter(Boolean)
 );
-const APP_ENV = process.env.APP_ENV || 'SANDBOX';
-const APPLE_APP_ID = process.env.APPLE_APP_ID || undefined;
+// 'AUTO'（默认）：按交易自身声明的 environment 选 verifier，并互相兜底。
+// 需要固定单环境时可用 APP_ENV=SANDBOX / APP_ENV=PRODUCTION 覆盖。
+const APP_ENV = process.env.APP_ENV || 'AUTO';
+const APPLE_APP_ID = process.env.APPLE_APP_ID || '6802204407';
 const STORE_FILE = process.env.STORE_FILE || path.join(__dirname, 'store.json');
 const USERS_FILE = process.env.USERS_FILE || path.join(__dirname, 'users.json');
 const GUEST_DAILY_LIMIT = Number(process.env.GUEST_DAILY_LIMIT || 3);
@@ -29,8 +31,57 @@ if (!ROOT_CAS.length) {
   process.exit(1);
 }
 
-const environment = APP_ENV === 'PRODUCTION' ? Environment.PRODUCTION : Environment.SANDBOX;
-const verifier = new SignedDataVerifier(ROOT_CAS, true, environment, BUNDLE_ID, APPLE_APP_ID);
+// 沙盒/审核交易签 environment=Sandbox，真实用户交易签 environment=Production，
+// 而 SignedDataVerifier 会在 `decodedJWT.environment !== this.environment` 时直接抛错
+// （库内 jws_verification.js:78）。固定单一环境会导致：审核期能过、上线后真实用户
+// 验签失败永远解锁不了（或反之）。故两个环境各建一个 verifier，按声明选路并兜底。
+const verifiers = {
+  [Environment.SANDBOX]: new SignedDataVerifier(ROOT_CAS, true, Environment.SANDBOX, BUNDLE_ID),
+};
+if (APPLE_APP_ID) {
+  verifiers[Environment.PRODUCTION] = new SignedDataVerifier(
+    ROOT_CAS,
+    true,
+    Environment.PRODUCTION,
+    BUNDLE_ID,
+    Number(APPLE_APP_ID)
+  );
+}
+
+// 仅读取 JWS 里（未验签的）environment 声明用于排序，签名随后仍会严格校验。
+function environmentOfJws(jws) {
+  try {
+    const segment = String(jws).split('.')[1];
+    return JSON.parse(Buffer.from(segment, 'base64').toString('utf8')).environment;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function verifyTransaction(jws) {
+  const claimed = environmentOfJws(jws);
+  let order;
+  if (APP_ENV === 'SANDBOX') {
+    order = [Environment.SANDBOX, Environment.PRODUCTION];
+  } else if (APP_ENV === 'PRODUCTION') {
+    order = [Environment.PRODUCTION, Environment.SANDBOX];
+  } else {
+    order = claimed === Environment.PRODUCTION
+      ? [Environment.PRODUCTION, Environment.SANDBOX]
+      : [Environment.SANDBOX, Environment.PRODUCTION];
+  }
+  let lastError;
+  for (const env of order) {
+    const v = verifiers[env];
+    if (!v) continue;
+    try {
+      return { payload: await v.verifyAndDecodeTransaction(jws), environment: env };
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError || new Error('no verifier available for this environment');
+}
 
 const store = {
   transactionIds: new Set(),
@@ -281,7 +332,7 @@ function toVideoSummary(v) {
 }
 
 app.get('/health', (req, res) => {
-  res.json({ ok: true, app: 'evashort-api', env: environment, users: Object.keys(users).length });
+  res.json({ ok: true, app: 'evashort-api', env: APP_ENV, verifiers: Object.keys(verifiers), users: Object.keys(users).length });
 });
 
 // ── Auth ──
@@ -467,7 +518,8 @@ app.post('/api/verify-iap', async (req, res) => {
   }
   let payload;
   try {
-    payload = await verifier.verifyAndDecodeTransaction(jws);
+    const verified = await verifyTransaction(jws);
+    payload = verified.payload;
   } catch (e) {
     console.warn('[verify-iap] 验签失败:', e && e.message);
     return res.status(400).json({ ok: false, error: 'INVALID_SIGNATURE', detail: e && e.message });
@@ -492,6 +544,6 @@ app.post('/api/verify-iap', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[evashort-api] listening on :${PORT} env=${environment} bundleId=${BUNDLE_ID}`);
+  console.log(`[evashort-api] listening on :${PORT} env=${APP_ENV} verifiers=${Object.keys(verifiers).join(',')} bundleId=${BUNDLE_ID}`);
   console.log(`[evashort-api] products=${[...ALLOWED_PRODUCT_IDS].join(',')} users=${Object.keys(users).length}`);
 });
